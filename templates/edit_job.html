@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sửa công việc</title>
+</head>
+
+<body>
+
+    <h1>Sửa công việc</h1>
+
+    <form method="POST">
+
+        <div>
+            <label>Tên công việc</label>
+            <input
+                type="text"
+                name="title"
+                value="{{ job['title'] }}"
+                required
+            >
+        </div>
+
+        <div>
+            <label>Công ty</label>
+            <input
+                type="text"
+                name="company"
+                value="{{ job['company'] or '' }}"
+            >
+        </div>
+
+        <div>
+            <label>Địa điểm</label>
+            <input
+                type="text"
+                name="location"
+                value="{{ job['location'] or '' }}"
+            >
+        </div>
+
+        <div>
+            <label>Loại công việc</label>
+
+            <select name="job_type">
+
+                <option value="Full-time"
+                    {% if job['job_type'] == 'Full-time' %}selected{% endif %}>
+                    Full-time
+                </option>
+
+                <option value="Part-time"
+                    {% if job['job_type'] == 'Part-time' %}selected{% endif %}>
+                    Part-time
+                </option>
+
+                <option value="Internship"
+                    {% if job['job_type'] == 'Internship' %}selected{% endif %}>
+                    Internship
+                </option>
+
+            </select>
+        </div>
+
+        <div>
+            <label>Nhóm nghề</label>
+
+            <select name="category">
+
+                <option value="Backend Development">Backend Development</option>
+                <option value="Frontend Development">Frontend Development</option>
+                <option value="Full Stack Development">Full Stack Development</option>
+                <option value="Data">Data</option>
+                <option value="AI / Machine Learning">AI / Machine Learning</option>
+                <option value="DevOps / Cloud">DevOps / Cloud</option>
+                <option value="Cybersecurity">Cybersecurity</option>
+                <option value="Mobile Development">Mobile Development</option>
+                <option value="Game Development">Game Development</option>
+                <option value="Network / System">Network / System</option>
+
+            </select>
+        </div>
+
+        <div>
+            <label>Mô tả công việc</label>
+
+            <textarea
+                name="description"
+                rows="6"
+            >{{ job['description'] or '' }}</textarea>
+        </div>
+
+        <br>
+
+        <button type="submit">Lưu thay đổi</button>
+
+    </form>
+
+    <br>
+
+    <a href="{{ url_for('jobs') }}">Quay lại</a>
+
+</body>
+</html>

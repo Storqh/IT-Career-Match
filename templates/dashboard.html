@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard - IT Career Match
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container">
+
+    <section class="hero">
+
+        <h1 class="hero-title">
+            Chào mừng đến với IT Career Match
+        </h1>
+
+        <p class="hero-subtitle mt-3">
+            Phân tích CV bằng Machine Learning và tìm những
+            công việc IT phù hợp nhất với kỹ năng của bạn.
+        </p>
+
+        <a href="{{ url_for('recommendations') }}"
+           class="btn btn-primary btn-lg mt-3">
+
+            Xem gợi ý việc làm bằng AI
+
+        </a>
+
+    </section>
+
+
+    <div class="row g-4">
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="card dashboard-card shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <div class="feature-icon">
+                        👤
+                    </div>
+
+                    <h5 class="mt-3">
+                        Hồ sơ cá nhân
+                    </h5>
+
+                    <p class="text-muted">
+                        Cập nhật thông tin và chuyên ngành.
+                    </p>
+
+                    <a href="{{ url_for('profile') }}"
+                       class="btn btn-outline-primary">
+                        Hồ sơ
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="card dashboard-card shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <div class="feature-icon">
+                        📄
+                    </div>
+
+                    <h5 class="mt-3">
+                        Phân tích CV
+                    </h5>
+
+                    <p class="text-muted">
+                        Upload CV PDF hoặc DOCX để AI phân tích.
+                    </p>
+
+                    <a href="{{ url_for('upload_cv') }}"
+                       class="btn btn-outline-primary">
+                        Upload CV
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="card dashboard-card shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <div class="feature-icon">
+                        💼
+                    </div>
+
+                    <h5 class="mt-3">
+                        Việc làm
+                    </h5>
+
+                    <p class="text-muted">
+                        Khám phá các vị trí IT hiện có.
+                    </p>
+
+                    <a href="{{ url_for('jobs') }}"
+                       class="btn btn-outline-primary">
+                        Xem việc làm
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="card dashboard-card shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <div class="feature-icon">
+                        🤖
+                    </div>
+
+                    <h5 class="mt-3">
+                        AI Recommendation
+                    </h5>
+
+                    <p class="text-muted">
+                        Top công việc phù hợp với CV của bạn.
+                    </p>
+
+                    <a href="{{ url_for('recommendations') }}"
+                       class="btn btn-primary">
+                        Xem gợi ý
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}
+Hồ sơ - IT Career Match
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="mb-4">
+                <h1 class="fw-bold">Hồ sơ cá nhân</h1>
+                <p class="text-muted">
+                    Cập nhật thông tin để hệ thống hiểu rõ hơn về bạn.
+                </p>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+
+                    <form method="POST">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                Họ và tên
+                            </label>
+
+                            <input
+                                type="text"
+                                name="full_name"
+                                class="form-control"
+                                value="{{ profile['full_name'] or '' }}">
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                Ngày sinh
+                            </label>
+
+                            <input
+                                type="date"
+                                name="date_of_birth"
+                                class="form-control"
+                                value="{{ profile['date_of_birth'] or '' }}">
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                Chuyên ngành
+                            </label>
+
+                            <input
+                                type="text"
+                                name="major"
+                                class="form-control"
+                                placeholder="Ví dụ: Công nghệ thông tin"
+                                value="{{ profile['major'] or '' }}">
+                        </div>
+
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                Giới thiệu bản thân
+                            </label>
+
+                            <textarea
+                                name="bio"
+                                class="form-control"
+                                rows="5"
+                                placeholder="Mô tả ngắn về bản thân, định hướng nghề nghiệp...">{{ profile['bio'] or '' }}</textarea>
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary">
+
+                            Lưu hồ sơ
+
+                        </button>
+
+                        <a href="{{ url_for('dashboard') }}"
+                           class="btn btn-outline-secondary">
+
+                            Quay lại
+
+                        </a>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

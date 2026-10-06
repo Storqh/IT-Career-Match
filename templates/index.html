@@ -1,0 +1,510 @@
+{% extends "base.html" %}
+
+{% block title %}
+IT Career Match - AI Job Recommendation
+{% endblock %}
+
+{% block content %}
+
+<!-- ================= HERO ================= -->
+
+<section class="py-5 bg-white">
+
+    <div class="container py-5">
+
+        <div class="row align-items-center">
+
+            <div class="col-lg-7">
+
+                <span class="badge bg-primary mb-3">
+                    AI Career Recommendation Platform
+                </span>
+
+                <h1 class="display-4 fw-bold mb-4">
+
+                    Tìm công việc IT
+                    <span class="text-primary">
+                        phù hợp với bạn
+                    </span>
+
+                </h1>
+
+                <p class="lead text-muted mb-4">
+
+                    IT Career Match sử dụng Machine Learning
+                    để phân tích CV, nhận diện kỹ năng,
+                    dự đoán định hướng nghề nghiệp và
+                    gợi ý những công việc phù hợp nhất
+                    dành cho sinh viên CNTT.
+
+                </p>
+
+
+                {% if session.get("user_id") %}
+
+                    <a href="{{ url_for('dashboard') }}"
+                       class="btn btn-primary btn-lg me-2">
+
+                        Đi đến Dashboard
+
+                    </a>
+
+                    <a href="{{ url_for('recommendations') }}"
+                       class="btn btn-outline-primary btn-lg">
+
+                        Xem AI Recommendation
+
+                    </a>
+
+                {% else %}
+
+                    <a href="{{ url_for('register') }}"
+                       class="btn btn-primary btn-lg me-2">
+
+                        Bắt đầu miễn phí
+
+                    </a>
+
+                    <a href="{{ url_for('login') }}"
+                       class="btn btn-outline-primary btn-lg">
+
+                        Đăng nhập
+
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- RIGHT SIDE -->
+
+            <div class="col-lg-5 mt-5 mt-lg-0">
+
+                <div class="card border-0 shadow-lg">
+
+                    <div class="card-body p-5">
+
+                        <h4 class="fw-bold mb-4">
+                            AI Career Analysis
+                        </h4>
+
+
+                        <div class="mb-4">
+
+                            <small class="text-muted">
+                                Career Prediction
+                            </small>
+
+                            <h4 class="text-primary mt-1">
+                                AI / Machine Learning
+                            </h4>
+
+                        </div>
+
+
+                        <div class="mb-4">
+
+                            <div class="d-flex justify-content-between">
+
+                                <span>
+                                    Job Match
+                                </span>
+
+                                <strong>
+                                    86%
+                                </strong>
+
+                            </div>
+
+
+                            <div class="progress mt-2">
+
+                                <div
+                                    class="progress-bar"
+                                    style="width: 86%;">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <small class="text-muted">
+                                Skills detected
+                            </small>
+
+                            <div class="mt-2">
+
+                                <span class="badge bg-success">
+                                    Python
+                                </span>
+
+                                <span class="badge bg-success">
+                                    SQL
+                                </span>
+
+                                <span class="badge bg-success">
+                                    Machine Learning
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= HOW IT WORKS ================= -->
+
+<section class="py-5">
+
+    <div class="container py-4">
+
+        <div class="text-center mb-5">
+
+            <h2 class="fw-bold">
+                Hệ thống hoạt động như thế nào?
+            </h2>
+
+            <p class="text-muted">
+                Chỉ với CV của bạn, hệ thống sẽ thực hiện toàn bộ quá trình phân tích.
+            </p>
+
+        </div>
+
+
+        <div class="row g-4">
+
+
+            <!-- STEP 1 -->
+
+            <div class="col-md-4">
+
+                <div class="card dashboard-card shadow-sm">
+
+                    <div class="card-body p-4 text-center">
+
+                        <div class="feature-icon">
+                            📄
+                        </div>
+
+                        <h4 class="fw-bold mt-3">
+                            1. Upload CV
+                        </h4>
+
+                        <p class="text-muted">
+
+                            Upload CV PDF hoặc DOCX.
+                            Hệ thống đọc nội dung và
+                            tiền xử lý dữ liệu văn bản.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- STEP 2 -->
+
+            <div class="col-md-4">
+
+                <div class="card dashboard-card shadow-sm">
+
+                    <div class="card-body p-4 text-center">
+
+                        <div class="feature-icon">
+                            🤖
+                        </div>
+
+                        <h4 class="fw-bold mt-3">
+                            2. AI phân tích
+                        </h4>
+
+                        <p class="text-muted">
+
+                            Machine Learning phân tích kỹ năng
+                            và dự đoán nhóm nghề phù hợp
+                            với hồ sơ của bạn.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- STEP 3 -->
+
+            <div class="col-md-4">
+
+                <div class="card dashboard-card shadow-sm">
+
+                    <div class="card-body p-4 text-center">
+
+                        <div class="feature-icon">
+                            🎯
+                        </div>
+
+                        <h4 class="fw-bold mt-3">
+                            3. Nhận gợi ý
+                        </h4>
+
+                        <p class="text-muted">
+
+                            Hệ thống xếp hạng công việc,
+                            tính Match Score và chỉ ra
+                            những kỹ năng bạn cần bổ sung.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= FEATURES ================= -->
+
+<section class="py-5 bg-white">
+
+    <div class="container py-4">
+
+        <div class="text-center mb-5">
+
+            <h2 class="fw-bold">
+                Tính năng chính
+            </h2>
+
+            <p class="text-muted">
+                Công nghệ AI hỗ trợ sinh viên CNTT định hướng nghề nghiệp.
+            </p>
+
+        </div>
+
+
+        <div class="row g-4">
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="card dashboard-card shadow-sm">
+
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold">
+                            🔍 CV Analysis
+                        </h5>
+
+                        <p class="text-muted mb-0">
+
+                            Phân tích nội dung CV và
+                            tự động trích xuất kỹ năng.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="card dashboard-card shadow-sm">
+
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold">
+                            🧠 Career Prediction
+                        </h5>
+
+                        <p class="text-muted mb-0">
+
+                            Machine Learning dự đoán
+                            nhóm nghề phù hợp với CV.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="card dashboard-card shadow-sm">
+
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold">
+                            🎯 Match Score
+                        </h5>
+
+                        <p class="text-muted mb-0">
+
+                            Đánh giá mức độ phù hợp giữa
+                            hồ sơ và từng công việc.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-6 col-lg-3">
+
+                <div class="card dashboard-card shadow-sm">
+
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold">
+                            📈 Skill Gap
+                        </h5>
+
+                        <p class="text-muted mb-0">
+
+                            Xác định kỹ năng còn thiếu
+                            để bạn có kế hoạch học tập.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= TECHNOLOGY ================= -->
+
+<section class="py-5">
+
+    <div class="container py-4 text-center">
+
+        <h2 class="fw-bold">
+            Công nghệ sử dụng
+        </h2>
+
+        <p class="text-muted mb-4">
+            Xây dựng bằng các công nghệ phổ biến trong Web và Machine Learning.
+        </p>
+
+
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+
+            <span class="badge bg-dark p-3">
+                Python
+            </span>
+
+            <span class="badge bg-dark p-3">
+                Flask
+            </span>
+
+            <span class="badge bg-dark p-3">
+                SQLite
+            </span>
+
+            <span class="badge bg-dark p-3">
+                Scikit-learn
+            </span>
+
+            <span class="badge bg-dark p-3">
+                TF-IDF
+            </span>
+
+            <span class="badge bg-dark p-3">
+                Logistic Regression
+            </span>
+
+            <span class="badge bg-dark p-3">
+                Bootstrap
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= CTA ================= -->
+
+<section class="py-5 bg-primary text-white">
+
+    <div class="container text-center py-4">
+
+        <h2 class="fw-bold">
+            Sẵn sàng tìm công việc phù hợp?
+        </h2>
+
+        <p class="mb-4">
+            Upload CV và để AI Career Match phân tích hồ sơ của bạn.
+        </p>
+
+
+        {% if session.get("user_id") %}
+
+        <a href="{{ url_for('upload_cv') }}"
+           class="btn btn-light btn-lg">
+
+            Phân tích CV ngay
+
+        </a>
+
+        {% else %}
+
+        <a href="{{ url_for('register') }}"
+           class="btn btn-light btn-lg">
+
+            Tạo tài khoản
+
+        </a>
+
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}

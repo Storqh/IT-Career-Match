@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}
+Upload CV - IT Career Match
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="card form-card shadow-sm">
+
+        <div class="card-body p-5">
+
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">Phân tích CV bằng AI</h2>
+
+                <p class="text-muted">
+                    Upload CV để hệ thống phân tích kỹ năng
+                    và gợi ý công việc phù hợp.
+                </p>
+            </div>
+
+            {% if message %}
+            <div class="alert alert-info">
+                {{ message }}
+            </div>
+            {% endif %}
+
+            <form method="POST"
+                  enctype="multipart/form-data">
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-bold">
+                        Chọn CV
+                    </label>
+
+                    <input
+                        type="file"
+                        name="cv"
+                        class="form-control form-control-lg"
+                        accept=".pdf,.docx"
+                        required>
+
+                    <div class="form-text">
+                        Hỗ trợ định dạng PDF và DOCX.
+                    </div>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary w-100 btn-lg">
+
+                    Upload & Phân tích CV
+
+                </button>
+
+            </form>
+
+            <hr class="my-4">
+
+            <div class="d-grid gap-2">
+
+                <a href="{{ url_for('recommendations') }}"
+                   class="btn btn-success">
+
+                    Xem AI Job Recommendations
+
+                </a>
+
+                <a href="{{ url_for('dashboard') }}"
+                   class="btn btn-outline-secondary">
+
+                    Quay lại Dashboard
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}IT Career Match{% endblock %}</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+
+        <a class="navbar-brand fw-bold"
+           href="{{ url_for('dashboard') }}">
+            IT Career Match
+        </a>
+
+        {% if session.get("user_id") %}
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbar">
+
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar">
+
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('dashboard') }}">
+                        Dashboard
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('profile') }}">
+                        Hồ sơ
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('upload_cv') }}">
+                        CV
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('jobs') }}">
+                        Việc làm
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('recommendations') }}">
+                        AI Gợi ý
+                    </a>
+                </li>
+
+                <li class="nav-item ms-lg-3">
+                    <a class="btn btn-outline-light"
+                       href="{{ url_for('logout') }}">
+                        Đăng xuất
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+</nav>
+
+
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+
+<footer class="site-footer">
+    <div class="container text-center">
+        <p class="mb-0">
+            IT Career Match — Personalized Job Recommendation System
+        </p>
+    </div>
+</footer>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>

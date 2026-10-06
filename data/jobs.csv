@@ -1,0 +1,11 @@
+id,title,company,location,skills
+1,Backend Developer Intern,TechNova,Ho Chi Minh City,"Python Flask SQL Git REST API"
+2,Java Backend Intern,NextTech,Ho Chi Minh City,"Java Spring Boot SQL Git REST API"
+3,Frontend Developer Intern,WebStar,Ho Chi Minh City,"HTML CSS JavaScript React Git"
+4,React Developer Intern,DigitalSoft,Remote,"React JavaScript HTML CSS Git"
+5,Data Analyst Intern,DataVision,Hanoi,"Python Pandas SQL Excel Power BI"
+6,Machine Learning Intern,AI Labs,Hanoi,"Python Machine Learning Pandas Scikit-learn SQL"
+7,Game Developer Intern,GameStudio,Ho Chi Minh City,"C++ C# Unity OOP Git"
+8,Unreal Developer Intern,GameTech,Remote,"C++ Unreal Engine OOP Git"
+9,DevOps Intern,CloudTech,Da Nang,"Linux Docker Git CI/CD AWS"
+10,ASP.NET Developer Intern,SoftWorld,Ho Chi Minh City,"C# ASP.NET Core SQL Git REST API"

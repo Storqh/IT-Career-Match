@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}
+AI Recommendations - IT Career Match
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <!-- HEADER -->
+    <div class="mb-4">
+        <h1 class="fw-bold">AI Job Recommendation</h1>
+        <p class="text-muted">
+            Kết quả phân tích CV và gợi ý việc làm phù hợp dành cho bạn.
+        </p>
+    </div>
+
+
+    <!-- CAREER PREDICTION -->
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body p-4">
+
+            <p class="text-muted mb-1">
+                Nhóm nghề được AI dự đoán
+            </p>
+
+            <h2 class="text-primary fw-bold">
+                {{ predicted_career }}
+            </h2>
+
+        </div>
+    </div>
+
+
+    <!-- TOP JOBS -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <h3 class="fw-bold mb-0">
+            Top công việc phù hợp
+        </h3>
+
+        <span class="badge bg-primary">
+            {{ jobs|length }} Recommendations
+        </span>
+
+    </div>
+
+
+    {% if jobs %}
+
+        {% for job in jobs %}
+
+        <div class="card job-card shadow-sm mb-4">
+
+            <div class="card-body p-4">
+
+                <!-- JOB HEADER -->
+                <div class="row">
+
+                    <div class="col-md-8">
+
+                        <span class="badge bg-secondary mb-2">
+                            #{{ loop.index }}
+                        </span>
+
+                        <h3 class="fw-bold">
+                            {{ job.title }}
+                        </h3>
+
+                        <p class="text-muted mb-2">
+                            {{ job.company }}
+                        </p>
+
+                        <span class="badge bg-light text-dark">
+                            {{ job.category }}
+                        </span>
+
+                    </div>
+
+
+                    <!-- MATCH SCORE -->
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+
+                        <div class="match-score text-success">
+                            {{ job.match_score }}%
+                        </div>
+
+                        <p class="text-muted">
+                            Match Score
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <hr>
+
+
+                <!-- SIMILARITY -->
+                <div class="mb-4">
+
+                    <div class="d-flex justify-content-between">
+
+                        <strong>
+                            CV - Job Similarity
+                        </strong>
+
+                        <span>
+                            {{ "%.2f"|format(job.similarity * 100) }}%
+                        </span>
+
+                    </div>
+
+                    <div class="progress mt-2"
+                         style="height: 10px;">
+
+                        <div
+                            class="progress-bar"
+                            style="width: {{ job.similarity * 100 }}%;">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- MATCHED SKILLS -->
+                <div class="mb-3">
+
+                    <h6 class="fw-bold">
+                        Kỹ năng phù hợp
+                    </h6>
+
+                    {% if job.matched_skills %}
+
+                        {% for skill in job.matched_skills %}
+
+                        <span class="badge bg-success skill-badge">
+                            {{ skill }}
+                        </span>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            Chưa phát hiện kỹ năng trùng khớp.
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- MISSING SKILLS -->
+                <div class="mb-4">
+
+                    <h6 class="fw-bold">
+                        Kỹ năng cần bổ sung
+                    </h6>
+
+                    {% if job.missing_skills %}
+
+                        {% for skill in job.missing_skills %}
+
+                        <span class="badge bg-warning text-dark skill-badge">
+                            {{ skill }}
+                        </span>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <span class="text-success">
+                            Không phát hiện kỹ năng còn thiếu.
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- AI EXPLANATION -->
+                <div class="alert alert-info mb-0">
+
+                    <strong>
+                        AI Explanation
+                    </strong>
+
+                    <p class="mb-0 mt-2">
+                        {{ job.explanation }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+
+    {% else %}
+
+        <div class="alert alert-warning">
+            Chưa có công việc phù hợp để gợi ý.
+        </div>
+
+    {% endif %}
+
+
+    <!-- BUTTONS -->
+    <div class="mt-4">
+
+        <a href="{{ url_for('dashboard') }}"
+           class="btn btn-outline-secondary">
+
+            Quay lại Dashboard
+
+        </a>
+
+        <a href="{{ url_for('upload_cv') }}"
+           class="btn btn-primary">
+
+            Upload CV mới
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}
