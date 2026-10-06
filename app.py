@@ -79,27 +79,58 @@ def register():
     return render_template("register.html")
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    # Nếu đã đăng nhập thì chuyển về Dashboard
+    if "user_id" in session:
+        return redirect(url_for("dashboard"))
 
     if request.method == "POST":
 
-        email = request.form["email"]
-        password = request.form["password"]
+        # Lấy dữ liệu từ form
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
 
+        # Kiểm tra dữ liệu rỗng
+        if not email or not password:
+            return render_template(
+                "login.html",
+                message="Vui lòng nhập đầy đủ email và mật khẩu.",
+                message_type="warning",
+                email=email
+            )
+
+        # Tìm tài khoản trong Database
         connection = get_connection()
 
         user = connection.execute(
-            "SELECT * FROM users WHERE email = ?",
+            """
+            SELECT *
+            FROM users
+            WHERE email = ?
+            """,
             (email,)
         ).fetchone()
 
         connection.close()
 
+        # Email không tồn tại
         if user is None:
-            return "Email không tồn tại."
+            return render_template(
+                "login.html",
+                message="Không tìm thấy tài khoản với email này.",
+                message_type="danger",
+                email=email
+            )
 
+        # Sai mật khẩu
         if not check_password_hash(user["password"], password):
-            return "Mật khẩu không chính xác."
+            return render_template(
+                "login.html",
+                message="Mật khẩu không chính xác. Vui lòng thử lại.",
+                message_type="danger",
+                email=email
+            )
 
+        # Đăng nhập thành công
         session["user_id"] = user["user_id"]
         session["email"] = user["email"]
         session["role"] = user["role"]
