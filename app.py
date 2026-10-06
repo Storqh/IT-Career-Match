@@ -1,4 +1,5 @@
 import os
+import resend
 import random
 import time
 from ai.recommender import recommend_jobs, predict_career
@@ -9,7 +10,6 @@ from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.database import get_connection
-from flask_mail import Mail, Message
 
 app = Flask(__name__)
 app.secret_key = os.environ.get(
@@ -17,26 +17,11 @@ app.secret_key = os.environ.get(
     "dev-secret-key-change-this"
 )
 
-# =========================
-# GMAIL CONFIG
-# =========================
-
-app.config["MAIL_SERVER"] = "smtp.gmail.com"
-app.config["MAIL_PORT"] = 465
-app.config["MAIL_USE_TLS"] = True
-app.config["MAIL_USE_SSL"] = False
-
-app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
-app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
-
-app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_USERNAME")
-
-mail = Mail(app)
-app.secret_key = "it-career-match-secret-key"
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"pdf", "docx"}
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+resend.api_key = os.environ.get("RESEND_API_KEY")   
 def allowed_file(filename):
     return (
         "." in filename
