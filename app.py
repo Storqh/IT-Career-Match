@@ -1,66 +1,212 @@
 import os
-import resend
 import random
 import time
-from ai.recommender import recommend_jobs, predict_career
+import resend
+
+from flask import (
+    Flask,
+    render_template,
+    request,
+    session,
+    redirect,
+    url_for
+)
+
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
+)
+
+from werkzeug.utils import secure_filename
+
+from database.database import get_connection
+
+from ai.recommender import (
+    recommend_jobs,
+    predict_career
+)
+
 from ai.text_preprocessing import preprocess_text
 from ai.skill_extractor import extract_skills
 from ai.cv_parser import read_pdf, read_docx
-from werkzeug.utils import secure_filename
-from flask import Flask, render_template, request, session, redirect, url_for
-from werkzeug.security import generate_password_hash, check_password_hash
-from database.database import get_connection
+
+
+# =========================================================
+# FLASK CONFIG
+# =========================================================
 
 app = Flask(__name__)
+
 app.secret_key = os.environ.get(
     "SECRET_KEY",
     "dev-secret-key-change-this"
 )
 
 UPLOAD_FOLDER = "uploads"
-ALLOWED_EXTENSIONS = {"pdf", "docx"}
+
+ALLOWED_EXTENSIONS = {
+    "pdf",
+    "docx"
+}
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-resend.api_key = os.environ.get("RESEND_API_KEY")   
+
+# Giới hạn CV tối đa 5 MB
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
+
+# Tự tạo thư mục uploads nếu chưa tồn tại
+os.makedirs(
+    UPLOAD_FOLDER,
+    exist_ok=True
+)
+
+
+# =========================================================
+# RESEND CONFIG
+# =========================================================
+
+resend.api_key = os.environ.get(
+    "RESEND_API_KEY"
+)
+
+
+# =========================================================
+# HELPER FUNCTIONS
+# =========================================================
+
 def allowed_file(filename):
     return (
         "." in filename
-        and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+        and filename.rsplit(".", 1)[1].lower()
+        in ALLOWED_EXTENSIONS
     )
+
+
+def send_otp_email(to_email, otp):
+    """
+    Gửi OTP bằng Resend API.
+    Không sử dụng SMTP vì Render Free có thể chặn SMTP.
+    """
+
+    if not resend.api_key:
+        raise RuntimeError(
+            "RESEND_API_KEY chưa được cấu hình."
+        )
+
+    params = {
+        "from": "IT Career Match <onboarding@resend.dev>",
+        "to": [to_email],
+        "subject": "Mã xác thực OTP - IT Career Match",
+        "html": f"""
+        <div style="
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+        ">
+
+            <h2>IT Career Match</h2>
+
+            <p>Xin chào,</p>
+
+            <p>
+                Mã xác thực OTP của bạn là:
+            </p>
+
+            <h1 style="
+                letter-spacing: 6px;
+                font-size: 32px;
+            ">
+                {otp}
+            </h1>
+
+            <p>
+                Mã OTP có hiệu lực trong
+                <b>5 phút</b>.
+            </p>
+
+            <p>
+                Nếu bạn không thực hiện đăng ký,
+                hãy bỏ qua email này.
+            </p>
+
+            <hr>
+
+            <small>
+                IT Career Match -
+                Personalized Job Recommendation System
+            </small>
+
+        </div>
+        """
+    }
+
+    return resend.Emails.send(params)
+
+
+# =========================================================
+# HOME
+# =========================================================
+
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template(
+        "index.html"
+    )
 
 
-@app.route("/register", methods=["GET", "POST"])
+# =========================================================
+# REGISTER
+# =========================================================
+
+@app.route(
+    "/register",
+    methods=["GET", "POST"]
+)
 def register():
 
+    # Nếu đã login
     if "user_id" in session:
-        return redirect(url_for("dashboard"))
+        return redirect(
+            url_for("dashboard")
+        )
 
     if request.method == "POST":
 
+        # -----------------------------
+        # GET FORM DATA
+        # -----------------------------
+
         full_name = request.form.get(
-            "full_name", ""
+            "full_name",
+            ""
         ).strip()
 
         email = request.form.get(
-            "email", ""
+            "email",
+            ""
         ).strip().lower()
 
         password = request.form.get(
-            "password", ""
+            "password",
+            ""
         )
 
         confirm_password = request.form.get(
-            "confirm_password", ""
+            "confirm_password",
+            ""
         )
 
-        # =========================
+        # -----------------------------
         # VALIDATION
-        # =========================
+        # -----------------------------
 
-        if not full_name or not email or not password:
+        if (
+            not full_name
+            or not email
+            or not password
+            or not confirm_password
+        ):
             return render_template(
                 "register.html",
                 message="Vui lòng nhập đầy đủ thông tin.",
@@ -87,9 +233,9 @@ def register():
                 email=email
             )
 
-        # =========================
-        # CHECK EMAIL
-        # =========================
+        # -----------------------------
+        # CHECK EXISTING EMAIL
+        # -----------------------------
 
         connection = get_connection()
 
@@ -113,55 +259,47 @@ def register():
                 email=email
             )
 
-        # =========================
+        # -----------------------------
         # CREATE OTP
-        # =========================
+        # -----------------------------
 
-        otp = str(random.SystemRandom().randint(
-            100000,
-            999999
-        ))
+        otp = str(
+            random.SystemRandom().randint(
+                100000,
+                999999
+            )
+        )
 
-        # Lưu tạm thông tin đăng ký
+        # -----------------------------
+        # SAVE TEMP REGISTER DATA
+        # -----------------------------
+
         session["pending_register"] = {
             "full_name": full_name,
             "email": email,
-            "password_hash": generate_password_hash(password),
+            "password_hash":
+                generate_password_hash(password),
             "otp": otp,
             "otp_created_at": int(time.time())
         }
 
-        # =========================
-        # SEND EMAIL
-        # =========================
+        # -----------------------------
+        # SEND OTP
+        # -----------------------------
 
         try:
 
-            msg = Message(
-                subject="Mã xác minh IT Career Match",
-                recipients=[email]
+            send_otp_email(
+                email,
+                otp
             )
-
-            msg.body = f"""
-Xin chào {full_name},
-
-Mã OTP xác minh tài khoản IT Career Match của bạn là:
-
-{otp}
-
-Mã OTP có hiệu lực trong 5 phút.
-
-Nếu bạn không thực hiện đăng ký này,
-hãy bỏ qua email.
-
-IT Career Match
-"""
-
-            mail.send(msg)
 
         except Exception as error:
 
-            print("MAIL ERROR:", error)
+            print(
+                "EMAIL API ERROR:",
+                repr(error)
+            )
 
             session.pop(
                 "pending_register",
@@ -170,7 +308,10 @@ IT Career Match
 
             return render_template(
                 "register.html",
-                message="Không thể gửi OTP. Vui lòng thử lại.",
+                message=(
+                    "Không thể gửi OTP. "
+                    "Vui lòng thử lại."
+                ),
                 message_type="danger",
                 full_name=full_name,
                 email=email
@@ -180,11 +321,24 @@ IT Career Match
             url_for("verify_otp")
         )
 
-    return render_template("register.html")
-@app.route("/verify-otp", methods=["GET", "POST"])
+    return render_template(
+        "register.html"
+    )
+
+
+# =========================================================
+# VERIFY OTP
+# =========================================================
+
+@app.route(
+    "/verify-otp",
+    methods=["GET", "POST"]
+)
 def verify_otp():
 
-    pending = session.get("pending_register")
+    pending = session.get(
+        "pending_register"
+    )
 
     if not pending:
         return redirect(
@@ -194,8 +348,13 @@ def verify_otp():
     if request.method == "POST":
 
         user_otp = request.form.get(
-            "otp", ""
+            "otp",
+            ""
         ).strip()
+
+        # -----------------------------
+        # EMPTY OTP
+        # -----------------------------
 
         if not user_otp:
             return render_template(
@@ -205,31 +364,49 @@ def verify_otp():
                 email=pending["email"]
             )
 
-        # =========================
-        # CHECK EXPIRED
-        # =========================
-
-        current_time = int(time.time())
+        # -----------------------------
+        # CHECK OTP FORMAT
+        # -----------------------------
 
         if (
-            current_time -
-            pending["otp_created_at"]
-            > 300
+            not user_otp.isdigit()
+            or len(user_otp) != 6
         ):
-
             return render_template(
                 "verify_otp.html",
-                message="Mã OTP đã hết hạn. Vui lòng gửi lại mã.",
+                message="OTP phải gồm 6 chữ số.",
                 message_type="danger",
                 email=pending["email"]
             )
 
-        # =========================
+        # -----------------------------
+        # CHECK EXPIRED
+        # -----------------------------
+
+        current_time = int(
+            time.time()
+        )
+
+        if (
+            current_time
+            - pending["otp_created_at"]
+            > 300
+        ):
+            return render_template(
+                "verify_otp.html",
+                message=(
+                    "Mã OTP đã hết hạn. "
+                    "Vui lòng gửi lại mã."
+                ),
+                message_type="danger",
+                email=pending["email"]
+            )
+
+        # -----------------------------
         # CHECK OTP
-        # =========================
+        # -----------------------------
 
         if user_otp != pending["otp"]:
-
             return render_template(
                 "verify_otp.html",
                 message="Mã OTP không chính xác.",
@@ -237,9 +414,9 @@ def verify_otp():
                 email=pending["email"]
             )
 
-        # =========================
+        # -----------------------------
         # CREATE USER
-        # =========================
+        # -----------------------------
 
         connection = get_connection()
 
@@ -259,6 +436,10 @@ def verify_otp():
             )
 
             user_id = cursor.lastrowid
+
+            # -------------------------
+            # CREATE PROFILE
+            # -------------------------
 
             connection.execute(
                 """
@@ -281,18 +462,22 @@ def verify_otp():
 
             print(
                 "REGISTER ERROR:",
-                error
+                repr(error)
             )
 
             return render_template(
                 "verify_otp.html",
-                message="Không thể tạo tài khoản.",
+                message=(
+                    "Không thể tạo tài khoản. "
+                    "Vui lòng thử lại."
+                ),
                 message_type="danger",
                 email=pending["email"]
             )
 
         connection.close()
 
+        # Xóa pending register
         session.pop(
             "pending_register",
             None
@@ -300,7 +485,10 @@ def verify_otp():
 
         return render_template(
             "login.html",
-            message="Xác minh email thành công. Bạn có thể đăng nhập.",
+            message=(
+                "Xác minh email thành công. "
+                "Bạn có thể đăng nhập."
+            ),
             message_type="success"
         )
 
@@ -308,7 +496,16 @@ def verify_otp():
         "verify_otp.html",
         email=pending["email"]
     )
-@app.route("/resend-otp", methods=["POST"])
+
+
+# =========================================================
+# RESEND OTP
+# =========================================================
+
+@app.route(
+    "/resend-otp",
+    methods=["POST"]
+)
 def resend_otp():
 
     pending = session.get(
@@ -320,6 +517,41 @@ def resend_otp():
             url_for("register")
         )
 
+    # -----------------------------
+    # COOLDOWN
+    # -----------------------------
+
+    current_time = int(
+        time.time()
+    )
+
+    last_sent = pending.get(
+        "otp_created_at",
+        0
+    )
+
+    # Không cho gửi lại quá nhanh
+    if current_time - last_sent < 60:
+
+        remaining = (
+            60
+            - (current_time - last_sent)
+        )
+
+        return render_template(
+            "verify_otp.html",
+            message=(
+                f"Vui lòng chờ {remaining} giây "
+                "trước khi gửi lại OTP."
+            ),
+            message_type="warning",
+            email=pending["email"]
+        )
+
+    # -----------------------------
+    # NEW OTP
+    # -----------------------------
+
     otp = str(
         random.SystemRandom().randint(
             100000,
@@ -327,42 +559,40 @@ def resend_otp():
         )
     )
 
-    pending["otp"] = otp
-    pending["otp_created_at"] = int(
-        time.time()
+    # Lưu OTP cũ để phục hồi nếu gửi thất bại
+    old_otp = pending.get("otp")
+    old_created_at = pending.get(
+        "otp_created_at"
     )
+
+    pending["otp"] = otp
+    pending["otp_created_at"] = current_time
 
     session["pending_register"] = pending
 
+    # -----------------------------
+    # SEND NEW OTP
+    # -----------------------------
+
     try:
 
-        msg = Message(
-            subject="Mã OTP mới - IT Career Match",
-            recipients=[
-                pending["email"]
-            ]
+        send_otp_email(
+            pending["email"],
+            otp
         )
-
-        msg.body = f"""
-Xin chào {pending['full_name']},
-
-Mã OTP mới của bạn là:
-
-{otp}
-
-Mã có hiệu lực trong 5 phút.
-
-IT Career Match
-"""
-
-        mail.send(msg)
 
     except Exception as error:
 
         print(
-            "RESEND OTP ERROR:",
-            error
+            "EMAIL API ERROR:",
+            repr(error)
         )
+
+        # Phục hồi OTP cũ nếu API gửi thất bại
+        pending["otp"] = old_otp
+        pending["otp_created_at"] = old_created_at
+
+        session["pending_register"] = pending
 
         return render_template(
             "verify_otp.html",
@@ -373,32 +603,61 @@ IT Career Match
 
     return render_template(
         "verify_otp.html",
-        message="Mã OTP mới đã được gửi đến email của bạn.",
+        message=(
+            "Mã OTP mới đã được gửi "
+            "đến email của bạn."
+        ),
         message_type="success",
         email=pending["email"]
     )
-@app.route("/login", methods=["GET", "POST"])
+
+
+# =========================================================
+# LOGIN
+# =========================================================
+
+@app.route(
+    "/login",
+    methods=["GET", "POST"]
+)
 def login():
-    # Nếu đã đăng nhập thì chuyển về Dashboard
+
     if "user_id" in session:
-        return redirect(url_for("dashboard"))
+        return redirect(
+            url_for("dashboard")
+        )
 
     if request.method == "POST":
 
-        # Lấy dữ liệu từ form
-        email = request.form.get("email", "").strip()
-        password = request.form.get("password", "")
+        email = request.form.get(
+            "email",
+            ""
+        ).strip().lower()
 
-        # Kiểm tra dữ liệu rỗng
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        # -----------------------------
+        # VALIDATION
+        # -----------------------------
+
         if not email or not password:
             return render_template(
                 "login.html",
-                message="Vui lòng nhập đầy đủ email và mật khẩu.",
+                message=(
+                    "Vui lòng nhập đầy đủ "
+                    "email và mật khẩu."
+                ),
                 message_type="warning",
                 email=email
             )
 
-        # Tìm tài khoản trong Database
+        # -----------------------------
+        # FIND USER
+        # -----------------------------
+
         connection = get_connection()
 
         user = connection.execute(
@@ -412,65 +671,128 @@ def login():
 
         connection.close()
 
-        # Email không tồn tại
         if user is None:
             return render_template(
                 "login.html",
-                message="Không tìm thấy tài khoản với email này.",
+                message=(
+                    "Không tìm thấy tài khoản "
+                    "với email này."
+                ),
                 message_type="danger",
                 email=email
             )
 
-        # Sai mật khẩu
-        if not check_password_hash(user["password"], password):
+        # -----------------------------
+        # CHECK PASSWORD
+        # -----------------------------
+
+        if not check_password_hash(
+            user["password"],
+            password
+        ):
             return render_template(
                 "login.html",
-                message="Mật khẩu không chính xác. Vui lòng thử lại.",
+                message=(
+                    "Mật khẩu không chính xác. "
+                    "Vui lòng thử lại."
+                ),
                 message_type="danger",
                 email=email
             )
 
-        # Đăng nhập thành công
+        # -----------------------------
+        # LOGIN SUCCESS
+        # -----------------------------
+
         session["user_id"] = user["user_id"]
         session["email"] = user["email"]
         session["role"] = user["role"]
 
-        return redirect(url_for("dashboard"))
+        return redirect(
+            url_for("dashboard")
+        )
 
-    return render_template("login.html")
-@app.route("/dashboard")
+    return render_template(
+        "login.html"
+    )
+
+
+# =========================================================
+# DASHBOARD
+# =========================================================
+
 @app.route("/dashboard")
 def dashboard():
 
     if "user_id" not in session:
-        return redirect(url_for("login"))
+        return redirect(
+            url_for("login")
+        )
 
     return render_template(
         "dashboard.html",
-        email=session["email"]
+        email=session.get("email")
     )
+
+
+# =========================================================
+# LOGOUT
+# =========================================================
+
 @app.route("/logout")
 def logout():
 
     session.clear()
 
-    return redirect(url_for("login"))
-@app.route("/profile", methods=["GET", "POST"])
+    return redirect(
+        url_for("login")
+    )
+
+
+# =========================================================
+# PROFILE
+# =========================================================
+
+@app.route(
+    "/profile",
+    methods=["GET", "POST"]
+)
 def profile():
 
     if "user_id" not in session:
-        return redirect(url_for("login"))
+        return redirect(
+            url_for("login")
+        )
 
     user_id = session["user_id"]
 
     connection = get_connection()
 
+    # -----------------------------
+    # UPDATE PROFILE
+    # -----------------------------
+
     if request.method == "POST":
 
-        full_name = request.form["full_name"]
-        date_of_birth = request.form["date_of_birth"]
-        major = request.form["major"]
-        bio = request.form["bio"]
+        full_name = request.form.get(
+            "full_name",
+            ""
+        ).strip()
+
+        date_of_birth = request.form.get(
+            "date_of_birth",
+            ""
+        ).strip()
+
+        major = request.form.get(
+            "major",
+            ""
+        ).strip()
+
+        bio = request.form.get(
+            "bio",
+            ""
+        ).strip()
 
         connection.execute(
             """
@@ -489,8 +811,18 @@ def profile():
                 user_id
             )
         )
+
         connection.commit()
-    print("Đã cập nhật profile:", user_id)
+
+        print(
+            "Đã cập nhật profile:",
+            user_id
+        )
+
+    # -----------------------------
+    # GET PROFILE
+    # -----------------------------
+
     profile_data = connection.execute(
         """
         SELECT *
@@ -506,16 +838,28 @@ def profile():
         "profile.html",
         profile=profile_data
     )
+
+
+# =========================================================
+# JOB LIST
+# =========================================================
+
 @app.route("/jobs")
 def jobs():
 
     if "user_id" not in session:
-        return redirect(url_for("login"))
+        return redirect(
+            url_for("login")
+        )
 
     connection = get_connection()
 
     jobs_data = connection.execute(
-        "SELECT * FROM jobs ORDER BY created_at DESC"
+        """
+        SELECT *
+        FROM jobs
+        ORDER BY created_at DESC
+        """
     ).fetchall()
 
     connection.close()
@@ -526,28 +870,72 @@ def jobs():
     )
 
 
-@app.route("/jobs/add", methods=["GET", "POST"])
+# =========================================================
+# ADD JOB
+# =========================================================
+
+@app.route(
+    "/jobs/add",
+    methods=["GET", "POST"]
+)
 def add_job():
 
     if "user_id" not in session:
-        return redirect(url_for("login"))
+        return redirect(
+            url_for("login")
+        )
+
     if session.get("role") != "admin":
-        return "Bạn không có quyền thêm công việc.", 403
+        return (
+            "Bạn không có quyền thêm công việc.",
+            403
+        )
+
     if request.method == "POST":
 
-        title = request.form["title"]
-        company = request.form["company"]
-        location = request.form["location"]
-        job_type = request.form["job_type"]
-        category = request.form["category"]
-        description = request.form["description"]
+        title = request.form.get(
+            "title",
+            ""
+        ).strip()
+
+        company = request.form.get(
+            "company",
+            ""
+        ).strip()
+
+        location = request.form.get(
+            "location",
+            ""
+        ).strip()
+
+        job_type = request.form.get(
+            "job_type",
+            ""
+        ).strip()
+
+        category = request.form.get(
+            "category",
+            ""
+        ).strip()
+
+        description = request.form.get(
+            "description",
+            ""
+        ).strip()
 
         connection = get_connection()
 
         connection.execute(
             """
             INSERT INTO jobs
-            (title, description, company, location, job_type, category)
+            (
+                title,
+                description,
+                company,
+                location,
+                job_type,
+                category
+            )
             VALUES (?, ?, ?, ?, ?, ?)
             """,
             (
@@ -563,35 +951,86 @@ def add_job():
         connection.commit()
         connection.close()
 
-        return redirect(url_for("jobs"))
+        return redirect(
+            url_for("jobs")
+        )
 
-    return render_template("add_jobs.html")
-@app.route("/jobs/edit/<int:job_id>", methods=["GET", "POST"])
+    return render_template(
+        "add_jobs.html"
+    )
+
+
+# =========================================================
+# EDIT JOB
+# =========================================================
+
+@app.route(
+    "/jobs/edit/<int:job_id>",
+    methods=["GET", "POST"]
+)
 def edit_job(job_id):
 
     if "user_id" not in session:
-        return redirect(url_for("login"))
+        return redirect(
+            url_for("login")
+        )
+
     if session.get("role") != "admin":
-        return "Bạn không có quyền sửa công việc.", 403
+        return (
+            "Bạn không có quyền sửa công việc.",
+            403
+        )
+
     connection = get_connection()
 
     job = connection.execute(
-        "SELECT * FROM jobs WHERE job_id = ?",
+        """
+        SELECT *
+        FROM jobs
+        WHERE job_id = ?
+        """,
         (job_id,)
     ).fetchone()
 
     if job is None:
         connection.close()
-        return "Không tìm thấy công việc", 404
+
+        return (
+            "Không tìm thấy công việc",
+            404
+        )
 
     if request.method == "POST":
 
-        title = request.form["title"]
-        company = request.form["company"]
-        location = request.form["location"]
-        job_type = request.form["job_type"]
-        category = request.form["category"]
-        description = request.form["description"]
+        title = request.form.get(
+            "title",
+            ""
+        ).strip()
+
+        company = request.form.get(
+            "company",
+            ""
+        ).strip()
+
+        location = request.form.get(
+            "location",
+            ""
+        ).strip()
+
+        job_type = request.form.get(
+            "job_type",
+            ""
+        ).strip()
+
+        category = request.form.get(
+            "category",
+            ""
+        ).strip()
+
+        description = request.form.get(
+            "description",
+            ""
+        ).strip()
 
         connection.execute(
             """
@@ -618,7 +1057,9 @@ def edit_job(job_id):
         connection.commit()
         connection.close()
 
-        return redirect(url_for("jobs"))
+        return redirect(
+            url_for("jobs")
+        )
 
     connection.close()
 
@@ -626,40 +1067,84 @@ def edit_job(job_id):
         "edit_job.html",
         job=job
     )
-@app.route("/jobs/delete/<int:job_id>", methods=["POST"])
+
+
+# =========================================================
+# DELETE JOB
+# =========================================================
+
+@app.route(
+    "/jobs/delete/<int:job_id>",
+    methods=["POST"]
+)
 def delete_job(job_id):
 
     if "user_id" not in session:
-        return redirect(url_for("login"))
+        return redirect(
+            url_for("login")
+        )
+
     if session.get("role") != "admin":
-        return "Bạn không có quyền xóa công việc.", 403
+        return (
+            "Bạn không có quyền xóa công việc.",
+            403
+        )
+
     connection = get_connection()
 
     job = connection.execute(
-        "SELECT * FROM jobs WHERE job_id = ?",
+        """
+        SELECT *
+        FROM jobs
+        WHERE job_id = ?
+        """,
         (job_id,)
     ).fetchone()
 
     if job is None:
         connection.close()
-        return "Không tìm thấy công việc", 404
+
+        return (
+            "Không tìm thấy công việc",
+            404
+        )
 
     connection.execute(
-        "DELETE FROM jobs WHERE job_id = ?",
+        """
+        DELETE FROM jobs
+        WHERE job_id = ?
+        """,
         (job_id,)
     )
 
     connection.commit()
     connection.close()
 
-    return redirect(url_for("jobs"))
-@app.route("/upload-cv", methods=["GET", "POST"])
+    return redirect(
+        url_for("jobs")
+    )
+
+
+# =========================================================
+# UPLOAD CV
+# =========================================================
+
+@app.route(
+    "/upload-cv",
+    methods=["GET", "POST"]
+)
 def upload_cv():
 
     if "user_id" not in session:
-        return redirect(url_for("login"))
+        return redirect(
+            url_for("login")
+        )
 
     if request.method == "POST":
+
+        # -----------------------------
+        # CHECK FILE
+        # -----------------------------
 
         if "cv" not in request.files:
             return render_template(
@@ -669,97 +1154,222 @@ def upload_cv():
 
         file = request.files["cv"]
 
-        if file.filename == "":
+        if not file.filename:
             return render_template(
                 "upload_cv.html",
                 message="Bạn chưa chọn CV."
             )
 
-        if not allowed_file(file.filename):
+        if not allowed_file(
+            file.filename
+        ):
             return render_template(
                 "upload_cv.html",
-                message="Chỉ hỗ trợ file PDF hoặc DOCX."
+                message=(
+                    "Chỉ hỗ trợ file PDF hoặc DOCX."
+                )
             )
 
-        filename = secure_filename(file.filename)
+        # -----------------------------
+        # SAFE FILE NAME
+        # -----------------------------
+
+        original_filename = secure_filename(
+            file.filename
+        )
+
+        # Tránh ghi đè CV giữa các user
+        filename = (
+            f"{session['user_id']}_"
+            f"{int(time.time())}_"
+            f"{original_filename}"
+        )
 
         file_path = os.path.join(
             app.config["UPLOAD_FOLDER"],
             filename
         )
 
-        file.save(file_path)
-        parsed_text = None
+        file.save(
+            file_path
+        )
 
-        if filename.lower().endswith(".pdf"):
-            parsed_text = read_pdf(file_path)
-        elif filename.lower().endswith(".docx"):
-            parsed_text = read_docx(file_path)
-            
-        cleaned_text = preprocess_text(parsed_text)
-        found_skills = extract_skills(cleaned_text)
+        # -----------------------------
+        # READ CV
+        # -----------------------------
+
+        try:
+
+            if filename.lower().endswith(
+                ".pdf"
+            ):
+                parsed_text = read_pdf(
+                    file_path
+                )
+
+            elif filename.lower().endswith(
+                ".docx"
+            ):
+                parsed_text = read_docx(
+                    file_path
+                )
+
+            else:
+                parsed_text = ""
+
+        except Exception as error:
+
+            print(
+                "CV PARSER ERROR:",
+                repr(error)
+            )
+
+            return render_template(
+                "upload_cv.html",
+                message=(
+                    "Không thể đọc nội dung CV."
+                )
+            )
+
+        if not parsed_text:
+            return render_template(
+                "upload_cv.html",
+                message=(
+                    "Không tìm thấy nội dung "
+                    "văn bản trong CV."
+                )
+            )
+
+        # -----------------------------
+        # NLP
+        # -----------------------------
+
+        cleaned_text = preprocess_text(
+            parsed_text
+        )
+
+        found_skills = extract_skills(
+            cleaned_text
+        )
+
+        # -----------------------------
+        # SAVE CV DATABASE
+        # -----------------------------
 
         connection = get_connection()
 
-        connection.execute(
-            """
-            INSERT INTO cvs
-            (user_id, file_name, file_path, parsed_text)
-            VALUES (?, ?, ?, ?)
-            """,
-            (
-                session["user_id"],
-                filename,
-                file_path,
-                parsed_text 
-            )
-        )
-        for skill_name in found_skills:
+        try:
+
             connection.execute(
-            """
-            INSERT OR IGNORE INTO skills (name)
-            VALUES (?)
-            """,
-            (skill_name,)
-        )
-
-            skill = connection.execute(
                 """
-                SELECT skill_id
-                FROM skills
-                WHERE name = ?
+                INSERT INTO cvs
+                (
+                    user_id,
+                    file_name,
+                    file_path,
+                    parsed_text
+                )
+                VALUES (?, ?, ?, ?)
                 """,
-                (skill_name,)
-            ).fetchone()
+                (
+                    session["user_id"],
+                    filename,
+                    file_path,
+                    parsed_text
+                )
+            )
 
-            if skill:
+            # -------------------------
+            # SAVE SKILLS
+            # -------------------------
+
+            for skill_name in found_skills:
+
                 connection.execute(
                     """
-                    INSERT OR IGNORE INTO student_skills
-                    (user_id, skill_id)
-                    VALUES (?, ?)
+                    INSERT OR IGNORE
+                    INTO skills (name)
+                    VALUES (?)
                     """,
-                    (
-                        session["user_id"],
-                        skill["skill_id"]
-                    )
+                    (skill_name,)
                 )
-        connection.commit()
+
+                skill = connection.execute(
+                    """
+                    SELECT skill_id
+                    FROM skills
+                    WHERE name = ?
+                    """,
+                    (skill_name,)
+                ).fetchone()
+
+                if skill:
+
+                    connection.execute(
+                        """
+                        INSERT OR IGNORE
+                        INTO student_skills
+                        (
+                            user_id,
+                            skill_id
+                        )
+                        VALUES (?, ?)
+                        """,
+                        (
+                            session["user_id"],
+                            skill["skill_id"]
+                        )
+                    )
+
+            connection.commit()
+
+        except Exception as error:
+
+            connection.rollback()
+            connection.close()
+
+            print(
+                "CV DATABASE ERROR:",
+                repr(error)
+            )
+
+            return render_template(
+                "upload_cv.html",
+                message=(
+                    "Không thể lưu dữ liệu CV."
+                )
+            )
+
         connection.close()
+
+        # -----------------------------
+        # RECOMMEND
+        # -----------------------------
 
         return redirect(
             url_for("recommendations")
         )
 
-    return render_template("upload_cv.html")
+    return render_template(
+        "upload_cv.html"
+    )
+
+
+# =========================================================
+# RECOMMENDATIONS
+# =========================================================
+
 @app.route("/recommendations")
 def recommendations():
+
     if "user_id" not in session:
-        return redirect(url_for("login"))
+        return redirect(
+            url_for("login")
+        )
 
     connection = get_connection()
 
-    # Lấy CV mới nhất của user
+    # CV mới nhất
     cv = connection.execute(
         """
         SELECT parsed_text
@@ -768,31 +1378,67 @@ def recommendations():
         ORDER BY created_at DESC
         LIMIT 1
         """,
-        (session["user_id"],)
+        (
+            session["user_id"],
+        )
     ).fetchone()
 
     connection.close()
 
-    if not cv or not cv["parsed_text"]:
-        return redirect(url_for("upload_cv"))
+    # Chưa upload CV
+    if (
+        not cv
+        or not cv["parsed_text"]
+    ):
+        return redirect(
+            url_for("upload_cv")
+        )
 
     cv_text = cv["parsed_text"]
 
-    # Dự đoán nhóm nghề
-    predicted_career = predict_career(cv_text)
+    # -----------------------------
+    # ML CAREER PREDICTION
+    # -----------------------------
 
-    # Lấy Top 5 Job
-    recommended_jobs = recommend_jobs(
-        cv_text,
-        top_k=5
-    )
+    try:
+
+        predicted_career = predict_career(
+            cv_text
+        )
+
+        recommended_jobs = recommend_jobs(
+            cv_text,
+            top_k=5
+        )
+
+    except Exception as error:
+
+        print(
+            "RECOMMENDATION ERROR:",
+            repr(error)
+        )
+
+        return render_template(
+            "upload_cv.html",
+            message=(
+                "Không thể phân tích CV. "
+                "Vui lòng thử lại."
+            )
+        )
 
     return render_template(
         "recommendations.html",
         predicted_career=predicted_career,
         jobs=recommended_jobs
     )
+
+
+# =========================================================
+# RUN LOCAL
+# =========================================================
+
 if __name__ == "__main__":
+
     app.run(
         host="0.0.0.0",
         port=5000,
