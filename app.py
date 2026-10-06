@@ -1,4 +1,6 @@
 import os
+import random
+import time
 from ai.recommender import recommend_jobs, predict_career
 from ai.text_preprocessing import preprocess_text
 from ai.skill_extractor import extract_skills
@@ -7,8 +9,29 @@ from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.database import get_connection
+from flask_mail import Mail, Message
 
 app = Flask(__name__)
+app.secret_key = os.environ.get(
+    "SECRET_KEY",
+    "dev-secret-key-change-this"
+)
+
+# =========================
+# GMAIL CONFIG
+# =========================
+
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 465
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USE_SSL"] = False
+
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
+
+app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_USERNAME")
+
+mail = Mail(app)
 app.secret_key = "it-career-match-secret-key"
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"pdf", "docx"}
@@ -27,56 +50,348 @@ def index():
 @app.route("/register", methods=["GET", "POST"])
 def register():
 
+    if "user_id" in session:
+        return redirect(url_for("dashboard"))
+
     if request.method == "POST":
 
-        full_name = request.form["full_name"]
-        email = request.form["email"]
-        password = request.form["password"]
-        confirm_password = request.form["confirm_password"]
+        full_name = request.form.get(
+            "full_name", ""
+        ).strip()
+
+        email = request.form.get(
+            "email", ""
+        ).strip().lower()
+
+        password = request.form.get(
+            "password", ""
+        )
+
+        confirm_password = request.form.get(
+            "confirm_password", ""
+        )
+
+        # =========================
+        # VALIDATION
+        # =========================
+
+        if not full_name or not email or not password:
+            return render_template(
+                "register.html",
+                message="Vui lòng nhập đầy đủ thông tin.",
+                message_type="warning",
+                full_name=full_name,
+                email=email
+            )
+
+        if len(password) < 6:
+            return render_template(
+                "register.html",
+                message="Mật khẩu phải có ít nhất 6 ký tự.",
+                message_type="danger",
+                full_name=full_name,
+                email=email
+            )
 
         if password != confirm_password:
-            return "Mật khẩu xác nhận không khớp."
+            return render_template(
+                "register.html",
+                message="Xác nhận mật khẩu không khớp.",
+                message_type="danger",
+                full_name=full_name,
+                email=email
+            )
+
+        # =========================
+        # CHECK EMAIL
+        # =========================
 
         connection = get_connection()
 
         existing_user = connection.execute(
-            "SELECT * FROM users WHERE email = ?",
+            """
+            SELECT user_id
+            FROM users
+            WHERE email = ?
+            """,
             (email,)
         ).fetchone()
 
-        if existing_user:
-            connection.close()
-            return "Email đã được sử dụng."
-
-        password_hash = generate_password_hash(password)
-
-        cursor = connection.cursor()
-
-        cursor.execute(
-            """
-            INSERT INTO users (email, password, role)
-            VALUES (?, ?, ?)
-            """,
-            (email, password_hash, "student")
-        )
-
-        user_id = cursor.lastrowid
-
-        cursor.execute(
-            """
-            INSERT INTO student_profiles (user_id, full_name)
-            VALUES (?, ?)
-            """,
-            (user_id, full_name)
-        )
-
-        connection.commit()
         connection.close()
 
-        return "Đăng ký thành công!"
+        if existing_user:
+            return render_template(
+                "register.html",
+                message="Email này đã được đăng ký.",
+                message_type="danger",
+                full_name=full_name,
+                email=email
+            )
 
+        # =========================
+        # CREATE OTP
+        # =========================
+
+        otp = str(random.SystemRandom().randint(
+            100000,
+            999999
+        ))
+
+        # Lưu tạm thông tin đăng ký
+        session["pending_register"] = {
+            "full_name": full_name,
+            "email": email,
+            "password_hash": generate_password_hash(password),
+            "otp": otp,
+            "otp_created_at": int(time.time())
+        }
+
+        # =========================
+        # SEND EMAIL
+        # =========================
+
+        try:
+
+            msg = Message(
+                subject="Mã xác minh IT Career Match",
+                recipients=[email]
+            )
+
+            msg.body = f"""
+Xin chào {full_name},
+
+Mã OTP xác minh tài khoản IT Career Match của bạn là:
+
+{otp}
+
+Mã OTP có hiệu lực trong 5 phút.
+
+Nếu bạn không thực hiện đăng ký này,
+hãy bỏ qua email.
+
+IT Career Match
+"""
+
+            mail.send(msg)
+
+        except Exception as error:
+
+            print("MAIL ERROR:", error)
+
+            session.pop(
+                "pending_register",
+                None
+            )
+
+            return render_template(
+                "register.html",
+                message="Không thể gửi OTP. Vui lòng thử lại.",
+                message_type="danger",
+                full_name=full_name,
+                email=email
+            )
+
+        return redirect(
+            url_for("verify_otp")
+        )
 
     return render_template("register.html")
+@app.route("/verify-otp", methods=["GET", "POST"])
+def verify_otp():
+
+    pending = session.get("pending_register")
+
+    if not pending:
+        return redirect(
+            url_for("register")
+        )
+
+    if request.method == "POST":
+
+        user_otp = request.form.get(
+            "otp", ""
+        ).strip()
+
+        if not user_otp:
+            return render_template(
+                "verify_otp.html",
+                message="Vui lòng nhập mã OTP.",
+                message_type="warning",
+                email=pending["email"]
+            )
+
+        # =========================
+        # CHECK EXPIRED
+        # =========================
+
+        current_time = int(time.time())
+
+        if (
+            current_time -
+            pending["otp_created_at"]
+            > 300
+        ):
+
+            return render_template(
+                "verify_otp.html",
+                message="Mã OTP đã hết hạn. Vui lòng gửi lại mã.",
+                message_type="danger",
+                email=pending["email"]
+            )
+
+        # =========================
+        # CHECK OTP
+        # =========================
+
+        if user_otp != pending["otp"]:
+
+            return render_template(
+                "verify_otp.html",
+                message="Mã OTP không chính xác.",
+                message_type="danger",
+                email=pending["email"]
+            )
+
+        # =========================
+        # CREATE USER
+        # =========================
+
+        connection = get_connection()
+
+        try:
+
+            cursor = connection.execute(
+                """
+                INSERT INTO users
+                (email, password, role)
+                VALUES (?, ?, ?)
+                """,
+                (
+                    pending["email"],
+                    pending["password_hash"],
+                    "student"
+                )
+            )
+
+            user_id = cursor.lastrowid
+
+            connection.execute(
+                """
+                INSERT INTO student_profiles
+                (user_id, full_name)
+                VALUES (?, ?)
+                """,
+                (
+                    user_id,
+                    pending["full_name"]
+                )
+            )
+
+            connection.commit()
+
+        except Exception as error:
+
+            connection.rollback()
+            connection.close()
+
+            print(
+                "REGISTER ERROR:",
+                error
+            )
+
+            return render_template(
+                "verify_otp.html",
+                message="Không thể tạo tài khoản.",
+                message_type="danger",
+                email=pending["email"]
+            )
+
+        connection.close()
+
+        session.pop(
+            "pending_register",
+            None
+        )
+
+        return render_template(
+            "login.html",
+            message="Xác minh email thành công. Bạn có thể đăng nhập.",
+            message_type="success"
+        )
+
+    return render_template(
+        "verify_otp.html",
+        email=pending["email"]
+    )
+@app.route("/resend-otp", methods=["POST"])
+def resend_otp():
+
+    pending = session.get(
+        "pending_register"
+    )
+
+    if not pending:
+        return redirect(
+            url_for("register")
+        )
+
+    otp = str(
+        random.SystemRandom().randint(
+            100000,
+            999999
+        )
+    )
+
+    pending["otp"] = otp
+    pending["otp_created_at"] = int(
+        time.time()
+    )
+
+    session["pending_register"] = pending
+
+    try:
+
+        msg = Message(
+            subject="Mã OTP mới - IT Career Match",
+            recipients=[
+                pending["email"]
+            ]
+        )
+
+        msg.body = f"""
+Xin chào {pending['full_name']},
+
+Mã OTP mới của bạn là:
+
+{otp}
+
+Mã có hiệu lực trong 5 phút.
+
+IT Career Match
+"""
+
+        mail.send(msg)
+
+    except Exception as error:
+
+        print(
+            "RESEND OTP ERROR:",
+            error
+        )
+
+        return render_template(
+            "verify_otp.html",
+            message="Không thể gửi lại OTP.",
+            message_type="danger",
+            email=pending["email"]
+        )
+
+    return render_template(
+        "verify_otp.html",
+        message="Mã OTP mới đã được gửi đến email của bạn.",
+        message_type="success",
+        email=pending["email"]
+    )
 @app.route("/login", methods=["GET", "POST"])
 def login():
     # Nếu đã đăng nhập thì chuyển về Dashboard
