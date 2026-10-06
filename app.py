@@ -1,7 +1,8 @@
 import os
 import random
 import time
-import resend
+import requests
+from dotenv import load_dotenv
 
 from flask import (
     Flask,
@@ -34,14 +35,14 @@ from ai.cv_parser import read_pdf, read_docx
 # =========================================================
 # FLASK CONFIG
 # =========================================================
-
+load_dotenv()
 app = Flask(__name__)
 
 app.secret_key = os.environ.get(
     "SECRET_KEY",
     "dev-secret-key-change-this"
 )
-
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
 UPLOAD_FOLDER = "uploads"
 
 ALLOWED_EXTENSIONS = {
@@ -59,17 +60,6 @@ os.makedirs(
     UPLOAD_FOLDER,
     exist_ok=True
 )
-
-
-# =========================================================
-# RESEND CONFIG
-# =========================================================
-
-resend.api_key = os.environ.get(
-    "RESEND_API_KEY"
-)
-
-
 # =========================================================
 # HELPER FUNCTIONS
 # =========================================================
@@ -82,67 +72,66 @@ def allowed_file(filename):
     )
 
 
-def send_otp_email(to_email, otp):
-    """
-    Gửi OTP bằng Resend API.
-    Không sử dụng SMTP vì Render Free có thể chặn SMTP.
-    """
+def send_otp_email(receiver_email, otp):
+    if not BREVO_API_KEY:
+        print("BREVO_API_KEY chưa được cấu hình.")
+        return False
 
-    if not resend.api_key:
-        raise RuntimeError(
-            "RESEND_API_KEY chưa được cấu hình."
-        )
+    url = "https://api.brevo.com/v3/smtp/email"
 
-    params = {
-        "from": "IT Career Match <onboarding@resend.dev>",
-        "to": [to_email],
-        "subject": "Mã xác thực OTP - IT Career Match",
-        "html": f"""
-        <div style="
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-        ">
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
 
-            <h2>IT Career Match</h2>
+    data = {
+        "sender": {
+            "name": "IT Career Match",
+            "email": "tranquochuy8645@gmail.com"
+        },
+        "to": [
+            {
+                "email": receiver_email
+            }
+        ],
+        "subject": "Mã OTP đăng ký IT Career Match",
+        "htmlContent": f"""
+        <html>
+            <body>
+                <h2>IT Career Match</h2>
 
-            <p>Xin chào,</p>
+                <p>Mã OTP đăng ký tài khoản của bạn là:</p>
 
-            <p>
-                Mã xác thực OTP của bạn là:
-            </p>
+                <h1>{otp}</h1>
 
-            <h1 style="
-                letter-spacing: 6px;
-                font-size: 32px;
-            ">
-                {otp}
-            </h1>
+                <p>Mã OTP có hiệu lực trong 5 phút.</p>
 
-            <p>
-                Mã OTP có hiệu lực trong
-                <b>5 phút</b>.
-            </p>
-
-            <p>
-                Nếu bạn không thực hiện đăng ký,
-                hãy bỏ qua email này.
-            </p>
-
-            <hr>
-
-            <small>
-                IT Career Match -
-                Personalized Job Recommendation System
-            </small>
-
-        </div>
+                <p>Nếu bạn không thực hiện đăng ký, hãy bỏ qua email này.</p>
+            </body>
+        </html>
         """
     }
 
-    return resend.Emails.send(params)
+    try:
+        response = requests.post(
+            url,
+            headers=headers,
+            json=data,
+            timeout=15
+        )
 
+        if response.status_code in (200, 201, 202):
+            print("OTP đã gửi tới:", receiver_email)
+            return True
+
+        print("BREVO ERROR:", response.status_code)
+        print(response.text)
+        return False
+
+    except requests.RequestException as e:
+        print("BREVO REQUEST ERROR:", e)
+        return False
 
 # =========================================================
 # HOME

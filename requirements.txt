@@ -1,5 +1,6 @@
 Flask
-resend
+requests
+python-dotenv
 pandas
 numpy
 scikit-learn
