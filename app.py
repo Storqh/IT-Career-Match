@@ -19,7 +19,7 @@ def allowed_file(filename):
         "." in filename
         and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
     )
-@app.route("/home")
+@app.route("/")
 def index():
     return render_template("index.html")
 
