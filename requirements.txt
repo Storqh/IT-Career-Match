@@ -6,3 +6,4 @@ pypdf
 python-docx
 joblib
 gunicorn
+Flask-Mail
