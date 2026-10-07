@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}
+Admin Dashboard - IT Career Match
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="mb-4">
+        <h1 class="fw-bold">
+            Admin Dashboard
+        </h1>
+        <a href="{{ url_for('admin_export_excel') }}"
+            class="btn btn-success">
+                📊 Xuất dữ liệu Excel
+            </a>
+
+        <p class="text-muted">
+            Tổng quan hệ thống IT Career Match
+        </p>
+    </div>
+
+
+    <div class="row g-4">
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+
+                    <p class="text-muted mb-1">
+                        Người dùng
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ total_users }}
+                    </h2>
+
+                    <a href="{{ url_for('admin_users') }}">
+                        Quản lý người dùng →
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+
+                    <p class="text-muted mb-1">
+                        Sinh viên
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ total_students }}
+                    </h2>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+
+                    <p class="text-muted mb-1">
+                        Việc làm
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ total_jobs }}
+                    </h2>
+
+                    <a href="{{ url_for('jobs') }}">
+                        Quản lý việc làm →
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+
+                    <p class="text-muted mb-1">
+                        CV đã tải lên
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ total_cvs }}
+                    </h2>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="row g-4 mt-1">
+
+        <div class="col-md-6">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <p class="text-muted mb-1">
+                        Admin
+                    </p>
+
+                    <h3 class="fw-bold">
+                        {{ total_admins }}
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-6">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <p class="text-muted mb-1">
+                        Đơn ứng tuyển
+                    </p>
+
+                    <h3 class="fw-bold">
+                        {{ total_applications }}
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card border-0 shadow-sm mt-4">
+
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between mb-3">
+
+                <h4 class="fw-bold">
+                    Người dùng mới
+                </h4>
+
+                <a
+                    href="{{ url_for('admin_users') }}"
+                    class="btn btn-outline-primary btn-sm"
+                >
+                    Xem tất cả
+                </a>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table align-middle">
+
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Họ tên</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for user in recent_users %}
+
+                        <tr>
+
+                            <td>
+                                #{{ user.user_id }}
+                            </td>
+
+                            <td>
+                                {{ user.full_name or "Chưa cập nhật" }}
+                            </td>
+
+                            <td>
+                                {{ user.email }}
+                            </td>
+
+                            <td>
+                                <span class="badge bg-primary">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+
+                            <td>
+
+                                <a
+                                    href="{{ url_for(
+                                        'admin_user_detail',
+                                        user_id=user.user_id
+                                    ) }}"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    Chi tiết
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

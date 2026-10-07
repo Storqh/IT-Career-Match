@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}
+Quản lý người dùng
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+
+    <div>
+        <h1 class="fw-bold">
+            Quản lý người dùng
+        </h1>
+
+        <p class="text-muted">
+            Danh sách tài khoản trong hệ thống
+        </p>
+    </div>
+
+    <div class="d-flex gap-2">
+
+        <a
+            href="{{ url_for('admin_add_user') }}"
+            class="btn btn-primary"
+        >
+            + Thêm tài khoản
+        </a>
+
+        <a
+            href="{{ url_for('admin_dashboard') }}"
+            class="btn btn-outline-secondary"
+        >
+            Dashboard
+        </a>
+
+    </div>
+
+</div>
+
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <form method="GET">
+
+                <div class="row g-3">
+
+                    <div class="col-md-7">
+
+                        <input
+                            class="form-control"
+                            type="text"
+                            name="q"
+                            value="{{ keyword }}"
+                            placeholder="Tìm email, họ tên, ngành học..."
+                        >
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <select
+                            class="form-select"
+                            name="role"
+                        >
+
+                            <option value="">
+                                Tất cả role
+                            </option>
+
+                            <option
+                                value="student"
+                                {% if selected_role == "student" %}
+                                selected
+                                {% endif %}
+                            >
+                                Student
+                            </option>
+
+                            <option
+                                value="admin"
+                                {% if selected_role == "admin" %}
+                                selected
+                                {% endif %}
+                            >
+                                Admin
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-2">
+
+                        <button
+                            class="btn btn-primary w-100"
+                        >
+                            Tìm kiếm
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <div class="card border-0 shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead>
+
+                        <tr>
+                            <th>ID</th>
+                            <th>Họ tên</th>
+                            <th>Email</th>
+                            <th>Ngành</th>
+                            <th>Role</th>
+                            <th>Thao tác</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for user in users %}
+
+                        <tr>
+
+                            <td>
+                                #{{ user.user_id }}
+                            </td>
+
+                            <td>
+                                {{ user.full_name or "Chưa cập nhật" }}
+                            </td>
+
+                            <td>
+                                {{ user.email }}
+                            </td>
+
+                            <td>
+                                {{ user.major or "—" }}
+                            </td>
+
+                            <td>
+
+                                {% if user.role == "admin" %}
+
+                                <span class="badge bg-danger">
+                                    Admin
+                                </span>
+
+                                {% else %}
+
+                                <span class="badge bg-primary">
+                                    Student
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                <a
+                                    href="{{ url_for(
+                                        'admin_user_detail',
+                                        user_id=user.user_id
+                                    ) }}"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    Chi tiết
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+
+                        {% else %}
+
+                        <tr>
+
+                            <td
+                                colspan="6"
+                                class="text-center py-4 text-muted"
+                            >
+                                Không tìm thấy người dùng.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

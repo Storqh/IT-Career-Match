@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Sửa người dùng{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <a
+                href="{{ url_for(
+                    'admin_user_detail',
+                    user_id=user.user_id
+                ) }}"
+                class="btn btn-outline-secondary mb-4"
+            >
+                ← Quay lại
+            </a>
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h2 class="fw-bold mb-4">
+                        Sửa tài khoản #{{ user.user_id }}
+                    </h2>
+
+                    <form method="POST">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Họ và tên
+                            </label>
+
+                            <input
+                                type="text"
+                                name="full_name"
+                                class="form-control"
+                                value="{{ user.full_name or '' }}"
+                                required
+                            >
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Email
+                            </label>
+
+                            <input
+                                type="email"
+                                name="email"
+                                class="form-control"
+                                value="{{ user.email }}"
+                                required
+                            >
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Ngành học
+                            </label>
+
+                            <input
+                                type="text"
+                                name="major"
+                                class="form-control"
+                                value="{{ user.major or '' }}"
+                            >
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Ngày sinh
+                            </label>
+
+                            <input
+                                type="date"
+                                name="date_of_birth"
+                                class="form-control"
+                                value="{{ user.date_of_birth or '' }}"
+                            >
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Bio
+                            </label>
+
+                            <textarea
+                                name="bio"
+                                class="form-control"
+                                rows="4"
+                            >{{ user.bio or '' }}</textarea>
+
+                        </div>
+
+                        <div class="mb-4">
+
+                            <label class="form-label">
+                                Role
+                            </label>
+
+                            <select
+                                name="role"
+                                class="form-select"
+                            >
+
+                                <option
+                                    value="student"
+                                    {% if user.role == "student" %}
+                                    selected
+                                    {% endif %}
+                                >
+                                    Student
+                                </option>
+
+                                <option
+                                    value="admin"
+                                    {% if user.role == "admin" %}
+                                    selected
+                                    {% endif %}
+                                >
+                                    Admin
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <button
+                            class="btn btn-primary"
+                        >
+                            Lưu thay đổi
+                        </button>   
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
