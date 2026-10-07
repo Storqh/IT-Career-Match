@@ -2,9 +2,9 @@
 
 ## Personalized Job Recommendation System for IT Students
 
-IT Career Match là hệ thống gợi ý việc làm cá nhân hóa dành cho sinh viên Công nghệ Thông tin.
+**IT Career Match** là hệ thống gợi ý việc làm cá nhân hóa dành cho sinh viên Công nghệ Thông tin.
 
-Hệ thống sử dụng **Machine Learning** và **Natural Language Processing (NLP)** để phân tích CV, trích xuất kỹ năng, dự đoán nhóm nghề nghiệp phù hợp và đề xuất các công việc dựa trên nội dung hồ sơ của người dùng.
+Hệ thống kết hợp **Machine Learning**, **Natural Language Processing (NLP)** và **Recommendation System** để phân tích CV, trích xuất kỹ năng, dự đoán định hướng nghề nghiệp và đề xuất những công việc phù hợp với hồ sơ của sinh viên.
 
 ---
 
@@ -12,48 +12,298 @@ Hệ thống sử dụng **Machine Learning** và **Natural Language Processing 
 
 👉 https://it-career-match.onrender.com
 
-> Website được deploy trên Render Free nên lần truy cập đầu tiên có thể mất một chút thời gian để khởi động.
+> Website được triển khai trên Render Free. Lần truy cập đầu tiên có thể cần một khoảng thời gian ngắn để server khởi động.
 
 ---
 
-## ✨ Chức năng chính
+# ✨ Main Features
 
+## 👨‍🎓 Student
+
+### Account
 - Đăng ký tài khoản
 - Xác thực email bằng OTP
+- Gửi OTP bằng Brevo Transactional Email API
+- OTP có thời gian hết hạn
 - Đăng nhập / đăng xuất
-- Quản lý hồ sơ sinh viên
-- Upload CV PDF / DOCX
+- Quản lý hồ sơ cá nhân
+
+### CV Analysis
+- Upload CV định dạng PDF
+- Upload CV định dạng DOCX
 - Tự động đọc nội dung CV
-- Trích xuất kỹ năng từ CV
-- Dự đoán nhóm nghề nghiệp bằng Machine Learning
-- Gợi ý việc làm phù hợp
-- Tính Match Score giữa CV và công việc
-- Phân tích Skill Gap
-- Giải thích lý do đề xuất công việc
-- Quản lý danh sách công việc
+- Text preprocessing
+- Skill extraction
+- Lưu thông tin kỹ năng sinh viên
+
+### AI Career Prediction
+- Phân tích nội dung CV
+- Chuyển CV thành TF-IDF Vector
+- Dự đoán nhóm nghề nghiệp bằng Logistic Regression
+
+### Job Recommendation
+- Content-Based Recommendation
+- Cosine Similarity
+- Match Score
+- Skill Gap Analysis
+- Recommendation Explanation
+- Top-K Job Recommendations
+
+### Job Search
+
+Hệ thống Job đang được mở rộng với:
+
+- 🔍 Search theo tên công việc
+- 🏢 Search theo công ty
+- 🧠 Search theo kỹ năng
+- 📂 Filter theo Career Category
+- 📍 Filter theo Location
+- 💰 Filter theo Salary
+- 💼 Filter theo Experience
+- 🕒 Filter theo Job Type
+- 🎯 Filter theo Job Level
+- Pagination
 
 ---
 
-## 🤖 Machine Learning
+# 💼 Job Information
 
-### Career Prediction
+Mỗi công việc trong hệ thống được thiết kế với các thông tin:
 
-Hệ thống sử dụng:
+```text
+Job Title
+Company
+Description
+Requirements
+Benefits
+Required Skills
+Location
+Salary
+Experience
+Job Type
+Job Level
+Career Category
+Application Deadline
+Status
+Source
+Created At
+```
 
-- **TF-IDF** để chuyển văn bản CV thành vector đặc trưng.
-- **Logistic Regression** để dự đoán nhóm nghề nghiệp.
+Trang chi tiết công việc dự kiến hiển thị:
 
-Các nhóm nghề hiện được mô hình hỗ trợ:
+```text
+Job Information
+      ↓
+Company
+      ↓
+Job Description
+      ↓
+Requirements
+      ↓
+Required Skills
+      ↓
+Benefits
+      ↓
+Salary / Location
+      ↓
+Application Deadline
+      ↓
+AI Match Score
+      ↓
+Skill Gap
+      ↓
+Recommendation Explanation
+```
 
-1. AI / Machine Learning
-2. Backend Development
-3. Cybersecurity
-4. Data
-5. DevOps / Cloud
-6. Network / System
-7. Other IT
+---
 
-### Kết quả mô hình
+# 🏢 Job Categories
+
+Hệ thống Job được mở rộng theo nhiều nhóm nghề CNTT:
+
+- AI / Machine Learning
+- Data
+- Backend Development
+- Frontend Development
+- Full Stack Development
+- DevOps / Cloud
+- Cybersecurity
+- Network / System
+- Software Testing / QA
+- Mobile Development
+- Game Development
+- Other IT
+
+Mục tiêu dataset Job sau khi mở rộng là khoảng **60 công việc demo** thuộc nhiều nhóm nghề khác nhau.
+
+> Career Prediction Model hiện tại được huấn luyện trên 7 nhóm nghề chính. Số lượng Job Category có thể lớn hơn số class của Machine Learning Model.
+
+---
+
+# 👨‍💼 Admin System
+
+Admin Dashboard đang được mở rộng để hỗ trợ quản trị toàn bộ hệ thống.
+
+## 📊 Admin Dashboard
+
+Dashboard dự kiến hiển thị:
+
+- Total Users
+- Total Students
+- Total Admins
+- Total Jobs
+- Total CVs
+- Total Applications
+- Total Recommendations
+- Career Category Statistics
+- Average Match Score
+
+---
+
+## 👥 User Management
+
+Admin có thể:
+
+- Xem danh sách người dùng
+- Search User
+- Filter User
+- Xem chi tiết User
+- Thêm User
+- Sửa User
+- Xóa User
+- Thay đổi Role
+
+Role hiện tại:
+
+```text
+student
+admin
+```
+
+Admin có thể xem:
+
+```text
+User
+ ├── Profile
+ ├── Skills
+ ├── CV
+ ├── Recommendations
+ └── Applications
+```
+
+Thông tin nhạy cảm như **password hash không được hiển thị hoặc export**.
+
+---
+
+## 💼 Job Management
+
+Admin có thể:
+
+- Add Job
+- Edit Job
+- Delete Job
+- View Job
+- Search Job
+- Filter Job
+- Active / Inactive Job
+- Quản lý Category
+- Quản lý Skills
+- Export Job Data
+
+Admin Search & Filter:
+
+```text
+Keyword
+Company
+Category
+Location
+Salary
+Experience
+Job Type
+Level
+Status
+```
+
+---
+
+# 📥 Data Export
+
+Admin Dashboard dự kiến hỗ trợ export dữ liệu.
+
+### CSV
+
+Có thể export:
+
+- Users
+- Jobs
+- Applications
+- Recommendations
+
+### Excel
+
+Excel Workbook có thể gồm:
+
+```text
+IT_Career_Match_Report.xlsx
+
+├── Users
+├── Jobs
+├── Applications
+└── Recommendations
+```
+
+Chức năng này giúp Admin dễ:
+
+- Thống kê dữ liệu
+- Tổng hợp kết quả
+- Làm báo cáo
+- Phân tích người dùng
+- Phân tích việc làm
+
+---
+
+# 🤖 Machine Learning
+
+## Career Prediction
+
+Pipeline:
+
+```text
+CV
+ ↓
+Extract Text
+ ↓
+Text Preprocessing
+ ↓
+TF-IDF
+ ↓
+Logistic Regression
+ ↓
+Career Prediction
+```
+
+### Model
+
+```text
+Algorithm:
+Logistic Regression
+
+Feature Extraction:
+TF-IDF
+
+Maximum Features:
+2000
+
+N-gram:
+(1, 2)
+
+Train/Test:
+80/20
+```
+
+---
+
+## 📊 Model Results
 
 | Metric | Score |
 |---|---:|
@@ -64,95 +314,226 @@ Các nhóm nghề hiện được mô hình hỗ trợ:
 
 ---
 
-## 💼 Job Recommendation
+# 🎯 ML Career Classes
 
-Sau khi phân tích CV, hệ thống sử dụng:
+Machine Learning Model hiện hỗ trợ 7 class:
 
-**Content-Based Filtering + Cosine Similarity**
+1. AI / Machine Learning
+2. Backend Development
+3. Cybersecurity
+4. Data
+5. DevOps / Cloud
+6. Network / System
+7. Other IT
 
-để tính độ tương đồng giữa CV và mô tả công việc.
+Training dataset cuối:
+
+```text
+275 samples
+7 classes
+2000 TF-IDF features
+```
+
+---
+
+# 🧠 Recommendation System
+
+Recommendation Engine sử dụng:
+
+```text
+Content-Based Filtering
+        +
+Cosine Similarity
+        +
+Career Category Bonus
+```
 
 Quy trình:
 
 ```text
-Upload CV
-    ↓
-Extract Text
-    ↓
-Text Preprocessing
-    ↓
+Student CV
+     ↓
+Preprocessing
+     ↓
 Skill Extraction
-    ↓
-TF-IDF
-    ↓
+     ↓
+TF-IDF Vector
+     ↓
 Career Prediction
-    ↓
+     ↓
+Compare with Jobs
+     ↓
 Cosine Similarity
-    ↓
+     ↓
 Match Score
-    ↓
-Skill Gap Analysis
-    ↓
-Top Job Recommendations
+     ↓
+Skill Gap
+     ↓
+Explanation
+     ↓
+Top-K Jobs
 ```
 
-Match Score được tính dựa trên độ tương đồng nội dung CV và nhóm nghề nghiệp dự đoán.
+---
+
+# ⭐ Match Score
+
+Match Score được xây dựng từ:
+
+```text
+CV ↔ Job Similarity
+        +
+Predicted Career Category
+```
+
+Mục đích là ưu tiên những công việc:
+
+- Có nội dung tương đồng với CV
+- Có kỹ năng phù hợp
+- Thuộc định hướng nghề nghiệp được ML dự đoán
 
 ---
 
-## 🧠 AI Features
+# 🔎 Skill Gap Analysis
 
-Hệ thống hiện có các chức năng AI/ML:
+Hệ thống so sánh:
 
-- CV Analysis
-- Skill Extraction
+```text
+CV Skills
+    ↕
+Job Required Skills
+```
+
+Sau đó xác định:
+
+```text
+Matched Skills
+Missing Skills
+```
+
+Ví dụ:
+
+```text
+CV:
+Python
+Flask
+SQL
+Git
+
+Job:
+Python
+Flask
+PostgreSQL
+Docker
+Git
+```
+
+Kết quả:
+
+```text
+Matched:
+Python
+Flask
+Git
+
+Missing:
+PostgreSQL
+Docker
+```
+
+---
+
+# 💡 Recommendation Explanation
+
+Hệ thống tạo giải thích cho mỗi recommendation dựa trên:
+
 - Career Prediction
-- Job Recommendation
 - Match Score
-- Skill Gap Analysis
-- Recommendation Explanation
+- Matched Skills
+- Missing Skills
+- Job Category
+
+Giúp sinh viên hiểu **vì sao công việc được đề xuất** thay vì chỉ nhận một danh sách Job.
 
 ---
 
-## 🛠️ Technologies
+# 🛠️ Technology Stack
 
-### Backend
+## Backend
 
-- Python
-- Flask
-- SQLite
+```text
+Python
+Flask
+SQLite
+```
 
-### Machine Learning
+## Machine Learning
 
-- scikit-learn
-- pandas
-- NumPy
-- TF-IDF
-- Logistic Regression
-- Cosine Similarity
-- joblib
+```text
+scikit-learn
+pandas
+NumPy
+TF-IDF
+Logistic Regression
+Cosine Similarity
+joblib
+```
 
-### Frontend
+## Frontend
 
-- HTML
-- CSS
-- Bootstrap
-- JavaScript
+```text
+HTML5
+CSS3
+Bootstrap
+JavaScript
+Jinja2
+```
 
-### Email
+## Email
 
-- Brevo Transactional Email API
-- OTP Email Verification
+```text
+Brevo Transactional Email API
+OTP Verification
+```
 
-### Deployment
+## Deployment
 
-- GitHub
-- Render
-- Gunicorn
+```text
+GitHub
+Render
+Gunicorn
+```
 
 ---
 
-## 📂 Project Structure
+# 🏗️ System Architecture
+
+```text
+                     USER
+                       │
+                       ▼
+                Flask Web App
+                       │
+          ┌────────────┼────────────┐
+          │            │            │
+          ▼            ▼            ▼
+       SQLite       AI / ML       Brevo
+          │            │            │
+          │         TF-IDF          │
+          │            │            │
+          │      LogisticRegression │
+          │            │            │
+          │     Recommendation      │
+          │                         │
+          └────────────┬────────────┘
+                       │
+                       ▼
+                  Web Interface
+```
+
+---
+
+# 📂 Project Structure
 
 ```text
 IT-Career-Match/
@@ -203,16 +584,37 @@ IT-Career-Match/
 
 ---
 
-## 🚀 Cài đặt
+# 🔐 Security
 
-### 1. Clone repository
+Hệ thống hiện áp dụng:
+
+- Password Hashing
+- OTP Email Verification
+- OTP Expiration
+- Flask Session
+- Role-Based Access Control
+- Environment Variables
+- `.env` excluded from Git
+- API keys are not stored in source code
+
+Đang phát triển:
+
+- OTP Resend Cooldown
+- OTP Rate Limiting
+- Improved Admin Authorization
+
+---
+
+# 🚀 Installation
+
+## 1. Clone Repository
 
 ```bash
 git clone https://github.com/Storqh/IT-Career-Match.git
 cd IT-Career-Match
 ```
 
-### 2. Tạo Virtual Environment
+## 2. Create Virtual Environment
 
 Windows:
 
@@ -221,36 +623,36 @@ python -m venv .venv
 .venv\Scripts\activate
 ```
 
-### 3. Cài thư viện
+## 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Environment Variables
+## 4. Environment Variables
 
-Tạo file:
+Tạo:
 
 ```text
 .env
 ```
 
-Thêm:
+Nội dung:
 
 ```env
 SECRET_KEY=your_secret_key
 BREVO_API_KEY=your_brevo_api_key
 ```
 
-> Không commit file `.env` hoặc API key lên GitHub.
+Không commit `.env` lên GitHub.
 
-### 5. Chạy ứng dụng
+## 5. Run
 
 ```bash
 python app.py
 ```
 
-Sau đó truy cập:
+Mở:
 
 ```text
 http://127.0.0.1:5000
@@ -258,85 +660,114 @@ http://127.0.0.1:5000
 
 ---
 
-## 🔐 OTP Email Verification
+# 🗺️ Development Roadmap
 
-Khi người dùng đăng ký:
+## ✅ Completed
 
-```text
-Register
-   ↓
-Generate OTP
-   ↓
-Brevo API
-   ↓
-Send OTP Email
-   ↓
-Verify OTP
-   ↓
-Create Account
-```
+- [x] User Registration
+- [x] Email OTP Verification
+- [x] Login / Logout
+- [x] Student Profile
+- [x] PDF CV Parser
+- [x] DOCX CV Parser
+- [x] Text Preprocessing
+- [x] Skill Extraction
+- [x] TF-IDF
+- [x] Career Prediction
+- [x] Logistic Regression Model
+- [x] Content-Based Recommendation
+- [x] Cosine Similarity
+- [x] Match Score
+- [x] Skill Gap Analysis
+- [x] Recommendation Explanation
+- [x] Basic Job Management
+- [x] Render Deployment
+- [x] Brevo Email Integration
 
-Mật khẩu người dùng được lưu dưới dạng **password hash**, không lưu mật khẩu gốc.
+## 🚧 In Development
+
+- [ ] Expand Job Database (~60 jobs)
+- [ ] Detailed Job Information
+- [ ] Student Job Search
+- [ ] Advanced Job Filters
+- [ ] Job Detail Page
+- [ ] Pagination
+- [ ] Admin Dashboard
+- [ ] User Management
+- [ ] User CRUD
+- [ ] User Role Management
+- [ ] Admin Job Search / Filter
+- [ ] Job Active / Inactive
+- [ ] CSV Export
+- [ ] Excel Export
+- [ ] Application Management
+- [ ] Statistics Dashboard
+- [ ] OTP Resend Cooldown
+- [ ] OTP Rate Limiting
+- [ ] Responsive Mobile Improvements
+
+## 🔮 Future
+
+- [ ] PostgreSQL
+- [ ] Real-time Job API
+- [ ] Semantic Embeddings
+- [ ] Advanced NLP
+- [ ] Resume Scoring
+- [ ] Learning Path Recommendation
+- [ ] Skill Recommendation
+- [ ] Favourite Jobs
+- [ ] Application Tracking
+- [ ] Improved Recommendation Model
 
 ---
 
-## 📊 Dataset
+# ⚠️ Current Limitations
 
-Dataset được tiền xử lý trước khi huấn luyện mô hình.
-
-Mô hình Career Prediction cuối cùng sử dụng:
-
-- **275 samples**
-- **7 career classes**
-- Train/Test Split: **80/20**
-- TF-IDF: tối đa **2000 features**
-
----
-
-## ⚠️ Current Limitations
-
-Phiên bản hiện tại là phiên bản phục vụ mục đích học tập và demo.
-
-Một số hạn chế:
-
-- Dataset còn tương đối nhỏ.
+- Dataset ML còn tương đối nhỏ.
 - Career Prediction hiện hỗ trợ 7 nhóm nghề chính.
 - Skill Extraction chủ yếu dựa trên danh sách kỹ năng định nghĩa trước.
-- SQLite phù hợp cho demo nhưng chưa tối ưu cho production deployment.
-- Hệ thống chưa sử dụng dữ liệu việc làm thời gian thực.
+- Job dataset hiện đang được mở rộng.
+- SQLite phù hợp với demo nhưng chưa phải lựa chọn tối ưu cho production.
+- Chưa sử dụng dữ liệu tuyển dụng thời gian thực.
+- Recommendation chủ yếu dựa trên nội dung CV và Job Description.
 
 ---
 
-## 🔮 Future Development
+# 📚 Job Data Reference
 
-Trong tương lai hệ thống có thể phát triển thêm:
+Cấu trúc thông tin tuyển dụng và hệ thống Search/Filter được xây dựng với tham khảo từ các nền tảng tuyển dụng, trong đó có TopCV.
 
-- PostgreSQL
-- Real-time Job API
-- Advanced NLP
-- Semantic Embeddings
-- Resume Scoring
-- Learning Path Recommendation
-- Personalized Skill Recommendation
-- Admin Dashboard
-- Favourite Jobs
-- Job Application Tracking
+Dữ liệu demo của project được xây dựng phục vụ mục đích học tập và nghiên cứu.
+
+Project không nhằm sao chép hoặc đại diện chính thức cho TopCV.
 
 ---
 
-## 🎓 Project Purpose
+# 🎓 Project Purpose
 
-Đây là đồ án Machine Learning với mục tiêu nghiên cứu cách ứng dụng:
+Đồ án nghiên cứu việc kết hợp:
 
-- Natural Language Processing
-- Machine Learning
-- Recommendation System
+```text
+Machine Learning
+       +
+Natural Language Processing
+       +
+Recommendation System
+       +
+Web Application
+```
 
-vào bài toán hỗ trợ sinh viên CNTT tìm kiếm công việc phù hợp với kỹ năng và định hướng nghề nghiệp.
+để hỗ trợ sinh viên CNTT:
+
+- Hiểu kỹ năng hiện tại
+- Xác định định hướng nghề nghiệp
+- Tìm công việc phù hợp
+- Phát hiện kỹ năng còn thiếu
+- Hiểu lý do AI đề xuất một công việc
 
 ---
 
-## 👨‍💻 Author
+# 👨‍💻 Author
 
 **Trần Quốc Huy**
 
@@ -346,6 +777,6 @@ GitHub: https://github.com/Storqh
 
 ---
 
-## 📄 License
+# 📄 License
 
-This project is developed for educational purposes.
+This project is developed for educational and research purposes.
