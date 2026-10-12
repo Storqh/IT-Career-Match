@@ -1,158 +1,508 @@
+
 {% extends "base.html" %}
-
-{% block title %}
-Dashboard - IT Career Match
-{% endblock %}
-
 
 {% block content %}
 
-<div class="container">
+<style>
+/* =========================================
+   IT CAREER MATCH - DASHBOARD
+========================================= */
 
-    <section class="hero">
+.icm-dashboard {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 36px 24px 70px;
+    font-family: inherit;
+}
 
-        <h1 class="hero-title">
-            Chào mừng đến với IT Career Match
-        </h1>
+/* WELCOME */
+.icm-dashboard .dashboard-welcome {
+    margin-bottom: 34px;
+}
 
-        <p class="hero-subtitle mt-3">
-            Phân tích CV bằng Machine Learning và tìm những
-            công việc IT phù hợp nhất với kỹ năng của bạn.
+.icm-dashboard .welcome-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: #eaf1ff;
+    color: #2563eb;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.icm-dashboard .dashboard-welcome h1 {
+    font-size: clamp(28px, 3vw, 38px);
+    font-weight: 800;
+    color: #14213d;
+    margin: 0 0 12px;
+    letter-spacing: -0.8px;
+}
+
+.icm-dashboard .dashboard-welcome p {
+    color: #64748b;
+    font-size: 16px;
+    line-height: 1.8;
+    margin: 0;
+}
+
+/* SECTION */
+.icm-dashboard .section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.icm-dashboard .section-heading h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: #14213d;
+    margin: 0;
+}
+
+.icm-dashboard .section-heading p {
+    color: #64748b;
+    font-size: 14px;
+    margin: 6px 0 0;
+}
+
+/* CARD GRID */
+.icm-dashboard .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.icm-dashboard .feature-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 310px;
+    padding: 26px;
+
+    background: #fff;
+    border: 1px solid #e4eaf3;
+    border-radius: 22px;
+    box-shadow: 0 8px 28px rgba(25, 48, 90, .045);
+
+    text-decoration: none !important;
+    color: #17243c !important;
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        border-color .25s ease;
+}
+
+.icm-dashboard .feature-card:hover {
+    transform: translateY(-6px);
+    border-color: #a7c2ff;
+    box-shadow: 0 20px 42px rgba(37, 99, 235, .12);
+}
+
+/* ICON */
+.icm-dashboard .feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    font-size: 27px;
+    margin-bottom: 25px;
+}
+
+.icm-dashboard .icon-profile {
+    background: #f0eaff;
+    color: #7444c0;
+}
+
+.icm-dashboard .icon-cv {
+    background: #eaf1ff;
+    color: #2563eb;
+}
+
+.icm-dashboard .icon-jobs {
+    background: #e4f8ef;
+    color: #059669;
+}
+
+.icm-dashboard .icon-ai {
+    background: #fff2e0;
+    color: #e28a12;
+}
+
+/* CONTENT */
+.icm-dashboard .feature-card h3 {
+    font-size: 19px;
+    font-weight: 800;
+    color: #17243c !important;
+    margin: 0 0 12px;
+    line-height: 1.4;
+    text-decoration: none !important;
+}
+
+.icm-dashboard .feature-card p {
+    font-size: 14px;
+    color: #718096 !important;
+    line-height: 1.8;
+    margin: 0 0 25px;
+    text-decoration: none !important;
+}
+
+/* BUTTON */
+.icm-dashboard .feature-button {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    min-height: 47px;
+    padding: 12px 18px;
+
+    background: #2563eb;
+    border-radius: 12px;
+    color: #fff !important;
+
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none !important;
+
+    transition:
+        background .25s ease,
+        transform .25s ease,
+        box-shadow .25s ease;
+}
+
+.icm-dashboard .feature-button i {
+    font-size: 15px;
+    color: #fff;
+    transition: transform .25s ease;
+}
+
+.icm-dashboard .feature-card:hover .feature-button {
+    background: #1d4ed8;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, .22);
+}
+
+.icm-dashboard .feature-card:hover .feature-button i {
+    transform: translate(3px, -3px);
+}
+
+.icm-dashboard .feature-card:focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: 4px;
+}
+
+/* AI BUTTON */
+.icm-dashboard .feature-card.ai-card .feature-button {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
+.icm-dashboard .feature-card.ai-card:hover .feature-button {
+    box-shadow: 0 8px 22px rgba(99, 102, 241, .28);
+}
+
+/* QUICK TIP */
+.icm-dashboard .dashboard-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 22px 24px;
+    margin-top: 32px;
+    background: linear-gradient(110deg, #edf4ff, #f8faff);
+    border: 1px solid #dce8ff;
+    border-radius: 18px;
+}
+
+.icm-dashboard .tip-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 13px;
+    background: #dce9ff;
+    color: #2563eb;
+    font-size: 21px;
+}
+
+.icm-dashboard .dashboard-tip h4 {
+    font-size: 16px;
+    font-weight: 800;
+    color: #1e3a68;
+    margin: 0 0 6px;
+}
+
+.icm-dashboard .dashboard-tip p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #64748b;
+    margin: 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+    .icm-dashboard .feature-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .icm-dashboard {
+        padding: 24px 16px 45px;
+    }
+
+    .icm-dashboard .feature-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .icm-dashboard .feature-card {
+        min-height: 255px;
+        padding: 23px;
+    }
+
+    .icm-dashboard .dashboard-welcome h1 {
+        font-size: 28px;
+    }
+
+    .icm-dashboard .dashboard-tip {
+        padding: 18px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .icm-dashboard .feature-card,
+    .icm-dashboard .feature-button,
+    .icm-dashboard .feature-button i {
+        transition: none;
+    }
+}
+
+/* =====================================
+   TĂNG KÍCH THƯỚC CHỮ DASHBOARD
+===================================== */
+
+/* Tiêu đề chào mừng */
+.icm-dashboard .dashboard-welcome h1 {
+    font-size: clamp(32px, 3.2vw, 42px);
+}
+
+/* Mô tả chào mừng */
+.icm-dashboard .dashboard-welcome p {
+    font-size: 18px;
+}
+
+/* Tiêu đề khu vực */
+.icm-dashboard .section-heading h2 {
+    font-size: 25px;
+}
+
+.icm-dashboard .section-heading p {
+    font-size: 16px;
+}
+
+/* Tiêu đề 4 thẻ */
+.icm-dashboard .feature-card h3 {
+    font-size: 22px;
+}
+
+/* Nội dung mô tả 4 thẻ */
+.icm-dashboard .feature-card p {
+    font-size: 16px;
+    line-height: 1.75;
+}
+
+/* Chữ trong button */
+.icm-dashboard .feature-button {
+    font-size: 16px;
+    min-height: 50px;
+    padding: 13px 20px;
+}
+
+/* Mẹo dành cho bạn */
+.icm-dashboard .dashboard-tip h4 {
+    font-size: 18px;
+}
+
+.icm-dashboard .dashboard-tip p {
+    font-size: 16px;
+}
+
+/* Tối ưu màn hình điện thoại */
+@media (max-width: 600px) {
+    .icm-dashboard .dashboard-welcome h1 {
+        font-size: 30px;
+    }
+
+    .icm-dashboard .feature-card h3 {
+        font-size: 20px;
+    }
+
+    .icm-dashboard .feature-card p {
+        font-size: 15px;
+    }
+
+    .icm-dashboard .feature-button {
+        font-size: 15px;
+    }
+}
+
+</style>
+
+<main class="icm-dashboard">
+
+    <!-- WELCOME -->
+    <section class="dashboard-welcome">
+
+        <div class="welcome-label">
+            <i class="bi bi-stars"></i>
+            YOUR CAREER WORKSPACE
+        </div>
+
+        <h1>Chào mừng đến với IT Career Match 👋</h1>
+
+        <p>
+            Khám phá tiềm năng của bạn, phân tích kỹ năng
+            và tìm kiếm những cơ hội nghề nghiệp IT phù hợp.
         </p>
-
-        <a href="{{ url_for('recommendations') }}"
-           class="btn btn-primary btn-lg mt-3">
-
-            Xem gợi ý việc làm bằng AI
-
-        </a>
 
     </section>
 
+    <!-- FEATURES -->
+    <section aria-labelledby="dashboardFeaturesTitle">
 
-    <div class="row g-4">
+        <div class="section-heading">
+            <div>
+                <h2 id="dashboardFeaturesTitle">
+                    Khám phá tính năng
+                </h2>
+                <p>
+                    Bắt đầu hành trình phát triển sự nghiệp của bạn.
+                </p>
+            </div>
+        </div>
 
-        <div class="col-md-6 col-lg-3">
+        <div class="feature-grid">
 
-            <div class="card dashboard-card shadow-sm">
+            <!-- PROFILE -->
+            <a href="{{ url_for('profile') }}"
+               class="feature-card">
 
-                <div class="card-body p-4">
-
-                    <div class="feature-icon">
-                        👤
-                    </div>
-
-                    <h5 class="mt-3">
-                        Hồ sơ cá nhân
-                    </h5>
-
-                    <p class="text-muted">
-                        Cập nhật thông tin và chuyên ngành.
-                    </p>
-
-                    <a href="{{ url_for('profile') }}"
-                       class="btn btn-outline-primary">
-                        Hồ sơ
-                    </a>
-
+                <div class="feature-icon icon-profile">
+                    <i class="bi bi-person-vcard"></i>
                 </div>
 
-            </div>
+                <h3>Hồ sơ cá nhân</h3>
+
+                <p>
+                    Quản lý thông tin cá nhân,
+                    cập nhật kỹ năng và định hướng nghề nghiệp.
+                </p>
+
+                <span class="feature-button">
+                    Xem hồ sơ
+                    <i class="bi bi-arrow-up-right"></i>
+                </span>
+
+            </a>
+
+            <!-- CV ANALYSIS -->
+            <a href="{{ url_for('upload_cv') }}"
+               class="feature-card">
+
+                <div class="feature-icon icon-cv">
+                    <i class="bi bi-file-earmark-person"></i>
+                </div>
+
+                <h3>Phân tích CV</h3>
+
+                <p>
+                    Tải lên CV PDF hoặc DOCX để hệ thống
+                    phân tích và nhận diện kỹ năng IT.
+                </p>
+
+                <span class="feature-button">
+                    Phân tích CV
+                    <i class="bi bi-arrow-up-right"></i>
+                </span>
+
+            </a>
+
+            <!-- JOBS -->
+            <a href="{{ url_for('jobs') }}"
+               class="feature-card">
+
+                <div class="feature-icon icon-jobs">
+                    <i class="bi bi-briefcase"></i>
+                </div>
+
+                <h3>Khám phá việc làm</h3>
+
+                <p>
+                    Tìm kiếm các vị trí công việc IT
+                    phù hợp với chuyên ngành và mục tiêu của bạn.
+                </p>
+
+                <span class="feature-button">
+                    Xem việc làm
+                    <i class="bi bi-arrow-up-right"></i>
+                </span>
+
+            </a>
+
+            <!-- AI RECOMMENDATION -->
+            <a href="{{ url_for('recommendations') }}"
+               class="feature-card ai-card">
+
+                <div class="feature-icon icon-ai">
+                    <i class="bi bi-stars"></i>
+                </div>
+
+                <h3>AI Recommendation</h3>
+
+                <p>
+                    Nhận gợi ý việc làm cá nhân hóa
+                    dựa trên CV và kỹ năng của bạn.
+                </p>
+
+                <span class="feature-button">
+                    Xem gợi ý
+                    <i class="bi bi-arrow-up-right"></i>
+                </span>
+
+            </a>
 
         </div>
 
+    </section>
 
-        <div class="col-md-6 col-lg-3">
+    <!-- CAREER TIP -->
+    <aside class="dashboard-tip">
 
-            <div class="card dashboard-card shadow-sm">
-
-                <div class="card-body p-4">
-
-                    <div class="feature-icon">
-                        📄
-                    </div>
-
-                    <h5 class="mt-3">
-                        Phân tích CV
-                    </h5>
-
-                    <p class="text-muted">
-                        Upload CV PDF hoặc DOCX để AI phân tích.
-                    </p>
-
-                    <a href="{{ url_for('upload_cv') }}"
-                       class="btn btn-outline-primary">
-                        Upload CV
-                    </a>
-
-                </div>
-
-            </div>
-
+        <div class="tip-icon">
+            <i class="bi bi-lightbulb"></i>
         </div>
 
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="card dashboard-card shadow-sm">
-
-                <div class="card-body p-4">
-
-                    <div class="feature-icon">
-                        💼
-                    </div>
-
-                    <h5 class="mt-3">
-                        Việc làm
-                    </h5>
-
-                    <p class="text-muted">
-                        Khám phá các vị trí IT hiện có.
-                    </p>
-
-                    <a href="{{ url_for('jobs') }}"
-                       class="btn btn-outline-primary">
-                        Xem việc làm
-                    </a>
-
-                </div>
-
-            </div>
-
+        <div>
+            <h4>Mẹo dành cho bạn</h4>
+            <p>
+                Hãy cập nhật hồ sơ và tải lên CV mới nhất
+                trước khi sử dụng AI Recommendation
+                để hệ thống có đủ thông tin đưa ra
+                những gợi ý phù hợp hơn.
+            </p>
         </div>
 
+    </aside>
 
-        <div class="col-md-6 col-lg-3">
-
-            <div class="card dashboard-card shadow-sm">
-
-                <div class="card-body p-4">
-
-                    <div class="feature-icon">
-                        🤖
-                    </div>
-
-                    <h5 class="mt-3">
-                        AI Recommendation
-                    </h5>
-
-                    <p class="text-muted">
-                        Top công việc phù hợp với CV của bạn.
-                    </p>
-
-                    <a href="{{ url_for('recommendations') }}"
-                       class="btn btn-primary">
-                        Xem gợi ý
-                    </a>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
+</main>
 
 {% endblock %}

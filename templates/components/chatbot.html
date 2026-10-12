@@ -1,0 +1,232 @@
+
+<!-- =========================================
+     IT CAREER MATCH - CHATBOT
+========================================= -->
+
+<div id="careerChatbot" class="career-chatbot">
+
+    <!-- Nút mở chatbot -->
+    <button
+        type="button"
+        id="chatbotToggle"
+        class="chatbot-toggle"
+        aria-label="Mở chatbot tư vấn nghề nghiệp"
+        aria-expanded="false"
+        aria-controls="chatbotWindow"
+    >
+        <i class="bi bi-chat-dots-fill"></i>
+    </button>
+
+    <!-- Cửa sổ chatbot -->
+    <section
+        id="chatbotWindow"
+        class="chatbot-window"
+        aria-label="Chatbot tư vấn nghề nghiệp"
+        hidden
+    >
+
+        <!-- 1. HEADER -->
+        <div class="chatbot-header">
+
+            <div class="chatbot-header-info">
+
+                <div class="chatbot-avatar">
+                    <i class="bi bi-robot"></i>
+                </div>
+
+                <div class="chatbot-header-text">
+                    <strong>IT Career Assistant</strong>
+                    <span>
+                        <i class="bi bi-circle-fill"></i>
+                        Trợ lý hướng nghiệp IT
+                    </span>
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                id="chatbotClose"
+                class="chatbot-close"
+                aria-label="Đóng chatbot"
+            >
+                <i class="bi bi-x-lg"></i>
+            </button>
+
+        </div>
+
+        <!-- 2. KHU VỰC TIN NHẮN -->
+        <div
+            id="chatbotMessages"
+            class="chatbot-messages"
+            role="log"
+            aria-live="polite"
+            aria-relevant="additions"
+        >
+
+            <!-- Lời chào ban đầu -->
+            <div class="chatbot-message bot">
+
+                <div class="chatbot-message-avatar">
+                    <i class="bi bi-robot"></i>
+                </div>
+
+                <div class="chatbot-bubble">
+                    <strong>Xin chào! 👋</strong>
+                    <div>
+                        Mình là trợ lý hướng nghiệp của IT Career Match.
+                        Mình có thể hỗ trợ bạn về CV, kỹ năng IT,
+                        lộ trình học tập và định hướng nghề nghiệp.
+                    </div>
+                    <div>
+                        Bạn muốn tìm hiểu điều gì hôm nay?
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- 3. CÂU HỎI GỢI Ý -->
+        <div
+            id="chatbotSuggestions"
+            class="chatbot-suggestions"
+        >
+
+            <button
+                type="button"
+                class="chatbot-suggestion"
+                data-question="Cách viết CV IT"
+            >
+                <i class="bi bi-file-earmark-person"></i>
+                Viết CV IT
+            </button>
+
+            <button
+                type="button"
+                class="chatbot-suggestion"
+                data-question="Lộ trình học Backend"
+            >
+                <i class="bi bi-code-slash"></i>
+                Học Backend
+            </button>
+
+            <button
+                type="button"
+                class="chatbot-suggestion"
+                data-question="Lộ trình học Machine Learning"
+            >
+                <i class="bi bi-cpu"></i>
+                Học AI/ML
+            </button>
+
+            <button
+                type="button"
+                class="chatbot-suggestion"
+                data-question="Cách chuẩn bị phỏng vấn IT"
+            >
+                <i class="bi bi-briefcase"></i>
+                Phỏng vấn IT
+            </button>
+
+        </div>
+
+        <!-- 4. Ô NHẬP TIN NHẮN -->
+        <form
+            id="chatbotForm"
+            class="chatbot-input-area"
+            autocomplete="off"
+        >
+
+            <input
+                type="text"
+                id="chatbotInput"
+                class="chatbot-input"
+                placeholder="Nhập câu hỏi của bạn..."
+                maxlength="500"
+                aria-label="Nhập câu hỏi"
+                required
+            >
+
+            <button
+                type="submit"
+                id="chatbotSend"
+                class="chatbot-send"
+                aria-label="Gửi tin nhắn"
+            >
+                <i class="bi bi-send-fill"></i>
+            </button>
+
+        </form>
+
+        <!-- 5. FOOTER -->
+        <div class="chatbot-footer">
+            IT Career Match · Career Support
+        </div>
+
+    </section>
+
+</div>
+
+<!-- FIX BỐ CỤC CHATBOT -->
+<style>
+    #careerChatbot .chatbot-window:not([hidden]) {
+        display: flex !important;
+        flex-direction: column !important;
+        height: min(600px, calc(100dvh - 110px)) !important;
+        overflow: hidden !important;
+    }
+
+    #careerChatbot .chatbot-window[hidden] {
+        display: none !important;
+    }
+
+    #careerChatbot .chatbot-header {
+        order: 1 !important;
+        flex: 0 0 auto !important;
+    }
+
+    #careerChatbot .chatbot-messages {
+        order: 2 !important;
+        flex: 1 1 0 !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        overscroll-behavior: contain;
+    }
+
+    #careerChatbot .chatbot-message {
+        flex-shrink: 0 !important;
+    }
+
+    #careerChatbot .chatbot-suggestions {
+        order: 3 !important;
+        flex: 0 0 auto !important;
+    }
+
+    #careerChatbot .chatbot-input-area {
+        order: 4 !important;
+        flex: 0 0 auto !important;
+    }
+
+    #careerChatbot .chatbot-footer {
+        order: 5 !important;
+        flex: 0 0 auto !important;
+    }
+
+    #careerChatbot .chatbot-bubble {
+        text-align: left !important;
+        text-align-last: left !important;
+        white-space: pre-line !important;
+        overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 576px) {
+        #careerChatbot .chatbot-window:not([hidden]) {
+            height: min(600px, calc(100dvh - 90px)) !important;
+        }
+    }
+</style>

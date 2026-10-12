@@ -1,0 +1,759 @@
+
+/* =========================================
+   IT CAREER MATCH - CHATBOT PRO UI
+========================================= */
+
+#careerChatbot {
+    --cb-blue: #2563eb;
+    --cb-dark: #1d4ed8;
+    --cb-text: #172338;
+    --cb-muted: #64748b;
+
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    left: auto !important;
+    top: auto !important;
+
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+
+    z-index: 99999 !important;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* RESET BUTTONS */
+
+#careerChatbot button {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+#careerChatbot *,
+#careerChatbot *::before,
+#careerChatbot *::after {
+    box-sizing: border-box;
+}
+
+/* FLOATING BUTTON */
+
+#careerChatbot .chatbot-toggle {
+    position: relative;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+
+    width: 64px;
+    height: 64px;
+
+    margin-left: auto;
+    padding: 0;
+
+    border: none;
+    border-radius: 21px;
+
+    background: linear-gradient(
+        135deg,
+        #2563eb,
+        #4f46e5
+    );
+
+    color: white;
+    font-size: 28px;
+
+    box-shadow:
+        0 10px 30px rgba(37, 99, 235, .32);
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+#careerChatbot .chatbot-toggle:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 15px 35px rgba(37, 99, 235, .4);
+}
+
+#careerChatbot .chatbot-notification {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+
+    width: 12px;
+    height: 12px;
+
+    background: #22c55e;
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+/* CHAT WINDOW */
+
+#careerChatbot .chatbot-window {
+    position: absolute !important;
+
+    right: 0 !important;
+    bottom: 80px !important;
+    left: auto !important;
+    top: auto !important;
+
+    width: 410px !important;
+    max-width: calc(100vw - 32px) !important;
+
+    height: 600px !important;
+    max-height: calc(100dvh - 125px) !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 22px !important;
+
+    box-shadow:
+        0 25px 70px rgba(15, 23, 42, .23) !important;
+
+    overflow: hidden !important;
+
+    animation: chatbotOpen .22s ease;
+}
+
+#careerChatbot .chatbot-window[hidden] {
+    display: none !important;
+}
+
+@keyframes chatbotOpen {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* HEADER */
+
+#careerChatbot .chatbot-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 18px;
+
+    background: linear-gradient(
+        135deg,
+        #2563eb,
+        #4338ca
+    ) !important;
+
+    color: white;
+    flex-shrink: 0;
+}
+
+#careerChatbot .chatbot-avatar {
+    width: 46px;
+    height: 46px;
+
+    display: grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .18);
+    font-size: 25px;
+}
+
+#careerChatbot .chatbot-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+}
+
+#careerChatbot .chatbot-header-info strong {
+    font-size: 17px;
+    font-weight: 800;
+    color: white !important;
+}
+
+#careerChatbot .chatbot-header-info > span {
+    color: #e0e7ff;
+    font-size: 13px;
+}
+
+#careerChatbot .chatbot-online-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+
+    background: #4ade80;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+#careerChatbot .chatbot-close {
+    display: grid;
+    place-items: center;
+
+    width: 34px;
+    height: 34px;
+
+    background: rgba(255, 255, 255, .12);
+    border: none;
+    border-radius: 9px;
+
+    color: white;
+    font-size: 17px;
+}
+
+#careerChatbot .chatbot-close:hover {
+    background: rgba(255, 255, 255, .23);
+}
+
+/* MESSAGE AREA */
+
+#careerChatbot .chatbot-messages {
+    flex: 1;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+
+    padding: 20px 15px;
+
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    background: #f8faff;
+}
+
+#careerChatbot .chatbot-message {
+    display: flex;
+    align-items: flex-end;
+    gap: 9px;
+
+    max-width: 95%;
+}
+
+#careerChatbot .chatbot-message.bot {
+    align-self: flex-start;
+}
+
+#careerChatbot .chatbot-message.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+#careerChatbot .chatbot-message-avatar {
+    width: 30px;
+    height: 30px;
+
+    display: grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    border-radius: 10px;
+    background: #e0eaff;
+    color: #2563eb;
+    font-size: 16px;
+}
+
+#careerChatbot .chatbot-message.user
+.chatbot-message-avatar {
+    display: none;
+}
+
+/* BUBBLES */
+
+#careerChatbot .chatbot-bubble {
+    padding: 13px 15px;
+
+    background: white;
+    color: var(--cb-text);
+
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.7;
+
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+#careerChatbot .chatbot-message.bot
+.chatbot-bubble {
+    border-bottom-left-radius: 5px;
+}
+
+#careerChatbot .chatbot-message.user
+.chatbot-bubble {
+    background: var(--cb-blue);
+    border-color: var(--cb-blue);
+    color: white;
+
+    border-bottom-right-radius: 5px;
+}
+
+/* QUICK QUESTIONS */
+
+#careerChatbot .chatbot-suggestions {
+    display: flex;
+    gap: 8px;
+
+    padding: 12px 14px;
+
+    overflow-x: auto;
+    scrollbar-width: thin;
+
+    background: #ffffff;
+    border-top: 1px solid #edf1f7;
+    flex-shrink: 0;
+}
+
+#careerChatbot .chatbot-suggestions button {
+    flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 9px 12px;
+
+    background: #eff6ff;
+    color: #1d4ed8;
+
+    border: 1px solid #bfdbfe;
+    border-radius: 20px;
+
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    transition: background .2s ease;
+}
+
+#careerChatbot .chatbot-suggestions button:hover {
+    background: #dbeafe;
+}
+
+/* INPUT */
+
+#careerChatbot .chatbot-input-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin: 0;
+    padding: 13px 14px;
+
+    background: white;
+    border-top: 1px solid #edf1f7;
+    flex-shrink: 0;
+}
+
+#careerChatbot .chatbot-input-area input {
+    flex: 1;
+    min-width: 0;
+
+    height: 46px;
+    padding: 11px 14px;
+
+    border: 1px solid #dbe3ee;
+    border-radius: 12px;
+
+    background: #f8fafc;
+    color: #172338;
+
+    font-size: 15px;
+    outline: none;
+}
+
+#careerChatbot .chatbot-input-area input:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+}
+
+#careerChatbot .chatbot-input-area button {
+    display: grid;
+    place-items: center;
+
+    width: 46px;
+    height: 46px;
+
+    flex-shrink: 0;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #2563eb;
+    color: white;
+
+    font-size: 18px;
+}
+
+#careerChatbot .chatbot-input-area button:hover {
+    background: #1d4ed8;
+}
+
+#careerChatbot .chatbot-input-area button:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+/* FOOTER */
+
+#careerChatbot .chatbot-footer {
+    padding: 0 12px 12px;
+
+    background: white;
+    color: #94a3b8;
+
+    font-size: 11px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* TYPING ANIMATION */
+
+#careerChatbot .chatbot-typing {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 20px;
+}
+
+#careerChatbot .chatbot-typing span {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+    background: #94a3b8;
+
+    animation: chatbotTyping 1s infinite alternate;
+}
+
+#careerChatbot .chatbot-typing span:nth-child(2) {
+    animation-delay: .2s;
+}
+
+#careerChatbot .chatbot-typing span:nth-child(3) {
+    animation-delay: .4s;
+}
+
+@keyframes chatbotTyping {
+    to {
+        opacity: .3;
+        transform: translateY(-4px);
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 576px) {
+    #careerChatbot {
+        bottom: 14px !important;
+        right: 14px !important;
+    }
+
+    #careerChatbot .chatbot-toggle {
+        width: 56px;
+        height: 56px;
+        font-size: 24px;
+        border-radius: 17px;
+    }
+
+    #careerChatbot .chatbot-window {
+        position: fixed !important;
+        left: 10px !important;
+        right: 10px !important;
+        bottom: 82px !important;
+
+        width: auto !important;
+        max-width: none !important;
+
+        height: min(620px, calc(100dvh - 105px)) !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #careerChatbot .chatbot-window,
+    #careerChatbot .chatbot-typing span {
+        animation: none;
+    }
+}
+
+/* ==========================================
+   FIX CHATBOT MESSAGE ALIGNMENT
+========================================== */
+
+/* Đảm bảo nội dung tin nhắn căn trái */
+#careerChatbot .chatbot-bubble {
+    display: block !important;
+
+    text-align: left !important;
+    text-align-last: left !important;
+
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    line-height: 1.7 !important;
+
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+
+    white-space: pre-wrap !important;
+    overflow-wrap: break-word !important;
+
+    width: auto !important;
+    max-width: 100% !important;
+
+    margin: 0 !important;
+}
+
+/* Tin nhắn của chatbot */
+#careerChatbot .chatbot-message.bot {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    justify-content: flex-start !important;
+
+    align-self: flex-start !important;
+    width: 100%;
+}
+
+/* Avatar chatbot */
+#careerChatbot .chatbot-message.bot
+.chatbot-message-avatar {
+    flex: 0 0 30px;
+}
+
+/* Tin nhắn của sinh viên */
+#careerChatbot .chatbot-message.user {
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    align-self: flex-end !important;
+    justify-content: flex-start !important;
+    width: fit-content;
+    max-width: 90%;
+}
+
+/* Bong bóng tin nhắn của sinh viên */
+#careerChatbot .chatbot-message.user
+.chatbot-bubble {
+    background: #2563eb !important;
+    color: white !important;
+}
+
+/* Không cho CSS bên ngoài căn giữa nội dung */
+#careerChatbot .chatbot-messages {
+    text-align: left !important;
+    align-items: stretch !important;
+}
+
+/* Chỉnh kích thước bong bóng */
+#careerChatbot .chatbot-message.bot
+.chatbot-bubble {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 16px !important;
+    border-radius: 15px 15px 15px 5px;
+}
+
+/* Không giãn khoảng cách chữ */
+#careerChatbot .chatbot-bubble,
+#careerChatbot .chatbot-bubble * {
+    text-align: left !important;
+    text-align-last: left !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+}
+
+/* FIX CHATBOT TEXT ALIGNMENT */
+
+#careerChatbot .chatbot-message.bot .chatbot-bubble {
+    display: block !important;
+    text-align: left !important;
+    text-align-last: left !important;
+    text-justify: auto !important;
+
+    white-space: pre-line !important;
+
+    letter-spacing: 0 !important;
+    word-spacing: normal !important;
+
+    line-height: 1.65 !important;
+    font-size: 15px !important;
+
+    padding: 14px 16px !important;
+    margin: 0 !important;
+}
+
+/* Đảm bảo các phần tử con không bị căn giữa */
+#careerChatbot .chatbot-bubble,
+#careerChatbot .chatbot-bubble * {
+    text-align: left !important;
+    text-align-last: left !important;
+    justify-content: flex-start !important;
+}
+
+/* Không để CSS chung căn giữa cả khung */
+#careerChatbot .chatbot-messages,
+#careerChatbot .chatbot-message {
+    text-align: left !important;
+}
+
+/* =====================================
+   FIX CHATBOT SCROLL & LAYOUT
+===================================== */
+
+/* Khung chatbot cố định */
+#careerChatbot .chatbot-window {
+    display: flex !important;
+    flex-direction: column !important;
+
+    height: min(600px, calc(100dvh - 120px)) !important;
+    overflow: hidden !important;
+}
+
+/* Header không được cuộn */
+#careerChatbot .chatbot-header {
+    flex: 0 0 auto !important;
+}
+
+/* Chỉ khu vực tin nhắn được cuộn */
+#careerChatbot .chatbot-messages {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 0 !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+}
+
+/* Tin nhắn không bị co chiều cao */
+#careerChatbot .chatbot-message {
+    flex-shrink: 0 !important;
+}
+
+/* Câu hỏi gợi ý luôn ở dưới */
+#careerChatbot .chatbot-suggestions {
+    flex: 0 0 auto !important;
+}
+
+/* Ô nhập luôn nằm dưới vùng chat */
+#careerChatbot .chatbot-input-area {
+    flex: 0 0 auto !important;
+    position: relative !important;
+}
+
+/* Footer không bị đẩy đi */
+#careerChatbot .chatbot-footer {
+    flex: 0 0 auto !important;
+}
+
+/* Đảm bảo hidden hoạt động */
+#careerChatbot .chatbot-window[hidden] {
+    display: none !important;
+}
+
+/* Điện thoại */
+@media (max-width: 576px) {
+    #careerChatbot .chatbot-window {
+        height: min(620px, calc(100dvh - 105px)) !important;
+    }
+}
+
+/* Tin nhắn mới luôn ở cuối vùng hội thoại */
+
+#careerChatbot .chatbot-messages {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+#careerChatbot .chatbot-message {
+    flex-shrink: 0 !important;
+}
+
+/* Giữ ô nhập cố định bên dưới */
+#careerChatbot .chatbot-input-area {
+    flex-shrink: 0 !important;
+}
+
+/* FIX: ĐÚNG THỨ TỰ KHUNG CHAT */
+
+#careerChatbot .chatbot-window {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    height: min(600px, calc(100dvh - 100px)) !important;
+}
+
+/* Header luôn ở trên */
+#careerChatbot .chatbot-header {
+    order: 1 !important;
+    flex: 0 0 auto !important;
+}
+
+/* Vùng tin nhắn nằm giữa và được cuộn */
+#careerChatbot .chatbot-messages {
+    order: 2 !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* Các câu hỏi gợi ý */
+#careerChatbot .chatbot-suggestions {
+    order: 3 !important;
+    flex: 0 0 auto !important;
+}
+
+/* Ô nhập nằm dưới tin nhắn */
+#careerChatbot .chatbot-input-area {
+    order: 4 !important;
+    flex: 0 0 auto !important;
+}
+
+/* Footer nằm cuối cùng */
+#careerChatbot .chatbot-footer {
+    order: 5 !important;
+    flex: 0 0 auto !important;
+}
+
+/* Tin nhắn không bị co */
+#careerChatbot .chatbot-message {
+    flex-shrink: 0 !important;
+}
+
+

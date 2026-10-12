@@ -1,104 +1,348 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Sửa công việc</title>
-</head>
 
-<body>
+{% extends "base.html" %}
 
-    <h1>Sửa công việc</h1>
+{% block title %}Chỉnh sửa công việc | IT Career Match{% endblock %}
 
-    <form method="POST">
+{% block content %}
+<main class="icm-page">
+    <div class="container py-4 py-lg-5">
 
-        <div>
-            <label>Tên công việc</label>
-            <input
-                type="text"
-                name="title"
-                value="{{ job['title'] }}"
-                required
-            >
+        <!-- BREADCRUMB -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('admin_jobs') }}">
+                        Quản lý công việc
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">
+                    Chỉnh sửa công việc
+                </li>
+            </ol>
+        </nav>
+
+        <!-- HEADER -->
+        <div class="icm-page-heading mb-4">
+            <div class="icm-heading-icon edit-job-heading-icon">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+
+            <div>
+                <div class="icm-eyebrow">
+                    JOB MANAGEMENT / EDIT
+                </div>
+
+                <h1 class="fw-bold mb-1">
+                    Chỉnh sửa công việc
+                </h1>
+
+                <p class="text-muted mb-0">
+                    Cập nhật thông tin tuyển dụng để đảm bảo
+                    dữ liệu luôn chính xác.
+                </p>
+            </div>
         </div>
 
-        <div>
-            <label>Công ty</label>
-            <input
-                type="text"
-                name="company"
-                value="{{ job['company'] or '' }}"
-            >
+        <div class="row g-4">
+
+            <!-- EDIT FORM -->
+            <div class="col-lg-8">
+                <form
+                    method="POST"
+                    action="{{ url_for('edit_job', job_id=job.job_id) }}"
+                    id="editJobForm"
+                    class="icm-form"
+                    data-loading-form
+                >
+
+                    <!-- GENERAL INFORMATION -->
+                    <div class="icm-panel mb-4">
+
+                        <div class="icm-panel-heading">
+                            <span class="icm-step edit-job-step">
+                                01
+                            </span>
+
+                            <div>
+                                <h5 class="fw-bold mb-1">
+                                    Thông tin tuyển dụng
+                                </h5>
+                                <p class="text-muted mb-0">
+                                    Chỉnh sửa thông tin cơ bản
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+
+                            <div class="col-12">
+                                <label for="title" class="form-label">
+                                    Vị trí tuyển dụng
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="title"
+                                    name="title"
+                                    class="form-control"
+                                    value="{{ job.title or '' }}"
+                                    maxlength="150"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="company" class="form-label">
+                                    Công ty
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="company"
+                                    name="company"
+                                    class="form-control"
+                                    value="{{ job.company or '' }}"
+                                    maxlength="120"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="location" class="form-label">
+                                    Địa điểm
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="location"
+                                    name="location"
+                                    class="form-control"
+                                    value="{{ job.location or '' }}"
+                                    maxlength="120"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">
+                                    Nhóm nghề
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <select
+                                    id="category"
+                                    name="category"
+                                    class="form-select"
+                                    required
+                                >
+                                    <option value="">Chọn nhóm nghề</option>
+
+                                    {% for value, label in [
+                                        ('AI/ML', 'AI / Machine Learning'),
+                                        ('Backend', 'Backend'),
+                                        ('Cybersecurity', 'Cybersecurity'),
+                                        ('Data', 'Data'),
+                                        ('DevOps/Cloud', 'DevOps / Cloud'),
+                                        ('Network/System', 'Network / System'),
+                                        ('Other IT', 'Other IT')
+                                    ] %}
+                                    <option value="{{ value }}"
+                                        {% if job.category == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="job_type" class="form-label">
+                                    Loại công việc
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <select
+                                    id="job_type"
+                                    name="job_type"
+                                    class="form-select"
+                                    required
+                                >
+                                    <option value="">Chọn loại công việc</option>
+
+                                    {% for value in [
+                                        'Full-time',
+                                        'Part-time',
+                                        'Internship',
+                                        'Remote',
+                                        'Contract'
+                                    ] %}
+                                    <option value="{{ value }}"
+                                        {% if job.job_type == value %}selected{% endif %}>
+                                        {{ value }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- DESCRIPTION -->
+                    <div class="icm-panel mb-4">
+
+                        <div class="icm-panel-heading">
+                            <span class="icm-step edit-job-step">
+                                02
+                            </span>
+
+                            <div>
+                                <h5 class="fw-bold mb-1">
+                                    Mô tả công việc
+                                </h5>
+
+                                <p class="text-muted mb-0">
+                                    Cập nhật nhiệm vụ và kỹ năng yêu cầu
+                                </p>
+                            </div>
+                        </div>
+
+                        <label for="description" class="form-label">
+                            Nội dung mô tả
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <textarea
+                            id="description"
+                            name="description"
+                            class="form-control"
+                            rows="10"
+                            minlength="30"
+                            maxlength="5000"
+                            data-character-count="editDescriptionCount"
+                            required
+                        >{{ job.description or '' }}</textarea>
+
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="text-muted small">
+                                Tối thiểu 30 ký tự
+                            </span>
+
+                            <span
+                                id="editDescriptionCount"
+                                class="text-muted small"
+                                aria-live="polite"
+                            >
+                                0 / 5000
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <!-- ACTIONS -->
+                    <div class="icm-form-actions">
+
+                        <a
+                            href="{{ url_for('admin_jobs') }}"
+                            class="btn btn-light icm-btn"
+                        >
+                            <i class="bi bi-x-circle me-2"></i>
+                            Hủy chỉnh sửa
+                        </a>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary icm-btn edit-job-save-btn"
+                        >
+                            <i class="bi bi-check-circle me-2"></i>
+                            Lưu thay đổi
+                        </button>
+
+                    </div>
+                
+                    <textarea id="initialJobDescription" hidden>{{ job.description or '' }}</textarea>
+
+                </form>
+            </div>
+
+            <!-- SIDEBAR -->
+            <div class="col-lg-4">
+
+                <aside class="icm-panel icm-help-panel">
+
+                    <div class="icm-help-icon edit-job-help-icon mb-3">
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+
+                    <h5 class="fw-bold">
+                        Thông tin công việc
+                    </h5>
+
+                    <div class="edit-job-summary">
+                        <div class="edit-job-summary-label">
+                            Mã công việc
+                        </div>
+
+                        <div class="edit-job-summary-value">
+                            #{{ job.job_id }}
+                        </div>
+                    </div>
+
+                    <div class="edit-job-summary">
+                        <div class="edit-job-summary-label">
+                            Vị trí hiện tại
+                        </div>
+
+                        <div class="edit-job-summary-value">
+                            {{ job.title }}
+                        </div>
+                    </div>
+
+                    <div class="edit-job-summary">
+                        <div class="edit-job-summary-label">
+                            Công ty
+                        </div>
+
+                        <div class="edit-job-summary-value">
+                            {{ job.company }}
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="fw-bold mb-3">
+                        <i class="bi bi-lightbulb me-2 text-warning"></i>
+                        Lưu ý khi chỉnh sửa
+                    </h6>
+
+                    <div class="icm-tip">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>
+                            Kiểm tra thông tin trước khi lưu.
+                        </span>
+                    </div>
+
+                    <div class="icm-tip">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>
+                            Chọn đúng nhóm nghề để hỗ trợ
+                            hệ thống gợi ý việc làm.
+                        </span>
+                    </div>
+
+                    <div class="icm-tip">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span>
+                            Mô tả rõ các công nghệ và kỹ năng
+                            mà ứng viên cần có.
+                        </span>
+                    </div>
+
+                </aside>
+            </div>
+
         </div>
-
-        <div>
-            <label>Địa điểm</label>
-            <input
-                type="text"
-                name="location"
-                value="{{ job['location'] or '' }}"
-            >
-        </div>
-
-        <div>
-            <label>Loại công việc</label>
-
-            <select name="job_type">
-
-                <option value="Full-time"
-                    {% if job['job_type'] == 'Full-time' %}selected{% endif %}>
-                    Full-time
-                </option>
-
-                <option value="Part-time"
-                    {% if job['job_type'] == 'Part-time' %}selected{% endif %}>
-                    Part-time
-                </option>
-
-                <option value="Internship"
-                    {% if job['job_type'] == 'Internship' %}selected{% endif %}>
-                    Internship
-                </option>
-
-            </select>
-        </div>
-
-        <div>
-            <label>Nhóm nghề</label>
-
-            <select name="category">
-
-                <option value="Backend Development">Backend Development</option>
-                <option value="Frontend Development">Frontend Development</option>
-                <option value="Full Stack Development">Full Stack Development</option>
-                <option value="Data">Data</option>
-                <option value="AI / Machine Learning">AI / Machine Learning</option>
-                <option value="DevOps / Cloud">DevOps / Cloud</option>
-                <option value="Cybersecurity">Cybersecurity</option>
-                <option value="Mobile Development">Mobile Development</option>
-                <option value="Game Development">Game Development</option>
-                <option value="Network / System">Network / System</option>
-
-            </select>
-        </div>
-
-        <div>
-            <label>Mô tả công việc</label>
-
-            <textarea
-                name="description"
-                rows="6"
-            >{{ job['description'] or '' }}</textarea>
-        </div>
-
-        <br>
-
-        <button type="submit">Lưu thay đổi</button>
-
-    </form>
-
-    <br>
-
-    <a href="{{ url_for('jobs') }}">Quay lại</a>
-
-</body>
-</html>
+    </div>
+</main>
+{% endblock %}

@@ -13,6 +13,16 @@
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet"
+        href="{{ url_for('static', filename='css/pro-ui.css') }}">
+    <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/chatbot.css') }}">
+
+
 </head>
 
 <body>
@@ -80,6 +90,16 @@
                         Đăng xuất
                     </a>
                 </li>
+                
+                {% if session.get('user_id') and session.get('role') == 'admin' %}
+                <li class="nav-item">
+                    <a class="nav-link admin-nav-link"
+                    href="{{ url_for('admin_dashboard') }}">
+                        <i class="bi bi-shield-lock-fill me-2"></i>
+                        Admin Panel
+                    </a>
+                </li>
+                {% endif %}
 
             </ul>
 
@@ -111,6 +131,14 @@
 </script>
 
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/pro-ui.js') }}" defer></script>
+
+{% include "components/chatbot.html" %}
+
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"
+        defer></script>
+
 
 </body>
 </html>

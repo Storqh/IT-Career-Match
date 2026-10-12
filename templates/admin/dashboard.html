@@ -1,238 +1,402 @@
-{% extends "base.html" %}
 
-{% block title %}
-Admin Dashboard - IT Career Match
-{% endblock %}
+{% extends "base.html" %}
 
 {% block content %}
 
-<div class="container py-5">
+<div class="container-fluid admin-dashboard py-4 px-3 px-lg-4">
 
-    <div class="mb-4">
-        <h1 class="fw-bold">
-            Admin Dashboard
-        </h1>
-        <a href="{{ url_for('admin_export_excel') }}"
-            class="btn btn-success">
-                📊 Xuất dữ liệu Excel
+    <!-- HEADER -->
+    <div class="admin-hero mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <div class="admin-eyebrow mb-2">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    ADMIN CONTROL CENTER
+                </div>
+
+                <h1 class="admin-heading mb-2">
+                    Admin Dashboard<span class="text-primary">.</span>
+                </h1>
+
+                <p class="admin-description mb-0">
+                    Chào mừng trở lại! Quản lý và theo dõi hoạt động của
+                    IT Career Match tại một nơi.
+                </p>
+            </div>
+
+            <div class="admin-badge">
+                <i class="bi bi-shield-check"></i>
+                Administrator
+            </div>
+        </div>
+
+        <div class="admin-toolbar mt-4">
+            <a href="{{ url_for('admin_jobs') }}"
+               class="admin-action admin-action-primary">
+                <i class="bi bi-briefcase-fill"></i>
+                Quản lý công việc
+                <i class="bi bi-arrow-up-right"></i>
             </a>
 
-        <p class="text-muted">
-            Tổng quan hệ thống IT Career Match
-        </p>
+            <a href="{{ url_for('admin_users') }}"
+               class="admin-action admin-action-light">
+                <i class="bi bi-people-fill"></i>
+                Quản lý người dùng
+            </a>
+
+            <a href="/admin/export/excel"
+               class="admin-action admin-action-light">
+                <i class="bi bi-file-earmark-excel-fill text-success"></i>
+                Xuất dữ liệu Excel
+            </a>
+        </div>
     </div>
 
+    <!-- SECTION TITLE -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="admin-section-title mb-1">Tổng quan hệ thống</h4>
+            <p class="admin-section-subtitle mb-0">
+                Các chỉ số hoạt động của nền tảng
+            </p>
+        </div>
+        <span class="admin-live-indicator">
+            <span class="admin-live-dot"></span>
+            System Overview
+        </span>
+    </div>
 
-    <div class="row g-4">
+    <!-- STATISTICS -->
+    <div class="row g-3 mb-4">
 
-        <div class="col-md-6 col-xl-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body p-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="admin-stat-card">
+                <div class="admin-stat-top">
+                    <div class="admin-stat-icon icon-blue">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <span class="admin-stat-tag">Users</span>
+                </div>
+                <div class="admin-stat-label">Tổng người dùng</div>
+                <div class="admin-stat-value">
+                    {{ total_users | default(0) }}
+                </div>
+                <div class="admin-stat-footer">
+                    <i class="bi bi-person-check"></i>
+                    Tài khoản trong hệ thống
+                </div>
+            </div>
+        </div>
 
-                    <p class="text-muted mb-1">
-                        Người dùng
-                    </p>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="admin-stat-card">
+                <div class="admin-stat-top">
+                    <div class="admin-stat-icon icon-purple">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <span class="admin-stat-tag">Students</span>
+                </div>
+                <div class="admin-stat-label">Sinh viên</div>
+                <div class="admin-stat-value">
+                    {{ total_students | default(0) }}
+                </div>
+                <div class="admin-stat-footer">
+                    <i class="bi bi-person-badge"></i>
+                    Tài khoản Student
+                </div>
+            </div>
+        </div>
 
-                    <h2 class="fw-bold">
-                        {{ total_users }}
-                    </h2>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="admin-stat-card">
+                <div class="admin-stat-top">
+                    <div class="admin-stat-icon icon-orange">
+                        <i class="bi bi-briefcase-fill"></i>
+                    </div>
+                    <span class="admin-stat-tag">Jobs</span>
+                </div>
+                <div class="admin-stat-label">Việc làm</div>
+                <div class="admin-stat-value">
+                    {{ total_jobs | default(0) }}
+                </div>
+                <div class="admin-stat-footer">
+                    <i class="bi bi-collection"></i>
+                    Cơ hội nghề nghiệp
+                </div>
+            </div>
+        </div>
 
-                    <a href="{{ url_for('admin_users') }}">
-                        Quản lý người dùng →
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="admin-stat-card">
+                <div class="admin-stat-top">
+                    <div class="admin-stat-icon icon-green">
+                        <i class="bi bi-file-earmark-person-fill"></i>
+                    </div>
+                    <span class="admin-stat-tag">CVs</span>
+                </div>
+                <div class="admin-stat-label">CV đã tải lên</div>
+                <div class="admin-stat-value">
+                    {{ total_cvs | default(0) }}
+                </div>
+                <div class="admin-stat-footer">
+                    <i class="bi bi-file-earmark-check"></i>
+                    Hồ sơ được lưu trữ
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SECONDARY STATS -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-6">
+            <div class="admin-mini-card">
+                <div class="admin-mini-icon icon-indigo">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="admin-mini-label">Tài khoản quản trị</div>
+                    <div class="admin-mini-value">
+                        {{ total_admins | default(0) }}
+                    </div>
+                </div>
+                <span class="admin-mini-chip">Admins</span>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="admin-mini-card">
+                <div class="admin-mini-icon icon-cyan">
+                    <i class="bi bi-send-check-fill"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="admin-mini-label">Đơn ứng tuyển</div>
+                    <div class="admin-mini-value">
+                        {{ total_applications | default(0) }}
+                    </div>
+                </div>
+                <span class="admin-mini-chip">Applications</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MANAGEMENT -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-lg-7">
+            <div class="admin-panel h-100">
+                <div class="admin-panel-heading">
+                    <div>
+                        <h5 class="fw-bold mb-1">Quản lý hệ thống</h5>
+                        <p class="text-muted small mb-0">
+                            Truy cập nhanh các chức năng quản trị
+                        </p>
+                    </div>
+                    <div class="admin-panel-icon">
+                        <i class="bi bi-sliders"></i>
+                    </div>
+                </div>
+
+                <div class="admin-management-grid">
+
+                    <a href="{{ url_for('admin_users') }}"
+                       class="admin-management-item">
+                        <div class="admin-management-icon icon-blue">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Người dùng</div>
+                            <div class="text-muted small">
+                                Xem, tìm kiếm và phân quyền
+                            </div>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </a>
+
+                    <a href="{{ url_for('admin_jobs') }}"
+                       class="admin-management-item">
+                        <div class="admin-management-icon icon-orange">
+                            <i class="bi bi-briefcase"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Công việc</div>
+                            <div class="text-muted small">
+                                Thêm, sửa và quản lý trạng thái
+                            </div>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </a>
+
+                    <a href="{{ url_for('admin_add_user') }}"
+                       class="admin-management-item">
+                        <div class="admin-management-icon icon-purple">
+                            <i class="bi bi-person-plus"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Tạo tài khoản</div>
+                            <div class="text-muted small">
+                                Thêm Student hoặc Admin mới
+                            </div>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </a>
+
+                    <a href="{{ url_for('add_job') }}"
+                       class="admin-management-item">
+                        <div class="admin-management-icon icon-green">
+                            <i class="bi bi-plus-circle"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">Đăng công việc</div>
+                            <div class="text-muted small">
+                                Tạo cơ hội việc làm mới
+                            </div>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted"></i>
                     </a>
 
                 </div>
             </div>
         </div>
 
-
-        <div class="col-md-6 col-xl-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body p-4">
-
-                    <p class="text-muted mb-1">
-                        Sinh viên
-                    </p>
-
-                    <h2 class="fw-bold">
-                        {{ total_students }}
-                    </h2>
-
-                </div>
-            </div>
-        </div>
-
-
-        <div class="col-md-6 col-xl-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body p-4">
-
-                    <p class="text-muted mb-1">
-                        Việc làm
-                    </p>
-
-                    <h2 class="fw-bold">
-                        {{ total_jobs }}
-                    </h2>
-
-                    <a href="{{ url_for('jobs') }}">
-                        Quản lý việc làm →
-                    </a>
-
-                </div>
-            </div>
-        </div>
-
-
-        <div class="col-md-6 col-xl-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body p-4">
-
-                    <p class="text-muted mb-1">
-                        CV đã tải lên
-                    </p>
-
-                    <h2 class="fw-bold">
-                        {{ total_cvs }}
-                    </h2>
-
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-
-    <div class="row g-4 mt-1">
-
-        <div class="col-md-6">
-
-            <div class="card border-0 shadow-sm">
-
-                <div class="card-body p-4">
-
-                    <p class="text-muted mb-1">
-                        Admin
-                    </p>
-
-                    <h3 class="fw-bold">
-                        {{ total_admins }}
-                    </h3>
-
+        <div class="col-lg-5">
+            <div class="admin-panel h-100">
+                <div class="admin-panel-heading">
+                    <div>
+                        <h5 class="fw-bold mb-1">Hoạt động quản trị</h5>
+                        <p class="text-muted small mb-0">
+                            Các công cụ dành cho Administrator
+                        </p>
+                    </div>
+                    <div class="admin-panel-icon">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
                 </div>
 
-            </div>
+                <div class="admin-info-box">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="admin-info-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">Admin Access</div>
+                            <div class="small text-muted">
+                                Quyền quản lý hệ thống
+                            </div>
+                        </div>
+                    </div>
 
-        </div>
-
-
-        <div class="col-md-6">
-
-            <div class="card border-0 shadow-sm">
-
-                <div class="card-body p-4">
-
-                    <p class="text-muted mb-1">
-                        Đơn ứng tuyển
+                    <p class="small text-muted mb-0">
+                        Bạn có thể quản lý tài khoản, cập nhật dữ liệu
+                        công việc và xuất báo cáo từ Dashboard.
                     </p>
-
-                    <h3 class="fw-bold">
-                        {{ total_applications }}
-                    </h3>
-
                 </div>
 
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="card border-0 shadow-sm mt-4">
-
-        <div class="card-body p-4">
-
-            <div class="d-flex justify-content-between mb-3">
-
-                <h4 class="fw-bold">
-                    Người dùng mới
-                </h4>
-
-                <a
-                    href="{{ url_for('admin_users') }}"
-                    class="btn btn-outline-primary btn-sm"
-                >
-                    Xem tất cả
+                <a href="/admin/export/excel"
+                   class="admin-export-card">
+                    <div class="admin-export-icon">
+                        <i class="bi bi-file-earmark-spreadsheet"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold">Xuất báo cáo Excel</div>
+                        <div class="small text-muted">
+                            Users, Jobs, Applications, Recommendations
+                        </div>
+                    </div>
+                    <i class="bi bi-download"></i>
                 </a>
-
             </div>
-
-
-            <div class="table-responsive">
-
-                <table class="table align-middle">
-
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Họ tên</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
-                        {% for user in recent_users %}
-
-                        <tr>
-
-                            <td>
-                                #{{ user.user_id }}
-                            </td>
-
-                            <td>
-                                {{ user.full_name or "Chưa cập nhật" }}
-                            </td>
-
-                            <td>
-                                {{ user.email }}
-                            </td>
-
-                            <td>
-                                <span class="badge bg-primary">
-                                    {{ user.role }}
-                                </span>
-                            </td>
-
-                            <td>
-
-                                <a
-                                    href="{{ url_for(
-                                        'admin_user_detail',
-                                        user_id=user.user_id
-                                    ) }}"
-                                    class="btn btn-sm btn-outline-primary"
-                                >
-                                    Chi tiết
-                                </a>
-
-                            </td>
-
-                        </tr>
-
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
         </div>
 
+    </div>
+
+    <!-- RECENT USERS -->
+    <div class="admin-panel mb-4">
+        <div class="admin-panel-heading">
+            <div>
+                <h5 class="fw-bold mb-1">Người dùng mới nhất</h5>
+                <p class="text-muted small mb-0">
+                    Danh sách tài khoản đăng ký gần đây
+                </p>
+            </div>
+
+            <a href="{{ url_for('admin_users') }}"
+               class="admin-view-all">
+                Xem tất cả
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table admin-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Người dùng</th>
+                        <th>Role</th>
+                        <th>Ngày tạo</th>
+                        <th class="text-end">Chi tiết</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for user in recent_users | default([]) %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="admin-user-avatar">
+                                    {{ (user.full_name or user.email or 'U')[0] | upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">
+                                        {{ user.full_name or 'Chưa cập nhật' }}
+                                    </div>
+                                    <div class="small text-muted">
+                                        {{ user.email }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if user.role == 'admin' %}
+                                <span class="admin-role-pill role-admin">
+                                    Admin
+                                </span>
+                            {% else %}
+                                <span class="admin-role-pill role-student">
+                                    Student
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-muted small">
+                            {{ user.created_at or '—' }}
+                        </td>
+
+                        <td class="text-end">
+                            <a href="{{ url_for('admin_user_detail', user_id=user.user_id) }}"
+                               class="admin-table-action">
+                                <i class="bi bi-arrow-up-right"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <i class="bi bi-people fs-2 d-block mb-2"></i>
+                            Chưa có dữ liệu người dùng gần đây.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="admin-footer text-center">
+        IT Career Match · Administration Panel
     </div>
 
 </div>

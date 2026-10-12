@@ -1,0 +1,846 @@
+
+/* ===========================================
+   IT CAREER MATCH
+   PROFESSIONAL UI - LARGE TEXT EDITION
+=========================================== */
+
+:root {
+    --icm-primary: #2563eb;
+    --icm-primary-dark: #1d4ed8;
+    --icm-primary-soft: #eff6ff;
+    --icm-ink: #172338;
+    --icm-muted: #64748b;
+    --icm-bg: #f6f8fc;
+    --icm-surface: #ffffff;
+    --icm-border: #e2e8f0;
+    --icm-radius: 17px;
+    --icm-shadow: 0 8px 30px rgba(15, 23, 42, .055);
+}
+
+/* ===========================================
+   GLOBAL TYPOGRAPHY
+=========================================== */
+
+html {
+    font-size: 17px;
+    scroll-behavior: smooth;
+}
+
+body {
+    background: var(--icm-bg);
+    color: var(--icm-ink);
+    font-family: Inter, -apple-system,
+                 BlinkMacSystemFont, "Segoe UI",
+                 Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+}
+
+p, li, td, th {
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--icm-ink);
+    font-weight: 750;
+    line-height: 1.3;
+    letter-spacing: -.4px;
+}
+
+h1 { font-size: 40px; }
+h2 { font-size: 33px; }
+h3 { font-size: 28px; }
+h4 { font-size: 24px; }
+h5 { font-size: 21px; }
+h6 { font-size: 18px; }
+
+small,
+.small {
+    font-size: 15px !important;
+    line-height: 1.6;
+}
+
+.text-muted {
+    color: var(--icm-muted) !important;
+}
+
+a {
+    transition: color .2s ease;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid #93c5fd;
+    outline-offset: 2px;
+}
+
+/* ===========================================
+   NAVBAR
+=========================================== */
+
+.navbar {
+    font-size: 16px;
+}
+
+.navbar-brand {
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+}
+
+.navbar .nav-link {
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px 14px;
+}
+
+.navbar .dropdown-item {
+    font-size: 16px;
+    padding: 10px 16px;
+}
+
+/* ===========================================
+   BUTTONS
+=========================================== */
+
+.btn {
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1.5;
+    border-radius: 11px;
+    padding: 12px 20px;
+    transition:
+        background-color .2s ease,
+        border-color .2s ease,
+        box-shadow .2s ease,
+        transform .2s ease;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: var(--icm-primary);
+    border-color: var(--icm-primary);
+}
+
+.btn-primary:hover {
+    background: var(--icm-primary-dark);
+    border-color: var(--icm-primary-dark);
+}
+
+.btn-sm {
+    font-size: 14px;
+    padding: 8px 13px;
+    border-radius: 9px;
+}
+
+.btn-lg {
+    font-size: 18px;
+    padding: 14px 26px;
+}
+
+.btn:disabled {
+    opacity: .7;
+    cursor: not-allowed;
+}
+
+/* ===========================================
+   FORMS
+=========================================== */
+
+.form-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 9px;
+}
+
+.form-control,
+.form-select {
+    font-size: 17px;
+    min-height: 50px;
+    padding: 12px 16px;
+    border: 1px solid #dce4ef;
+    border-radius: 12px;
+    background: #ffffff;
+    color: var(--icm-ink);
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
+}
+
+.form-control::placeholder {
+    color: #94a3b8;
+    font-size: 16px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, .10);
+}
+
+textarea.form-control {
+    min-height: 150px;
+    line-height: 1.75;
+    resize: vertical;
+}
+
+.form-text {
+    font-size: 14px;
+}
+
+.form-check-label {
+    font-size: 16px;
+}
+
+/* ===========================================
+   CARDS
+=========================================== */
+
+.card {
+    border-radius: var(--icm-radius);
+    border: 1px solid var(--icm-border);
+    background: var(--icm-surface);
+}
+
+.card-body {
+    padding: 24px;
+}
+
+.card-title {
+    font-size: 21px;
+    font-weight: 750;
+}
+
+.card-text {
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+.card.shadow-sm {
+    box-shadow: var(--icm-shadow) !important;
+}
+
+.job-card {
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+.job-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 36px rgba(15, 23, 42, .09) !important;
+}
+
+/* ===========================================
+   TABLES
+=========================================== */
+
+.table {
+    --bs-table-bg: transparent;
+    font-size: 16px;
+}
+
+.table thead th {
+    font-size: 15px;
+    font-weight: 750;
+    color: #475569;
+    padding: 15px;
+    vertical-align: middle;
+}
+
+.table tbody td {
+    font-size: 16px;
+    padding: 15px;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr {
+    transition: background-color .2s ease;
+}
+
+/* ===========================================
+   BADGES AND ALERTS
+=========================================== */
+
+.badge {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.alert {
+    font-size: 16px;
+    border-radius: 13px;
+    padding: 16px 20px;
+}
+
+.breadcrumb,
+.breadcrumb-item {
+    font-size: 15px;
+}
+
+/* ===========================================
+   ADD JOB PAGE
+=========================================== */
+
+.icm-page {
+    min-height: 75vh;
+}
+
+.icm-page-heading {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.icm-page-heading h1 {
+    font-size: clamp(30px, 3.5vw, 40px);
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.icm-page-heading p {
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.icm-heading-icon {
+    width: 66px;
+    height: 66px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    background: #e8f0ff;
+    color: #2563eb;
+    font-size: 30px;
+}
+
+.icm-eyebrow {
+    font-size: 13px;
+    font-weight: 800;
+    color: #2563eb;
+    letter-spacing: 1.5px;
+    margin-bottom: 7px;
+}
+
+/* ===========================================
+   PANELS
+=========================================== */
+
+.icm-panel {
+    background: #ffffff;
+    border: 1px solid var(--icm-border);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: var(--icm-shadow);
+}
+
+.icm-panel-heading {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 22px;
+    margin-bottom: 26px;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.icm-panel-heading h5 {
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.icm-panel-heading p {
+    font-size: 16px;
+}
+
+.icm-step {
+    width: 45px;
+    height: 45px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    background: #eaf2ff;
+    color: #2563eb;
+    font-size: 17px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+/* ===========================================
+   FORM ACTIONS
+=========================================== */
+
+.icm-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.icm-btn {
+    min-height: 51px;
+    padding: 13px 23px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* ===========================================
+   HELP PANEL
+=========================================== */
+
+.icm-help-panel {
+    position: sticky;
+    top: 24px;
+}
+
+.icm-help-panel h5 {
+    font-size: 22px;
+}
+
+.icm-help-panel p {
+    font-size: 16px;
+    line-height: 1.75;
+}
+
+.icm-help-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background: #fff4dd;
+    color: #d97706;
+    display: grid;
+    place-items: center;
+    font-size: 26px;
+}
+
+.icm-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px 0;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #475569;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.icm-tip:last-child {
+    border-bottom: none;
+}
+
+.icm-tip i {
+    color: #10b981;
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+/* ===========================================
+   ADMIN DASHBOARD TYPOGRAPHY
+=========================================== */
+
+.admin-dashboard {
+    font-size: 16px;
+}
+
+.admin-heading {
+    font-size: clamp(30px, 3.5vw, 42px);
+    font-weight: 800;
+}
+
+.admin-description {
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.admin-eyebrow {
+    font-size: 13px;
+}
+
+.admin-section-title {
+    font-size: 23px;
+}
+
+.admin-section-subtitle {
+    font-size: 16px;
+}
+
+.admin-stat-label {
+    font-size: 16px;
+}
+
+.admin-stat-value {
+    font-size: 40px;
+    font-weight: 800;
+}
+
+.admin-stat-footer {
+    font-size: 14px;
+}
+
+.admin-stat-tag {
+    font-size: 12px;
+}
+
+.admin-mini-label {
+    font-size: 15px;
+}
+
+.admin-mini-value {
+    font-size: 29px;
+}
+
+.admin-mini-chip {
+    font-size: 13px;
+}
+
+.admin-panel-heading h5 {
+    font-size: 21px;
+}
+
+.admin-management-item {
+    font-size: 16px;
+}
+
+.admin-management-item .small {
+    font-size: 14px !important;
+}
+
+.admin-action {
+    font-size: 16px;
+}
+
+.admin-badge {
+    font-size: 15px;
+}
+
+.admin-role-pill {
+    font-size: 13px;
+}
+
+.admin-table thead th {
+    font-size: 14px;
+}
+
+.admin-table tbody td {
+    font-size: 15px;
+}
+
+.admin-view-all {
+    font-size: 15px;
+}
+
+.admin-footer {
+    font-size: 14px;
+}
+
+/* ===========================================
+   TOAST NOTIFICATIONS
+=========================================== */
+
+.icm-toast-container {
+    position: fixed;
+    top: 22px;
+    right: 22px;
+    z-index: 1090;
+    display: grid;
+    gap: 10px;
+    width: min(380px, calc(100vw - 32px));
+}
+
+.icm-toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #172338;
+    color: #fff;
+    border-radius: 14px;
+    padding: 16px 19px;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, .15);
+    font-size: 16px;
+}
+
+.icm-toast.success {
+    background: #047857;
+}
+
+.icm-toast.error {
+    background: #b91c1c;
+}
+
+.icm-toast-close {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+/* ===========================================
+   BACK TO TOP
+=========================================== */
+
+.icm-back-to-top {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    width: 49px;
+    height: 49px;
+    border: none;
+    border-radius: 14px;
+    background: #2563eb;
+    color: #fff;
+    font-size: 20px;
+    box-shadow: 0 8px 22px rgba(37, 99, 235, .25);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: .2s ease;
+    z-index: 1000;
+}
+
+.icm-back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* ===========================================
+   RESPONSIVE
+=========================================== */
+
+@media (max-width: 992px) {
+    h1 { font-size: 34px; }
+    h2 { font-size: 29px; }
+
+    .icm-panel {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+
+    body {
+        font-size: 16px;
+    }
+
+    h1 { font-size: 30px; }
+    h2 { font-size: 26px; }
+    h3 { font-size: 23px; }
+
+    .icm-page-heading {
+        align-items: flex-start;
+    }
+
+    .icm-page-heading h1 {
+        font-size: 30px;
+    }
+
+    .icm-heading-icon {
+        width: 52px;
+        height: 52px;
+        font-size: 23px;
+    }
+
+    .icm-panel {
+        padding: 21px;
+    }
+
+    .icm-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .icm-form-actions .btn {
+        width: 100%;
+    }
+
+    .icm-help-panel {
+        position: static;
+    }
+
+    .admin-heading {
+        font-size: 30px;
+    }
+
+    .admin-stat-value {
+        font-size: 34px;
+    }
+
+    .icm-toast-container {
+        top: 12px;
+        right: 16px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}
+
+/* ADMIN PANEL NAVIGATION */
+
+.admin-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    color: #ffffff !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    padding: 10px 17px !important;
+    border-radius: 11px;
+    margin: 0 8px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, .18);
+    transition: all .2s ease;
+}
+
+.admin-nav-link:hover {
+    background: linear-gradient(135deg, #1d4ed8, #4338ca);
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 18px rgba(37, 99, 235, .25);
+}
+
+@media (max-width: 991px) {
+    .admin-nav-link {
+        margin: 8px 0;
+        justify-content: center;
+    }
+}
+
+/* ==========================================
+   IT CAREER MATCH - EDIT JOB
+========================================== */
+
+.edit-job-heading-icon {
+    background: #fff2e6;
+    color: #ea580c;
+}
+
+.edit-job-step {
+    background: #fff2e6;
+    color: #ea580c;
+}
+
+.edit-job-save-btn {
+    background: linear-gradient(135deg, #2563eb, #4f46e5);
+    border: none;
+    box-shadow: 0 7px 18px rgba(37, 99, 235, .2);
+}
+
+.edit-job-save-btn:hover {
+    background: linear-gradient(135deg, #1d4ed8, #4338ca);
+    box-shadow: 0 10px 25px rgba(37, 99, 235, .28);
+}
+
+.edit-job-help-icon {
+    background: #eaf2ff;
+    color: #2563eb;
+}
+
+.edit-job-summary {
+    padding: 14px 0;
+    border-bottom: 1px solid #edf1f6;
+}
+
+.edit-job-summary:last-of-type {
+    border-bottom: none;
+}
+
+.edit-job-summary-label {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.edit-job-summary-value {
+    color: #172338;
+    font-size: 17px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+    .edit-job-summary-value {
+        font-size: 16px;
+    }
+}
+
+/* DYNAMIC JOB DESCRIPTION */
+
+.job-description-section {
+    padding: 22px;
+    background: #f8faff;
+    border: 1px solid #dfe8f5;
+    border-radius: 15px;
+    margin-bottom: 16px;
+}
+
+.job-description-section strong {
+    font-size: 18px;
+    color: #172338;
+}
+
+.job-section-title {
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.job-section-content {
+    font-size: 17px;
+    line-height: 1.75;
+    min-height: 150px;
+}
+
+#addDescriptionSection {
+    font-size: 16px;
+    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: 11px;
+}
+/* ĐƯA MẸO ĐĂNG TUYỂN SANG CỘT PHẢI */
+@media (min-width: 992px) {
+    .icm-help-panel {
+        position: sticky;
+        top: 100px;
+        width: 100%;
+    }
+}
+/* Điện thoại: mẹo nằm bên dưới form */
+@media (max-width: 991px) {
+    .icm-help-panel {
+        position: static;
+    }
+}
+
+/* Đưa Back to Top lên trên nút chatbot */
+
+.icm-back-to-top {
+    right: 32px;
+    bottom: 105px;
+    z-index: 1000;
+}
+
+
+
