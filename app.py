@@ -269,7 +269,6 @@ def register():
                 999999
             )
         )
-
         # -----------------------------
         # SAVE TEMP REGISTER DATA
         # -----------------------------
@@ -501,117 +500,60 @@ def verify_otp():
 # =========================================================
 # RESEND OTP
 # =========================================================
-
-@app.route(
-    "/resend-otp",
-    methods=["POST"]
-)
+@app.route("/resend-otp", methods=["POST"])
 def resend_otp():
-
-    pending = session.get(
-        "pending_register"
-    )
+    pending = session.get("pending_register")
 
     if not pending:
-        return redirect(
-            url_for("register")
-        )
+        return redirect(url_for("register"))
 
-    # -----------------------------
-    # COOLDOWN
-    # -----------------------------
+    current_time = int(time.time())
+    last_sent = pending.get("otp_created_at", 0)
+    elapsed = current_time - last_sent
 
-    current_time = int(
-        time.time()
-    )
-
-    last_sent = pending.get(
-        "otp_created_at",
-        0
-    )
-
-    # Không cho gửi lại quá nhanh
-    if current_time - last_sent < 60:
-
-        remaining = (
-            60
-            - (current_time - last_sent)
-        )
+    # Chặn gửi lại trước 60 giây
+    if elapsed < 60:
+        remaining = 60 - elapsed
 
         return render_template(
             "verify_otp.html",
-            message=(
-                f"Vui lòng chờ {remaining} giây "
-                "trước khi gửi lại OTP."
-            ),
-            message_type="warning",
-            email=pending["email"]
+            email=pending["email"],
+            message=f"Vui lòng chờ {remaining} giây trước khi gửi lại OTP.",
+            message_type="warning"
         )
 
-    # -----------------------------
-    # NEW OTP
-    # -----------------------------
-
+    # Tạo OTP mới
     otp = str(
-        random.SystemRandom().randint(
-            100000,
-            999999
-        )
+        random.SystemRandom().randint(100000, 999999)
     )
 
-    # Lưu OTP cũ để phục hồi nếu gửi thất bại
-    old_otp = pending.get("otp")
-    old_created_at = pending.get(
-        "otp_created_at"
-    )
-
-    pending["otp"] = otp
-    pending["otp_created_at"] = current_time
-
-    session["pending_register"] = pending
-
-    # -----------------------------
-    # SEND NEW OTP
-    # -----------------------------
-
+    # Gửi email trước khi cập nhật OTP trong session
     try:
-
-        send_otp_email(
-            pending["email"],
-            otp
-        )
+        send_otp_email(pending["email"], otp)
 
     except Exception as error:
-
-        print(
-            "EMAIL API ERROR:",
-            repr(error)
-        )
-
-        # Phục hồi OTP cũ nếu API gửi thất bại
-        pending["otp"] = old_otp
-        pending["otp_created_at"] = old_created_at
-
-        session["pending_register"] = pending
+        print("EMAIL API ERROR:", repr(error))
 
         return render_template(
             "verify_otp.html",
-            message="Không thể gửi lại OTP.",
-            message_type="danger",
-            email=pending["email"]
+            email=pending["email"],
+            message="Không thể gửi lại OTP. Vui lòng thử lại.",
+            message_type="danger"
         )
+
+    # Chỉ cập nhật khi gửi email thành công
+    pending["otp"] = otp
+    pending["otp_created_at"] = int(time.time())
+
+    session["pending_register"] = pending
+    session.modified = True
 
     return render_template(
         "verify_otp.html",
-        message=(
-            "Mã OTP mới đã được gửi "
-            "đến email của bạn."
-        ),
-        message_type="success",
-        email=pending["email"]
+        email=pending["email"],
+        message="Mã OTP mới đã được gửi đến email của bạn.",
+        message_type="success"
     )
-
-
 # =========================================================
 # LOGIN
 # =========================================================

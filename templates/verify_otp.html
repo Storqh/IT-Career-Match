@@ -1,156 +1,326 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác minh OTP | IT Career Match</title>
 
-{% block title %}
-Xác minh OTP - IT Career Match
-{% endblock %}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #eef2ff, #dbeafe);
+            color: #1e293b;
+        }
 
-{% block content %}
+        .otp-container {
+            width: 100%;
+            max-width: 460px;
+            background: #ffffff;
+            padding: 38px 32px;
+            border-radius: 20px;
+            box-shadow: 0 15px 45px rgba(15, 23, 42, 0.12);
+        }
 
-<div class="container py-5">
+        .logo {
+            text-align: center;
+            font-size: 27px;
+            font-weight: 800;
+            color: #2563eb;
+            margin-bottom: 28px;
+        }
 
-    <div class="row justify-content-center">
+        .icon {
+            width: 76px;
+            height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: #eff6ff;
+            font-size: 36px;
+        }
 
-        <div class="col-md-6 col-lg-5">
+        h1 {
+            text-align: center;
+            font-size: 27px;
+            margin-bottom: 12px;
+            color: #0f172a;
+        }
 
-            <div class="card shadow-sm border-0">
+        .description {
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.7;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
 
-                <div class="card-body p-5 text-center">
+        .email {
+            color: #2563eb;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
 
-                    <div
-                        class="bg-primary bg-opacity-10
-                               rounded-circle d-inline-flex
-                               align-items-center
-                               justify-content-center mb-3"
-                        style="width:70px;height:70px;">
+        .message {
+            padding: 13px 15px;
+            margin-bottom: 18px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
 
-                        <span style="font-size:30px;">
-                            ✉️
-                        </span>
+        .message.success {
+            color: #166534;
+            background: #dcfce7;
+        }
 
-                    </div>
+        .message.warning {
+            color: #92400e;
+            background: #fef3c7;
+        }
 
+        .message.danger,
+        .message.error {
+            color: #991b1b;
+            background: #fee2e2;
+        }
 
-                    <h2 class="fw-bold">
-                        Xác minh email
-                    </h2>
+        .field-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 15px;
+            font-weight: 700;
+        }
 
+        .otp-input {
+            width: 100%;
+            height: 60px;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            outline: none;
+            padding: 10px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 10px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
 
-                    <p class="text-muted">
+        .otp-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+        }
 
-                        Chúng tôi đã gửi mã OTP 6 số đến
+        .hint {
+            margin-top: 10px;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.5;
+        }
 
-                        <br>
+        button {
+            width: 100%;
+            min-height: 48px;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
 
-                        <strong>
-                            {{ email }}
-                        </strong>
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
 
-                    </p>
+        .verify-button {
+            margin-top: 24px;
+            background: #2563eb;
+            color: white;
+        }
 
+        .verify-button:hover:not(:disabled) {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
 
-                    {% if message %}
+        .divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 25px 0;
+        }
 
-                    <div
-                        class="alert alert-{{ message_type|default('danger') }}
-                               alert-dismissible fade show text-start">
+        .resend-text {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
 
-                        {{ message }}
+        .resend-button {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
 
-                        <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="alert">
-                        </button>
+        .resend-button:hover:not(:disabled) {
+            background: #dbeafe;
+        }
 
-                    </div>
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 22px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 14px;
+        }
 
-                    {% endif %}
+        .back-link:hover {
+            color: #2563eb;
+        }
 
+        @media (max-width: 480px) {
+            .otp-container {
+                padding: 30px 22px;
+            }
 
-                    <form method="POST">
+            h1 {
+                font-size: 24px;
+            }
 
-                        <div class="mb-4">
+            .otp-input {
+                font-size: 25px;
+                letter-spacing: 8px;
+            }
+        }
+    </style>
+</head>
 
-                            <input
-                                type="text"
-                                name="otp"
-                                class="form-control form-control-lg
-                                       text-center fw-bold"
-                                placeholder="000000"
-                                maxlength="6"
-                                inputmode="numeric"
-                                pattern="[0-9]{6}"
-                                autocomplete="one-time-code"
-                                style="letter-spacing:10px;"
-                                required>
+<body>
+    <main class="otp-container">
+        <div class="logo">IT Career Match</div>
 
-                        </div>
+        <div class="icon">✉️</div>
 
+        <h1>Xác minh email</h1>
 
-                        <div class="d-grid">
+        <p class="description">
+            Chúng tôi đã gửi mã xác minh đến email
+            <br>
+            <span class="email">{{ email }}</span>
+            <br>
+            Vui lòng nhập mã OTP gồm 6 chữ số để hoàn tất đăng ký.
+        </p>
 
-                            <button
-                                type="submit"
-                                class="btn btn-primary btn-lg">
-
-                                Xác minh OTP
-
-                            </button>
-
-                        </div>
-
-                    </form>
-
-
-                    <p class="text-muted small mt-3">
-                        Mã OTP có hiệu lực trong 5 phút.
-                    </p>
-
-
-                    <hr>
-
-
-                    <p class="text-muted mb-2">
-                        Không nhận được mã?
-                    </p>
-
-
-                    <form
-                        method="POST"
-                        action="{{ url_for('resend_otp') }}">
-
-                        <button
-                            type="submit"
-                            class="btn btn-outline-primary">
-
-                            Gửi lại OTP
-
-                        </button>
-
-                    </form>
-
-
-                    <div class="mt-4">
-
-                        <a
-                            href="{{ url_for('register') }}"
-                            class="text-decoration-none">
-
-                            ← Quay lại đăng ký
-
-                        </a>
-
-                    </div>
-
-                </div>
-
+        {% if message %}
+            <div class="message {{ message_type | default('warning') }}" role="alert">
+                {{ message }}
             </div>
+        {% endif %}
 
-        </div>
+        <!-- FORM XÁC MINH OTP -->
+        <form method="POST"
+              action="{{ url_for('verify_otp') }}"
+              id="verifyForm">
 
-    </div>
+            <label class="field-label" for="otp">
+                Mã xác minh OTP
+            </label>
 
-</div>
+            <input
+                type="text"
+                id="otp"
+                name="otp"
+                class="otp-input"
+                placeholder="000000"
+                inputmode="numeric"
+                pattern="[0-9]{6}"
+                minlength="6"
+                maxlength="6"
+                autocomplete="one-time-code"
+                aria-describedby="otpHint"
+                required
+                autofocus
+            >
 
-{% endblock %}
+            <p class="hint" id="otpHint">
+                Mã OTP có hiệu lực trong 5 phút.
+            </p>
+
+            <button type="submit" class="verify-button" id="verifyButton">
+                Xác minh OTP
+            </button>
+        </form>
+
+        <div class="divider"></div>
+
+        <p class="resend-text">
+            Chưa nhận được mã? Bạn có thể yêu cầu gửi lại sau 60 giây.
+        </p>
+
+        <!-- FORM GỬI LẠI OTP -->
+        <form method="POST"
+              action="{{ url_for('resend_otp') }}"
+              id="resendForm">
+
+            <button type="submit" class="resend-button" id="resendButton">
+                Gửi lại OTP
+            </button>
+        </form>
+
+        <a href="{{ url_for('register') }}" class="back-link">
+            ← Quay lại trang đăng ký
+        </a>
+    </main>
+
+    <script>
+        const otpInput = document.getElementById("otp");
+        const verifyForm = document.getElementById("verifyForm");
+        const verifyButton = document.getElementById("verifyButton");
+        const resendForm = document.getElementById("resendForm");
+        const resendButton = document.getElementById("resendButton");
+
+        // Chỉ cho phép nhập chữ số và tối đa 6 ký tự.
+        otpInput.addEventListener("input", function () {
+            this.value = this.value.replace(/\D/g, "").slice(0, 6);
+        });
+
+        // Kiểm tra dữ liệu trước khi gửi yêu cầu xác minh.
+        verifyForm.addEventListener("submit", function (event) {
+            const otp = otpInput.value.trim();
+
+            if (!/^\d{6}$/.test(otp)) {
+                event.preventDefault();
+                alert("Vui lòng nhập mã OTP gồm đúng 6 chữ số.");
+                otpInput.focus();
+                return;
+            }
+
+            verifyButton.disabled = true;
+            verifyButton.textContent = "Đang xác minh...";
+        });
+
+        // Tránh gửi form gửi lại nhiều lần do bấm liên tục.
+        resendForm.addEventListener("submit", function () {
+            resendButton.disabled = true;
+            resendButton.textContent = "Đang gửi OTP...";
+        });
+    </script>
+</body>
+</html>
