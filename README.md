@@ -654,7 +654,7 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-## 🔑 4. How to Get Environment Variables
+## 4. How to Get Environment Variables
 
 Để chạy đầy đủ chức năng đăng nhập, quản lý session và xác minh email OTP, người dùng cần tự cấu hình các biến môi trường sau.
 
