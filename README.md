@@ -654,22 +654,109 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-## 4. Environment Variables
+## 🔑 4. How to Get Environment Variables
 
-Tạo file:
+Để chạy đầy đủ chức năng đăng nhập, quản lý session và xác minh email OTP, người dùng cần tự cấu hình các biến môi trường sau.
 
-``` text
-.env
-```
-
-Nội dung:
-
-``` env
+```env
 SECRET_KEY=your_secret_key
 BREVO_API_KEY=your_brevo_api_key
 ```
 
-> Không commit `.env`, API key hoặc Secret Key lên GitHub.
+### 4.1. Generate Flask SECRET_KEY
+
+`SECRET_KEY` được Flask sử dụng để ký session và bảo vệ dữ liệu session khỏi bị chỉnh sửa trái phép.
+
+**Cách tạo:**
+
+1. Cài đặt Python trên máy tính.
+2. Mở Terminal hoặc Command Prompt.
+3. Chạy lệnh:
+
+   ```bash
+   python -c "import secrets; print(secrets.token_hex(32))"
+   ```
+
+4. Sao chép chuỗi được tạo ra.
+5. Dán chuỗi đó vào biến `SECRET_KEY` trong file `.env`.
+
+Ví dụ:
+
+```env
+SECRET_KEY=paste_your_generated_secret_key_here
+```
+
+Mỗi người dùng nên tạo một khóa riêng. Không sử dụng khóa ví dụ làm khóa thật.
+
+### 4.2. Get Brevo API Key
+
+Brevo API Key được sử dụng để kết nối ứng dụng với Brevo và gửi email xác minh OTP.
+
+**Các bước thực hiện:**
+
+1. Truy cập [Brevo](https://www.brevo.com/) và đăng nhập hoặc tạo tài khoản.
+2. Mở phần **Settings** trong tài khoản.
+3. Chọn **SMTP & API** → **API Keys & MCP**.
+4. Nhấn **Generate a new API key**.
+5. Đặt tên dễ nhận biết, ví dụ `IT Career Match`.
+6. Chọn thời hạn sử dụng phù hợp và tạo khóa.
+7. Sao chép API Key ngay khi khóa được hiển thị và lưu ở nơi an toàn.
+8. Dán khóa vào biến `BREVO_API_KEY` trong file `.env`.
+
+Tài liệu chính thức: [Create and manage your API keys – Brevo](https://help.brevo.com/hc/en-us/articles/209467485-Create-and-manage-your-API-keys).
+
+**Important:** Brevo chỉ hiển thị đầy đủ API Key khi tạo. Nếu làm mất khóa, bạn cần tạo khóa mới.
+
+### 4.3. Configure the `.env` File
+
+Tạo file `.env` ở thư mục gốc của dự án, cùng cấp với `app.py`.
+
+```text
+IT-Career-Match/
+├── app.py
+├── .env
+├── .gitignore
+├── requirements.txt
+└── README.md
+```
+
+Nội dung file `.env`:
+
+```env
+SECRET_KEY=paste_your_generated_secret_key_here
+BREVO_API_KEY=paste_your_brevo_api_key_here
+```
+
+Thay các giá trị ví dụ bằng khóa thực tế của bạn.
+
+### 4.4. Keep Your Keys Secure
+
+- Không đăng `SECRET_KEY` hoặc `BREVO_API_KEY` lên GitHub.
+- Không gửi API Key trong ảnh chụp màn hình hoặc bài đăng công khai.
+- Đảm bảo `.env` nằm trong `.gitignore`.
+- Nếu khóa bị lộ, hãy thay khóa bị lộ và cập nhật cấu hình ứng dụng.
+
+Ví dụ `.gitignore`:
+
+```gitignore
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+```
+
+### 4.5. Troubleshooting
+
+Nếu email OTP không được gửi:
+
+- Kiểm tra `BREVO_API_KEY` đã được nhập đúng chưa.
+- Kiểm tra tài khoản Brevo và quyền sử dụng API.
+- Kiểm tra cấu hình gửi email trong dự án.
+- Kiểm tra log lỗi trong Terminal.
+
+Nếu ứng dụng báo lỗi liên quan đến session hoặc secret key, hãy kiểm tra `SECRET_KEY` đã được cấu hình và Flask đã đọc biến môi trường đúng cách chưa.
+
 
 ## 5. Run Application
 
