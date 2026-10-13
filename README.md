@@ -872,7 +872,7 @@ Dự án được xây dựng nhằm nghiên cứu và áp dụng:
 
 # 👨‍💻 Author
 
-**NHóm 4**
+**Nhóm 4**
 
 GitHub: **Storqh**
 
