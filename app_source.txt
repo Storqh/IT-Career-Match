@@ -1,0 +1,2904 @@
+﻿import os
+import random
+import time
+import requests
+import re
+import unicodedata
+from io import BytesIO
+from flask import send_file
+from openpyxl import Workbook   
+from openpyxl.styles import Font, Alignment
+from dotenv import load_dotenv
+
+from flask import (
+    Flask,
+    render_template,
+    request,
+    session,
+    redirect,
+    jsonify,
+    url_for
+)
+
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
+)
+
+from werkzeug.utils import secure_filename
+
+from database.database import get_connection
+
+from ai.recommender import (
+    recommend_jobs,
+    predict_career
+)
+
+from ai.text_preprocessing import preprocess_text
+from ai.skill_extractor import extract_skills
+from ai.cv_parser import read_pdf, read_docx
+
+
+# =========================================================
+# FLASK CONFIG
+# =========================================================
+load_dotenv()
+app = Flask(__name__)
+
+app.secret_key = os.environ.get(
+    "SECRET_KEY",
+    "dev-secret-key-change-this"
+)
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
+UPLOAD_FOLDER = "uploads"
+
+ALLOWED_EXTENSIONS = {
+    "pdf",
+    "docx"
+}
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+# Giá»›i háº¡n CV tá»‘i Ä‘a 5 MB
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
+
+# Tá»± táº¡o thÆ° má»¥c uploads náº¿u chÆ°a tá»“n táº¡i
+os.makedirs(
+    UPLOAD_FOLDER,
+    exist_ok=True
+)
+# =========================================================
+# HELPER FUNCTIONS
+# =========================================================
+
+def allowed_file(filename):
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower()
+        in ALLOWED_EXTENSIONS
+    )
+
+def is_admin():
+    return (
+        "user_id" in session
+        and session.get("role") == "admin"
+    )
+def send_otp_email(receiver_email, otp):
+    if not BREVO_API_KEY:
+        print("BREVO_API_KEY chÆ°a Ä‘Æ°á»£c cáº¥u hÃ¬nh.")
+        return False
+
+    url = "https://api.brevo.com/v3/smtp/email"
+
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+
+    data = {
+        "sender": {
+            "name": "IT Career Match",
+            "email": "tranquochuy8645@gmail.com"
+        },
+        "to": [
+            {
+                "email": receiver_email
+            }
+        ],
+        "subject": "MÃ£ OTP Ä‘Äƒng kÃ½ IT Career Match",
+        "htmlContent": f"""
+        <html>
+            <body>
+                <h2>IT Career Match</h2>
+
+                <p>MÃ£ OTP Ä‘Äƒng kÃ½ tÃ i khoáº£n cá»§a báº¡n lÃ :</p>
+
+                <h1>{otp}</h1>
+
+                <p>MÃ£ OTP cÃ³ hiá»‡u lá»±c trong 5 phÃºt.</p>
+
+                <p>Náº¿u báº¡n khÃ´ng thá»±c hiá»‡n Ä‘Äƒng kÃ½, hÃ£y bá» qua email nÃ y.</p>
+            </body>
+        </html>
+        """
+    }
+
+    try:
+        response = requests.post(
+            url,
+            headers=headers,
+            json=data,
+            timeout=15
+        )
+
+        if response.status_code in (200, 201, 202):
+            print("OTP Ä‘Ã£ gá»­i tá»›i:", receiver_email)
+            return True
+
+        print("BREVO ERROR:", response.status_code)
+        print(response.text)
+        return False
+
+    except requests.RequestException as e:
+        print("BREVO REQUEST ERROR:", e)
+        return False
+
+# =========================================================
+# HOME
+# =========================================================
+
+@app.route("/")
+def index():
+    return render_template(
+        "index.html"
+    )
+
+
+# =========================================================
+# REGISTER
+# =========================================================
+
+@app.route(
+    "/register",
+    methods=["GET", "POST"]
+)
+def register():
+
+    # Náº¿u Ä‘Ã£ login
+    if "user_id" in session:
+        return redirect(
+            url_for("dashboard")
+        )
+
+    if request.method == "POST":
+
+        # -----------------------------
+        # GET FORM DATA
+        # -----------------------------
+
+        full_name = request.form.get(
+            "full_name",
+            ""
+        ).strip()
+
+        email = request.form.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        confirm_password = request.form.get(
+            "confirm_password",
+            ""
+        )
+
+        # -----------------------------
+        # VALIDATION
+        # -----------------------------
+
+        if (
+            not full_name
+            or not email
+            or not password
+            or not confirm_password
+        ):
+            return render_template(
+                "register.html",
+                message="Vui lÃ²ng nháº­p Ä‘áº§y Ä‘á»§ thÃ´ng tin.",
+                message_type="warning",
+                full_name=full_name,
+                email=email
+            )
+
+        if len(password) < 6:
+            return render_template(
+                "register.html",
+                message="Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 6 kÃ½ tá»±.",
+                message_type="danger",
+                full_name=full_name,
+                email=email
+            )
+
+        if password != confirm_password:
+            return render_template(
+                "register.html",
+                message="XÃ¡c nháº­n máº­t kháº©u khÃ´ng khá»›p.",
+                message_type="danger",
+                full_name=full_name,
+                email=email
+            )
+
+        # -----------------------------
+        # CHECK EXISTING EMAIL
+        # -----------------------------
+
+        connection = get_connection()
+
+        existing_user = connection.execute(
+            """
+            SELECT user_id
+            FROM users
+            WHERE email = ?
+            """,
+            (email,)
+        ).fetchone()
+
+        connection.close()
+
+        if existing_user:
+            return render_template(
+                "register.html",
+                message="Email nÃ y Ä‘Ã£ Ä‘Æ°á»£c Ä‘Äƒng kÃ½.",
+                message_type="danger",
+                full_name=full_name,
+                email=email
+            )
+
+        # -----------------------------
+        # CREATE OTP
+        # -----------------------------
+
+        otp = str(
+            random.SystemRandom().randint(
+                100000,
+                999999
+            )
+        )
+        # -----------------------------
+        # SAVE TEMP REGISTER DATA
+        # -----------------------------
+
+        session["pending_register"] = {
+            "full_name": full_name,
+            "email": email,
+            "password_hash":
+                generate_password_hash(password),
+            "otp": otp,
+            "otp_created_at": int(time.time())
+        }
+
+        # -----------------------------
+        # SEND OTP
+        # -----------------------------
+
+        try:
+
+            send_otp_email(
+                email,
+                otp
+            )
+
+        except Exception as error:
+
+            print(
+                "EMAIL API ERROR:",
+                repr(error)
+            )
+
+            session.pop(
+                "pending_register",
+                None
+            )
+
+            return render_template(
+                "register.html",
+                message=(
+                    "KhÃ´ng thá»ƒ gá»­i OTP. "
+                    "Vui lÃ²ng thá»­ láº¡i."
+                ),
+                message_type="danger",
+                full_name=full_name,
+                email=email
+            )
+
+        return redirect(
+            url_for("verify_otp")
+        )
+
+    return render_template(
+        "register.html"
+    )
+
+
+# =========================================================
+# VERIFY OTP
+# =========================================================
+
+@app.route(
+    "/verify-otp",
+    methods=["GET", "POST"]
+)
+def verify_otp():
+
+    pending = session.get(
+        "pending_register"
+    )
+
+    if not pending:
+        return redirect(
+            url_for("register")
+        )
+
+    if request.method == "POST":
+
+        user_otp = request.form.get(
+            "otp",
+            ""
+        ).strip()
+
+        # -----------------------------
+        # EMPTY OTP
+        # -----------------------------
+
+        if not user_otp:
+            return render_template(
+                "verify_otp.html",
+                message="Vui lÃ²ng nháº­p mÃ£ OTP.",
+                message_type="warning",
+                email=pending["email"]
+            )
+
+        # -----------------------------
+        # CHECK OTP FORMAT
+        # -----------------------------
+
+        if (
+            not user_otp.isdigit()
+            or len(user_otp) != 6
+        ):
+            return render_template(
+                "verify_otp.html",
+                message="OTP pháº£i gá»“m 6 chá»¯ sá»‘.",
+                message_type="danger",
+                email=pending["email"]
+            )
+
+        # -----------------------------
+        # CHECK EXPIRED
+        # -----------------------------
+
+        current_time = int(
+            time.time()
+        )
+
+        if (
+            current_time
+            - pending["otp_created_at"]
+            > 300
+        ):
+            return render_template(
+                "verify_otp.html",
+                message=(
+                    "MÃ£ OTP Ä‘Ã£ háº¿t háº¡n. "
+                    "Vui lÃ²ng gá»­i láº¡i mÃ£."
+                ),
+                message_type="danger",
+                email=pending["email"]
+            )
+
+        # -----------------------------
+        # CHECK OTP
+        # -----------------------------
+
+        if user_otp != pending["otp"]:
+            return render_template(
+                "verify_otp.html",
+                message="MÃ£ OTP khÃ´ng chÃ­nh xÃ¡c.",
+                message_type="danger",
+                email=pending["email"]
+            )
+
+        # -----------------------------
+        # CREATE USER
+        # -----------------------------
+
+        connection = get_connection()
+
+        try:
+
+            cursor = connection.execute(
+                """
+                INSERT INTO users
+                (email, password, role)
+                VALUES (?, ?, ?)
+                """,
+                (
+                    pending["email"],
+                    pending["password_hash"],
+                    "student"
+                )
+            )
+
+            user_id = cursor.lastrowid
+
+            # -------------------------
+            # CREATE PROFILE
+            # -------------------------
+
+            connection.execute(
+                """
+                INSERT INTO student_profiles
+                (user_id, full_name)
+                VALUES (?, ?)
+                """,
+                (
+                    user_id,
+                    pending["full_name"]
+                )
+            )
+
+            connection.commit()
+
+        except Exception as error:
+
+            connection.rollback()
+            connection.close()
+
+            print(
+                "REGISTER ERROR:",
+                repr(error)
+            )
+
+            return render_template(
+                "verify_otp.html",
+                message=(
+                    "KhÃ´ng thá»ƒ táº¡o tÃ i khoáº£n. "
+                    "Vui lÃ²ng thá»­ láº¡i."
+                ),
+                message_type="danger",
+                email=pending["email"]
+            )
+
+        connection.close()
+
+        # XÃ³a pending register
+        session.pop(
+            "pending_register",
+            None
+        )
+
+        return render_template(
+            "login.html",
+            message=(
+                "XÃ¡c minh email thÃ nh cÃ´ng. "
+                "Báº¡n cÃ³ thá»ƒ Ä‘Äƒng nháº­p."
+            ),
+            message_type="success"
+        )
+
+    return render_template(
+        "verify_otp.html",
+        email=pending["email"]
+    )
+
+
+# =========================================================
+# RESEND OTP
+# =========================================================
+@app.route("/resend-otp", methods=["POST"])
+def resend_otp():
+    pending = session.get("pending_register")
+
+    if not pending:
+        return redirect(url_for("register"))
+
+    current_time = int(time.time())
+    last_sent = pending.get("otp_created_at", 0)
+    elapsed = current_time - last_sent
+
+    # Cháº·n gá»­i láº¡i trÆ°á»›c 60 giÃ¢y
+    if elapsed < 60:
+        remaining = 60 - elapsed
+
+        return render_template(
+            "verify_otp.html",
+            email=pending["email"],
+            message=f"Vui lÃ²ng chá» {remaining} giÃ¢y trÆ°á»›c khi gá»­i láº¡i OTP.",
+            message_type="warning"
+        )
+
+    # Táº¡o OTP má»›i
+    otp = str(
+        random.SystemRandom().randint(100000, 999999)
+    )
+
+    # Gá»­i email trÆ°á»›c khi cáº­p nháº­t OTP trong session
+    try:
+        send_otp_email(pending["email"], otp)
+
+    except Exception as error:
+        print("EMAIL API ERROR:", repr(error))
+
+        return render_template(
+            "verify_otp.html",
+            email=pending["email"],
+            message="KhÃ´ng thá»ƒ gá»­i láº¡i OTP. Vui lÃ²ng thá»­ láº¡i.",
+            message_type="danger"
+        )
+
+    # Chá»‰ cáº­p nháº­t khi gá»­i email thÃ nh cÃ´ng
+    pending["otp"] = otp
+    pending["otp_created_at"] = int(time.time())
+
+    session["pending_register"] = pending
+    session.modified = True
+
+    return render_template(
+        "verify_otp.html",
+        email=pending["email"],
+        message="MÃ£ OTP má»›i Ä‘Ã£ Ä‘Æ°á»£c gá»­i Ä‘áº¿n email cá»§a báº¡n.",
+        message_type="success"
+    )
+# =========================================================
+# LOGIN
+# =========================================================
+
+@app.route(
+    "/login",
+    methods=["GET", "POST"]
+)
+def login():
+
+    if "user_id" in session:
+        return redirect(
+            url_for("dashboard")
+        )
+
+    if request.method == "POST":
+
+        email = request.form.get(
+            "email",
+            ""
+        ).strip().lower()
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        # -----------------------------
+        # VALIDATION
+        # -----------------------------
+
+        if not email or not password:
+            return render_template(
+                "login.html",
+                message=(
+                    "Vui lÃ²ng nháº­p Ä‘áº§y Ä‘á»§ "
+                    "email vÃ  máº­t kháº©u."
+                ),
+                message_type="warning",
+                email=email
+            )
+
+        # -----------------------------
+        # FIND USER
+        # -----------------------------
+
+        connection = get_connection()
+
+        user = connection.execute(
+            """
+            SELECT *
+            FROM users
+            WHERE email = ?
+            """,
+            (email,)
+        ).fetchone()
+
+        connection.close()
+
+        if user is None:
+            return render_template(
+                "login.html",
+                message=(
+                    "KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n "
+                    "vá»›i email nÃ y."
+                ),
+                message_type="danger",
+                email=email
+            )
+
+        # -----------------------------
+        # CHECK PASSWORD
+        # -----------------------------
+
+        if not check_password_hash(
+            user["password"],
+            password
+        ):
+            return render_template(
+                "login.html",
+                message=(
+                    "Máº­t kháº©u khÃ´ng chÃ­nh xÃ¡c. "
+                    "Vui lÃ²ng thá»­ láº¡i."
+                ),
+                message_type="danger",
+                email=email
+            )
+
+        # -----------------------------
+        # LOGIN SUCCESS
+        # -----------------------------
+
+        session["user_id"] = user["user_id"]
+        session["email"] = user["email"]
+        session["role"] = user["role"]
+
+        return redirect(
+            url_for("dashboard")
+        )
+
+    return render_template(
+        "login.html"
+    )
+
+
+# =========================================================
+# DASHBOARD
+# =========================================================
+
+@app.route("/dashboard")
+def dashboard():
+
+    if "user_id" not in session:
+        return redirect(
+            url_for("login")
+        )
+
+    return render_template(
+        "dashboard.html",
+        email=session.get("email")
+    )
+
+
+# =========================================================
+# LOGOUT
+# =========================================================
+
+@app.route("/logout")
+def logout():
+
+    session.clear()
+
+    return redirect(
+        url_for("login")
+    )
+
+
+# =========================================================
+# PROFILE
+# =========================================================
+
+@app.route(
+    "/profile",
+    methods=["GET", "POST"]
+)
+def profile():
+
+    if "user_id" not in session:
+        return redirect(
+            url_for("login")
+        )
+
+    user_id = session["user_id"]
+
+    connection = get_connection()
+
+    # -----------------------------
+    # UPDATE PROFILE
+    # -----------------------------
+
+    if request.method == "POST":
+
+        full_name = request.form.get(
+            "full_name",
+            ""
+        ).strip()
+
+        date_of_birth = request.form.get(
+            "date_of_birth",
+            ""
+        ).strip()
+
+        major = request.form.get(
+            "major",
+            ""
+        ).strip()
+
+        bio = request.form.get(
+            "bio",
+            ""
+        ).strip()
+
+        connection.execute(
+            """
+            UPDATE student_profiles
+            SET full_name = ?,
+                date_of_birth = ?,
+                major = ?,
+                bio = ?
+            WHERE user_id = ?
+            """,
+            (
+                full_name,
+                date_of_birth,
+                major,
+                bio,
+                user_id
+            )
+        )
+
+        connection.commit()
+
+        print(
+            "ÄÃ£ cáº­p nháº­t profile:",
+            user_id
+        )
+
+    # -----------------------------
+    # GET PROFILE
+    # -----------------------------
+
+    profile_data = connection.execute(
+        """
+        SELECT *
+        FROM student_profiles
+        WHERE user_id = ?
+        """,
+        (user_id,)
+    ).fetchone()
+
+    connection.close()
+
+    return render_template(
+        "profile.html",
+        profile=profile_data
+    )
+# =========================================================
+# JOB LIST - SEARCH / FILTER / SORT / PAGINATION
+# =========================================================
+
+@app.route("/jobs")
+def jobs():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    # -----------------------------------------------------
+    # GET FILTER VALUES
+    # -----------------------------------------------------
+
+    keyword = request.args.get("q", "").strip()
+    category = request.args.get("category", "").strip()
+    location = request.args.get("location", "").strip()
+    job_type = request.args.get("job_type", "").strip()
+    experience = request.args.get("experience", "").strip()
+    level = request.args.get("level", "").strip()
+    salary = request.args.get("salary", "").strip()
+    sort = request.args.get("sort", "newest").strip()
+
+    try:
+        page = int(request.args.get("page", 1))
+    except ValueError:
+        page = 1
+
+    if page < 1:
+        page = 1
+
+    per_page = 9
+    offset = (page - 1) * per_page
+
+    connection = get_connection()
+
+    # -----------------------------------------------------
+    # BASE QUERY
+    # -----------------------------------------------------
+
+    where_conditions = []
+    params = []
+
+    # Student chá»‰ tháº¥y job active.
+    # Admin cÃ³ thá»ƒ tháº¥y táº¥t cáº£ Ä‘á»ƒ tiá»‡n quáº£n lÃ½.
+    if session.get("role") != "admin":
+        where_conditions.append(
+            "(status = 'active' OR status IS NULL)"
+        )
+
+    # -----------------------------------------------------
+    # SEARCH
+    # -----------------------------------------------------
+
+    if keyword:
+        search_value = f"%{keyword}%"
+
+        where_conditions.append("""
+            (
+                title LIKE ?
+                OR company LIKE ?
+                OR skills LIKE ?
+                OR description LIKE ?
+                OR category LIKE ?
+            )
+        """)
+
+        params.extend([
+            search_value,
+            search_value,
+            search_value,
+            search_value,
+            search_value
+        ])
+
+    # -----------------------------------------------------
+    # FILTER
+    # -----------------------------------------------------
+
+    if category:
+        where_conditions.append("category = ?")
+        params.append(category)
+
+    if location:
+        where_conditions.append("location LIKE ?")
+        params.append(f"%{location}%")
+
+    if job_type:
+        where_conditions.append("job_type = ?")
+        params.append(job_type)
+
+    if experience:
+        where_conditions.append("experience = ?")
+        params.append(experience)
+
+    if level:
+        where_conditions.append("level = ?")
+        params.append(level)
+
+    # -----------------------------------------------------
+    # SALARY FILTER
+    # -----------------------------------------------------
+
+    if salary == "under_10":
+        where_conditions.append(
+            "salary_min < 10000000"
+        )
+
+    elif salary == "10_15":
+        where_conditions.append("""
+            salary_max >= 10000000
+            AND salary_min <= 15000000
+        """)
+
+    elif salary == "15_20":
+        where_conditions.append("""
+            salary_max >= 15000000
+            AND salary_min <= 20000000
+        """)
+
+    elif salary == "20_plus":
+        where_conditions.append(
+            "salary_max >= 20000000"
+        )
+
+    # -----------------------------------------------------
+    # BUILD WHERE
+    # -----------------------------------------------------
+
+    where_sql = ""
+
+    if where_conditions:
+        where_sql = (
+            " WHERE "
+            + " AND ".join(where_conditions)
+        )
+
+    # -----------------------------------------------------
+    # SORT
+    # -----------------------------------------------------
+
+    order_sql = " ORDER BY created_at DESC"
+
+    if sort == "salary_high":
+        order_sql = """
+            ORDER BY
+                salary_max DESC,
+                created_at DESC
+        """
+
+    elif sort == "salary_low":
+        order_sql = """
+            ORDER BY
+                CASE
+                    WHEN salary_min IS NULL
+                         OR salary_min = 0
+                    THEN 1
+                    ELSE 0
+                END,
+                salary_min ASC,
+                created_at DESC
+        """
+
+    elif sort == "title":
+        order_sql = " ORDER BY title ASC"
+
+    # -----------------------------------------------------
+    # COUNT RESULTS
+    # -----------------------------------------------------
+
+    count_sql = (
+        "SELECT COUNT(*) AS total "
+        "FROM jobs"
+        + where_sql
+    )
+
+    total_row = connection.execute(
+        count_sql,
+        params
+    ).fetchone()
+
+    total_jobs = total_row["total"]
+
+    total_pages = (
+        total_jobs + per_page - 1
+    ) // per_page
+
+    # -----------------------------------------------------
+    # GET JOBS
+    # -----------------------------------------------------
+
+    query = (
+        "SELECT * FROM jobs"
+        + where_sql
+        + order_sql
+        + " LIMIT ? OFFSET ?"
+    )
+
+    query_params = params + [
+        per_page,
+        offset
+    ]
+
+    jobs_data = connection.execute(
+        query,
+        query_params
+    ).fetchall()
+
+    # -----------------------------------------------------
+    # FILTER OPTIONS
+    # -----------------------------------------------------
+
+    categories = connection.execute("""
+        SELECT DISTINCT category
+        FROM jobs
+        WHERE category IS NOT NULL
+          AND TRIM(category) != ''
+        ORDER BY category
+    """).fetchall()
+
+    locations = connection.execute("""
+        SELECT DISTINCT location
+        FROM jobs
+        WHERE location IS NOT NULL
+          AND TRIM(location) != ''
+        ORDER BY location
+    """).fetchall()
+
+    job_types = connection.execute("""
+        SELECT DISTINCT job_type
+        FROM jobs
+        WHERE job_type IS NOT NULL
+          AND TRIM(job_type) != ''
+        ORDER BY job_type
+    """).fetchall()
+
+    experiences = connection.execute("""
+        SELECT DISTINCT experience
+        FROM jobs
+        WHERE experience IS NOT NULL
+          AND TRIM(experience) != ''
+        ORDER BY experience
+    """).fetchall()
+
+    levels = connection.execute("""
+        SELECT DISTINCT level
+        FROM jobs
+        WHERE level IS NOT NULL
+          AND TRIM(level) != ''
+        ORDER BY level
+    """).fetchall()
+
+    connection.close()
+
+    # -----------------------------------------------------
+    # PAGE RANGE
+    # -----------------------------------------------------
+
+    start_page = max(
+        1,
+        page - 2
+    )
+
+    end_page = min(
+        total_pages,
+        page + 2
+    )
+
+    page_numbers = range(
+        start_page,
+        end_page + 1
+    )
+
+    return render_template(
+        "jobs.html",
+
+        jobs=jobs_data,
+
+        keyword=keyword,
+        selected_category=category,
+        selected_location=location,
+        selected_job_type=job_type,
+        selected_experience=experience,
+        selected_level=level,
+        selected_salary=salary,
+        selected_sort=sort,
+
+        categories=categories,
+        locations=locations,
+        job_types=job_types,
+        experiences=experiences,
+        levels=levels,
+
+        page=page,
+        total_pages=total_pages,
+        total_jobs=total_jobs,
+        page_numbers=page_numbers
+    )
+# =========================================================
+# JOB DETAIL
+# =========================================================
+
+@app.route("/jobs/<int:job_id>")
+def job_detail(job_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    connection = get_connection()
+
+    job = connection.execute(
+        """
+        SELECT *
+        FROM jobs
+        WHERE job_id = ?
+        """,
+        (job_id,)
+    ).fetchone()
+
+    connection.close()
+
+    if job is None:
+        return "KhÃ´ng tÃ¬m tháº¥y cÃ´ng viá»‡c.", 404
+
+    return render_template(
+        "job_detail.html",
+        job=job
+    )
+# =========================================================
+# ADD JOB
+# =========================================================
+
+@app.route(
+    "/jobs/add",
+    methods=["GET", "POST"]
+)
+def add_job():
+
+    if "user_id" not in session:
+        return redirect(
+            url_for("login")
+        )
+
+    if session.get("role") != "admin":
+        return (
+            "Báº¡n khÃ´ng cÃ³ quyá»n thÃªm cÃ´ng viá»‡c.",
+            403
+        )
+
+    if request.method == "POST":
+
+        title = request.form.get(
+            "title",
+            ""
+        ).strip()
+
+        company = request.form.get(
+            "company",
+            ""
+        ).strip()
+
+        location = request.form.get(
+            "location",
+            ""
+        ).strip()
+
+        job_type = request.form.get(
+            "job_type",
+            ""
+        ).strip()
+
+        category = request.form.get(
+            "category",
+            ""
+        ).strip()
+
+        description = request.form.get(
+            "description",
+            ""
+        ).strip()
+
+        connection = get_connection()
+
+        connection.execute(
+            """
+            INSERT INTO jobs
+            (
+                title,
+                description,
+                company,
+                location,
+                job_type,
+                category
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                title,
+                description,
+                company,
+                location,
+                job_type,
+                category
+            )
+        )
+
+        connection.commit()
+        connection.close()
+
+        return redirect(
+            url_for("jobs")
+        )
+
+    return render_template(
+        "add_jobs.html"
+    )
+
+
+# =========================================================
+# EDIT JOB
+# =========================================================
+
+@app.route(
+    "/jobs/edit/<int:job_id>",
+    methods=["GET", "POST"]
+)
+def edit_job(job_id):
+
+    if "user_id" not in session:
+        return redirect(
+            url_for("login")
+        )
+
+    if session.get("role") != "admin":
+        return (
+            "Báº¡n khÃ´ng cÃ³ quyá»n sá»­a cÃ´ng viá»‡c.",
+            403
+        )
+
+    connection = get_connection()
+
+    job = connection.execute(
+        """
+        SELECT *
+        FROM jobs
+        WHERE job_id = ?
+        """,
+        (job_id,)
+    ).fetchone()
+
+    if job is None:
+        connection.close()
+
+        return (
+            "KhÃ´ng tÃ¬m tháº¥y cÃ´ng viá»‡c",
+            404
+        )
+
+    if request.method == "POST":
+
+        title = request.form.get(
+            "title",
+            ""
+        ).strip()
+
+        company = request.form.get(
+            "company",
+            ""
+        ).strip()
+
+        location = request.form.get(
+            "location",
+            ""
+        ).strip()
+
+        job_type = request.form.get(
+            "job_type",
+            ""
+        ).strip()
+
+        category = request.form.get(
+            "category",
+            ""
+        ).strip()
+
+        description = request.form.get(
+            "description",
+            ""
+        ).strip()
+
+        connection.execute(
+            """
+            UPDATE jobs
+            SET title = ?,
+                description = ?,
+                company = ?,
+                location = ?,
+                job_type = ?,
+                category = ?
+            WHERE job_id = ?
+            """,
+            (
+                title,
+                description,
+                company,
+                location,
+                job_type,
+                category,
+                job_id
+            )
+        )
+
+        connection.commit()
+        connection.close()
+
+        return redirect(
+            url_for("jobs")
+        )
+
+    connection.close()
+
+    return render_template(
+        "edit_job.html",
+        job=job
+    )
+
+
+# =========================================================
+# DELETE JOB
+# =========================================================
+
+@app.route(
+    "/jobs/delete/<int:job_id>",
+    methods=["POST"]
+)
+def delete_job(job_id):
+
+    if "user_id" not in session:
+        return redirect(
+            url_for("login")
+        )
+
+    if session.get("role") != "admin":
+        return (
+            "Báº¡n khÃ´ng cÃ³ quyá»n xÃ³a cÃ´ng viá»‡c.",
+            403
+        )
+
+    connection = get_connection()
+
+    job = connection.execute(
+        """
+        SELECT *
+        FROM jobs
+        WHERE job_id = ?
+        """,
+        (job_id,)
+    ).fetchone()
+
+    if job is None:
+        connection.close()
+
+        return (
+            "KhÃ´ng tÃ¬m tháº¥y cÃ´ng viá»‡c",
+            404
+        )
+
+    connection.execute(
+        """
+        DELETE FROM jobs
+        WHERE job_id = ?
+        """,
+        (job_id,)
+    )
+
+    connection.commit()
+    connection.close()
+
+    return redirect(
+        url_for("jobs")
+    )
+
+
+# =========================================================
+# UPLOAD CV
+# =========================================================
+
+@app.route(
+    "/upload-cv",
+    methods=["GET", "POST"]
+)
+def upload_cv():
+
+    if "user_id" not in session:
+        return redirect(
+            url_for("login")
+        )
+
+    if request.method == "POST":
+
+        # -----------------------------
+        # CHECK FILE
+        # -----------------------------
+
+        if "cv" not in request.files:
+            return render_template(
+                "upload_cv.html",
+                message="KhÃ´ng tÃ¬m tháº¥y file."
+            )
+
+        file = request.files["cv"]
+
+        if not file.filename:
+            return render_template(
+                "upload_cv.html",
+                message="Báº¡n chÆ°a chá»n CV."
+            )
+
+        if not allowed_file(
+            file.filename
+        ):
+            return render_template(
+                "upload_cv.html",
+                message=(
+                    "Chá»‰ há»— trá»£ file PDF hoáº·c DOCX."
+                )
+            )
+
+        # -----------------------------
+        # SAFE FILE NAME
+        # -----------------------------
+
+        original_filename = secure_filename(
+            file.filename
+        )
+
+        # TrÃ¡nh ghi Ä‘Ã¨ CV giá»¯a cÃ¡c user
+        filename = (
+            f"{session['user_id']}_"
+            f"{int(time.time())}_"
+            f"{original_filename}"
+        )
+
+        file_path = os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            filename
+        )
+
+        file.save(
+            file_path
+        )
+
+        # -----------------------------
+        # READ CV
+        # -----------------------------
+
+        try:
+
+            if filename.lower().endswith(
+                ".pdf"
+            ):
+                parsed_text = read_pdf(
+                    file_path
+                )
+
+            elif filename.lower().endswith(
+                ".docx"
+            ):
+                parsed_text = read_docx(
+                    file_path
+                )
+
+            else:
+                parsed_text = ""
+
+        except Exception as error:
+
+            print(
+                "CV PARSER ERROR:",
+                repr(error)
+            )
+
+            return render_template(
+                "upload_cv.html",
+                message=(
+                    "KhÃ´ng thá»ƒ Ä‘á»c ná»™i dung CV."
+                )
+            )
+
+        if not parsed_text:
+            return render_template(
+                "upload_cv.html",
+                message=(
+                    "KhÃ´ng tÃ¬m tháº¥y ná»™i dung "
+                    "vÄƒn báº£n trong CV."
+                )
+            )
+
+        # -----------------------------
+        # NLP
+        # -----------------------------
+
+        cleaned_text = preprocess_text(
+            parsed_text
+        )
+
+        found_skills = extract_skills(
+            cleaned_text
+        )
+
+        # -----------------------------
+        # SAVE CV DATABASE
+        # -----------------------------
+
+        connection = get_connection()
+
+        try:
+
+            connection.execute(
+                """
+                INSERT INTO cvs
+                (
+                    user_id,
+                    file_name,
+                    file_path,
+                    parsed_text
+                )
+                VALUES (?, ?, ?, ?)
+                """,
+                (
+                    session["user_id"],
+                    filename,
+                    file_path,
+                    parsed_text
+                )
+            )
+
+            # -------------------------
+            # SAVE SKILLS
+            # -------------------------
+
+            for skill_name in found_skills:
+
+                connection.execute(
+                    """
+                    INSERT OR IGNORE
+                    INTO skills (name)
+                    VALUES (?)
+                    """,
+                    (skill_name,)
+                )
+
+                skill = connection.execute(
+                    """
+                    SELECT skill_id
+                    FROM skills
+                    WHERE name = ?
+                    """,
+                    (skill_name,)
+                ).fetchone()
+
+                if skill:
+
+                    connection.execute(
+                        """
+                        INSERT OR IGNORE
+                        INTO student_skills
+                        (
+                            user_id,
+                            skill_id
+                        )
+                        VALUES (?, ?)
+                        """,
+                        (
+                            session["user_id"],
+                            skill["skill_id"]
+                        )
+                    )
+
+            connection.commit()
+
+        except Exception as error:
+
+            connection.rollback()
+            connection.close()
+
+            print(
+                "CV DATABASE ERROR:",
+                repr(error)
+            )
+
+            return render_template(
+                "upload_cv.html",
+                message=(
+                    "KhÃ´ng thá»ƒ lÆ°u dá»¯ liá»‡u CV."
+                )
+            )
+
+        connection.close()
+
+        # -----------------------------
+        # RECOMMEND
+        # -----------------------------
+
+        return redirect(
+            url_for("recommendations")
+        )
+
+    return render_template(
+        "upload_cv.html"
+    )
+
+
+# =========================================================
+# RECOMMENDATIONS
+# =========================================================
+
+@app.route("/recommendations")
+def recommendations():
+
+    if "user_id" not in session:
+        return redirect(
+            url_for("login")
+        )
+
+    connection = get_connection()
+
+    # CV má»›i nháº¥t
+    cv = connection.execute(
+        """
+        SELECT parsed_text
+        FROM cvs
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+        """,
+        (
+            session["user_id"],
+        )
+    ).fetchone()
+
+    connection.close()
+
+    # ChÆ°a upload CV
+    if (
+        not cv
+        or not cv["parsed_text"]
+    ):
+        return redirect(
+            url_for("upload_cv")
+        )
+
+    cv_text = cv["parsed_text"]
+
+    # -----------------------------
+    # ML CAREER PREDICTION
+    # -----------------------------
+
+    try:
+
+        predicted_career = predict_career(
+            cv_text
+        )
+
+        recommended_jobs = recommend_jobs(
+            cv_text,
+            top_k=5
+        )
+
+    except Exception as error:
+
+        print(
+            "RECOMMENDATION ERROR:",
+            repr(error)
+        )
+
+        return render_template(
+            "upload_cv.html",
+            message=(
+                "KhÃ´ng thá»ƒ phÃ¢n tÃ­ch CV. "
+                "Vui lÃ²ng thá»­ láº¡i."
+            )
+        )
+
+    return render_template(
+        "recommendations.html",
+        predicted_career=predicted_career,
+        jobs=recommended_jobs
+    )
+# =========================================================
+# ADMIN DASHBOARD
+# =========================================================
+
+@app.route("/admin")
+def admin_dashboard():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if not is_admin():
+        return "Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p.", 403
+
+    connection = get_connection()
+
+    total_users = connection.execute(
+        "SELECT COUNT(*) AS total FROM users"
+    ).fetchone()["total"]
+
+    total_students = connection.execute(
+        """
+        SELECT COUNT(*) AS total
+        FROM users
+        WHERE role = 'student'
+        """
+    ).fetchone()["total"]
+
+    total_admins = connection.execute(
+        """
+        SELECT COUNT(*) AS total
+        FROM users
+        WHERE role = 'admin'
+        """
+    ).fetchone()["total"]
+
+    total_jobs = connection.execute(
+        "SELECT COUNT(*) AS total FROM jobs"
+    ).fetchone()["total"]
+
+    total_cvs = connection.execute(
+        "SELECT COUNT(*) AS total FROM cvs"
+    ).fetchone()["total"]
+
+    total_applications = connection.execute(
+        "SELECT COUNT(*) AS total FROM applications"
+    ).fetchone()["total"]
+
+    recent_users = connection.execute(
+        """
+        SELECT
+            u.user_id,
+            u.email,
+            u.role,
+            u.created_at,
+            p.full_name
+        FROM users u
+        LEFT JOIN student_profiles p
+            ON u.user_id = p.user_id
+        ORDER BY u.created_at DESC
+        LIMIT 5
+        """
+    ).fetchall()
+
+    connection.close()
+
+    return render_template(
+        "admin/dashboard.html",
+        total_users=total_users,
+        total_students=total_students,
+        total_admins=total_admins,
+        total_jobs=total_jobs,
+        total_cvs=total_cvs,
+        total_applications=total_applications,
+        recent_users=recent_users
+    )
+
+
+# =========================================================
+# ADMIN USER LIST
+# =========================================================
+
+@app.route("/admin/users")
+def admin_users():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if not is_admin():
+        return "Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p.", 403
+
+    keyword = request.args.get(
+        "q",
+        ""
+    ).strip()
+
+    role = request.args.get(
+        "role",
+        ""
+    ).strip()
+
+    connection = get_connection()
+
+    sql = """
+        SELECT
+            u.user_id,
+            u.email,
+            u.role,
+            u.created_at,
+            p.full_name,
+            p.major
+        FROM users u
+        LEFT JOIN student_profiles p
+            ON u.user_id = p.user_id
+        WHERE 1 = 1
+    """
+
+    params = []
+
+    if keyword:
+        sql += """
+            AND (
+                u.email LIKE ?
+                OR p.full_name LIKE ?
+                OR p.major LIKE ?
+            )
+        """
+
+        search = f"%{keyword}%"
+
+        params.extend([
+            search,
+            search,
+            search
+        ])
+
+    if role:
+        sql += " AND u.role = ?"
+        params.append(role)
+
+    sql += " ORDER BY u.created_at DESC"
+
+    users = connection.execute(
+        sql,
+        params
+    ).fetchall()
+
+    connection.close()
+
+    return render_template(
+        "admin/users.html",
+        users=users,
+        keyword=keyword,
+        selected_role=role
+    )
+
+
+# =========================================================
+# ADMIN USER DETAIL
+# =========================================================
+
+@app.route("/admin/users/<int:user_id>")
+def admin_user_detail(user_id):
+
+    if not is_admin():
+        return "Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p.", 403
+
+    connection = get_connection()
+
+    user = connection.execute(
+        """
+        SELECT
+            u.user_id,
+            u.email,
+            u.role,
+            u.created_at,
+            p.full_name,
+            p.date_of_birth,
+            p.major,
+            p.bio
+        FROM users u
+        LEFT JOIN student_profiles p
+            ON u.user_id = p.user_id
+        WHERE u.user_id = ?
+        """,
+        (user_id,)
+    ).fetchone()
+
+    if user is None:
+        connection.close()
+        return "KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n.", 404
+
+    skills = connection.execute(
+        """
+        SELECT s.name
+        FROM student_skills ss
+        JOIN skills s
+            ON ss.skill_id = s.skill_id
+        WHERE ss.user_id = ?
+        ORDER BY s.name
+        """,
+        (user_id,)
+    ).fetchall()
+
+    cvs = connection.execute(
+        """
+        SELECT
+            cv_id,
+            file_name,
+            created_at
+        FROM cvs
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        """,
+        (user_id,)
+    ).fetchall()
+
+    connection.close()
+
+    return render_template(
+        "admin/user_detail.html",
+        user=user,
+        skills=skills,
+        cvs=cvs
+    )
+
+
+# =========================================================
+# ADMIN CHANGE USER ROLE
+# =========================================================
+
+@app.route(
+    "/admin/users/<int:user_id>/role",
+    methods=["POST"]
+)
+def admin_change_user_role(user_id):
+
+    if not is_admin():
+        return "Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p.", 403
+
+    new_role = request.form.get(
+        "role",
+        ""
+    ).strip()
+
+    if new_role not in (
+        "student",
+        "admin"
+    ):
+        return "Role khÃ´ng há»£p lá»‡.", 400
+
+    # KhÃ´ng cho admin tá»± háº¡ quyá»n chÃ­nh mÃ¬nh
+    if user_id == session["user_id"]:
+        return (
+            "Báº¡n khÃ´ng thá»ƒ tá»± thay Ä‘á»•i quyá»n "
+            "cá»§a tÃ i khoáº£n Ä‘ang Ä‘Äƒng nháº­p.",
+            400
+        )
+
+    connection = get_connection()
+
+    user = connection.execute(
+        """
+        SELECT user_id
+        FROM users
+        WHERE user_id = ?
+        """,
+        (user_id,)
+    ).fetchone()
+
+    if user is None:
+        connection.close()
+        return "KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n.", 404
+
+    connection.execute(
+        """
+        UPDATE users
+        SET role = ?
+        WHERE user_id = ?
+        """,
+        (
+            new_role,
+            user_id
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+    return redirect(
+        url_for(
+            "admin_user_detail",
+            user_id=user_id
+        )
+    )
+
+
+# =========================================================
+# ADMIN DELETE USER
+# =========================================================
+
+@app.route(
+    "/admin/users/<int:user_id>/delete",
+    methods=["POST"]
+)
+def admin_delete_user(user_id):
+
+    if not is_admin():
+        return "Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p.", 403
+
+    # KhÃ´ng cho xÃ³a chÃ­nh mÃ¬nh
+    if user_id == session["user_id"]:
+        return (
+            "Báº¡n khÃ´ng thá»ƒ xÃ³a tÃ i khoáº£n "
+            "Ä‘ang Ä‘Äƒng nháº­p.",
+            400
+        )
+
+    connection = get_connection()
+
+    user = connection.execute(
+        """
+        SELECT user_id
+        FROM users
+        WHERE user_id = ?
+        """,
+        (user_id,)
+    ).fetchone()
+
+    if user is None:
+        connection.close()
+        return "KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n.", 404
+
+    try:
+
+        # CÃ¡c báº£ng liÃªn quan
+        connection.execute(
+            "DELETE FROM recommendations WHERE user_id = ?",
+            (user_id,)
+        )
+
+        connection.execute(
+            "DELETE FROM applications WHERE user_id = ?",
+            (user_id,)
+        )
+
+        connection.execute(
+            "DELETE FROM favourites WHERE user_id = ?",
+            (user_id,)
+        )
+
+        connection.execute(
+            "DELETE FROM student_skills WHERE user_id = ?",
+            (user_id,)
+        )
+
+        connection.execute(
+            "DELETE FROM cvs WHERE user_id = ?",
+            (user_id,)
+        )
+
+        connection.execute(
+            "DELETE FROM student_profiles WHERE user_id = ?",
+            (user_id,)
+        )
+
+        connection.execute(
+            "DELETE FROM users WHERE user_id = ?",
+            (user_id,)
+        )
+
+        connection.commit()
+
+    except Exception as error:
+
+        connection.rollback()
+        connection.close()
+
+        print(
+            "DELETE USER ERROR:",
+            repr(error)
+        )
+
+        return "KhÃ´ng thá»ƒ xÃ³a tÃ i khoáº£n.", 500
+
+    connection.close()
+
+    return redirect(
+        url_for("admin_users")
+    )
+# =========================================================
+# ADMIN - ADD USER
+# =========================================================
+
+@app.route("/admin/users/add", methods=["GET", "POST"])
+def admin_add_user():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if not is_admin():
+        return "Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p.", 403
+
+    if request.method == "POST":
+
+        full_name = request.form.get(
+            "full_name", ""
+        ).strip()
+
+        email = request.form.get(
+            "email", ""
+        ).strip().lower()
+
+        password = request.form.get(
+            "password", ""
+        )
+
+        major = request.form.get(
+            "major", ""
+        ).strip()
+
+        role = request.form.get(
+            "role", "student"
+        ).strip()
+
+        if not full_name or not email or not password:
+            return render_template(
+                "admin/add_user.html",
+                message="Vui lÃ²ng nháº­p Ä‘áº§y Ä‘á»§ thÃ´ng tin."
+            )
+
+        if len(password) < 6:
+            return render_template(
+                "admin/add_user.html",
+                message="Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 6 kÃ½ tá»±."
+            )
+
+        if role not in ("student", "admin"):
+            role = "student"
+
+        connection = get_connection()
+
+        existing_user = connection.execute(
+            """
+            SELECT user_id
+            FROM users
+            WHERE email = ?
+            """,
+            (email,)
+        ).fetchone()
+
+        if existing_user:
+            connection.close()
+
+            return render_template(
+                "admin/add_user.html",
+                message="Email nÃ y Ä‘Ã£ tá»“n táº¡i."
+            )
+
+        try:
+
+            cursor = connection.execute(
+                """
+                INSERT INTO users
+                    (email, password, role)
+                VALUES (?, ?, ?)
+                """,
+                (
+                    email,
+                    generate_password_hash(password),
+                    role
+                )
+            )
+
+            user_id = cursor.lastrowid
+
+            connection.execute(
+                """
+                INSERT INTO student_profiles
+                    (user_id, full_name, major)
+                VALUES (?, ?, ?)
+                """,
+                (
+                    user_id,
+                    full_name,
+                    major
+                )
+            )
+
+            connection.commit()
+
+        except Exception as error:
+
+            connection.rollback()
+            connection.close()
+
+            print(
+                "ADMIN ADD USER ERROR:",
+                repr(error)
+            )
+
+            return render_template(
+                "admin/add_user.html",
+                message="KhÃ´ng thá»ƒ táº¡o tÃ i khoáº£n."
+            )
+
+        connection.close()
+
+        return redirect(
+            url_for("admin_users")
+        )
+
+    return render_template(
+        "admin/add_user.html"
+    )
+@app.route(
+    "/admin/users/<int:user_id>/edit",
+    methods=["GET", "POST"]
+)
+def admin_edit_user(user_id):
+
+    if not is_admin():
+        return "Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p.", 403
+
+    connection = get_connection()
+
+    user = connection.execute(
+        """
+        SELECT
+            u.user_id,
+            u.email,
+            u.role,
+            p.full_name,
+            p.major,
+            p.date_of_birth,
+            p.bio
+        FROM users u
+        LEFT JOIN student_profiles p
+            ON u.user_id = p.user_id
+        WHERE u.user_id = ?
+        """,
+        (user_id,)
+    ).fetchone()
+
+    if user is None:
+        connection.close()
+        return "KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n.", 404
+
+    if request.method == "POST":
+
+        full_name = request.form.get(
+            "full_name", ""
+        ).strip()
+
+        email = request.form.get(
+            "email", ""
+        ).strip().lower()
+
+        major = request.form.get(
+            "major", ""
+        ).strip()
+
+        date_of_birth = request.form.get(
+            "date_of_birth", ""
+        ).strip()
+
+        bio = request.form.get(
+            "bio", ""
+        ).strip()
+
+        role = request.form.get(
+            "role", user["role"]
+        ).strip()
+
+        if not full_name or not email:
+            connection.close()
+
+            return "Há» tÃªn vÃ  email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.", 400
+
+        if role not in ("student", "admin"):
+            role = user["role"]
+
+        # KhÃ´ng cho tá»± háº¡ quyá»n chÃ­nh mÃ¬nh
+        if (
+            user_id == session["user_id"]
+            and role != "admin"
+        ):
+            connection.close()
+
+            return (
+                "Báº¡n khÃ´ng thá»ƒ tá»± háº¡ quyá»n "
+                "tÃ i khoáº£n Admin Ä‘ang Ä‘Äƒng nháº­p.",
+                400
+            )
+
+        duplicate = connection.execute(
+            """
+            SELECT user_id
+            FROM users
+            WHERE email = ?
+              AND user_id != ?
+            """,
+            (email, user_id)
+        ).fetchone()
+
+        if duplicate:
+            connection.close()
+            return "Email Ä‘Ã£ Ä‘Æ°á»£c tÃ i khoáº£n khÃ¡c sá»­ dá»¥ng.", 400
+
+        try:
+
+            connection.execute(
+                """
+                UPDATE users
+                SET email = ?,
+                    role = ?
+                WHERE user_id = ?
+                """,
+                (
+                    email,
+                    role,
+                    user_id
+                )
+            )
+
+            connection.execute(
+                """
+                INSERT INTO student_profiles
+                (
+                    user_id,
+                    full_name,
+                    major,
+                    date_of_birth,
+                    bio
+                )
+                VALUES (?, ?, ?, ?, ?)
+
+                ON CONFLICT(user_id)
+                DO UPDATE SET
+                    full_name = excluded.full_name,
+                    major = excluded.major,
+                    date_of_birth = excluded.date_of_birth,
+                    bio = excluded.bio
+                """,
+                (
+                    user_id,
+                    full_name,
+                    major,
+                    date_of_birth or None,
+                    bio
+                )
+            )
+
+            connection.commit()
+
+        except Exception as error:
+
+            connection.rollback()
+            connection.close()
+
+            print("EDIT USER ERROR:", repr(error))
+
+            return "KhÃ´ng thá»ƒ cáº­p nháº­t tÃ i khoáº£n.", 500
+
+        connection.close()
+
+        # Náº¿u sá»­a chÃ­nh mÃ¬nh thÃ¬ cáº­p nháº­t session
+        if user_id == session["user_id"]:
+            session["email"] = email
+            session["role"] = role
+
+        return redirect(
+            url_for(
+                "admin_user_detail",
+                user_id=user_id
+            )
+        )
+
+    connection.close()
+
+    return render_template(
+        "admin/edit_user.html",
+        user=user
+    )
+@app.route("/admin/export/excel")
+def admin_export_excel():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if not is_admin():
+        return "Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p.", 403
+
+    connection = get_connection()
+
+    wb = Workbook()
+
+    # ==========================
+    # 1. USERS
+    # ==========================
+    ws_users = wb.active
+    ws_users.title = "Users"
+
+    ws_users.append([
+        "User ID",
+        "Full Name",
+        "Email",
+        "Role",
+        "Major",
+        "Date of Birth",
+        "Created At"
+    ])
+
+    users = connection.execute("""
+        SELECT
+            u.user_id,
+            p.full_name,
+            u.email,
+            u.role,
+            p.major,
+            p.date_of_birth,
+            u.created_at
+        FROM users u
+        LEFT JOIN student_profiles p
+            ON u.user_id = p.user_id
+        ORDER BY u.user_id
+    """).fetchall()
+
+    for user in users:
+        ws_users.append([
+            user["user_id"],
+            user["full_name"],
+            user["email"],
+            user["role"],
+            user["major"],
+            user["date_of_birth"],
+            user["created_at"]
+        ])
+
+    # ==========================
+    # 2. JOBS
+    # ==========================
+    ws_jobs = wb.create_sheet("Jobs")
+
+    ws_jobs.append([
+        "Job ID",
+        "Title",
+        "Company",
+        "Category",
+        "Location",
+        "Job Type",
+        "Level",
+        "Experience",
+        "Salary Min",
+        "Salary Max",
+        "Status",
+        "Created At"
+    ])
+
+    jobs = connection.execute("""
+        SELECT
+            job_id,
+            title,
+            company,
+            category,
+            location,
+            job_type,
+            level,
+            experience,
+            salary_min,
+            salary_max,
+            status,
+            created_at
+        FROM jobs
+        ORDER BY job_id
+    """).fetchall()
+
+    for job in jobs:
+        ws_jobs.append(list(job))
+
+    # ==========================
+    # 3. APPLICATIONS
+    # ==========================
+    ws_app = wb.create_sheet("Applications")
+
+    ws_app.append([
+        "Application ID",
+        "User ID",
+        "Job ID",
+        "Status",
+        "Applied At",
+        "Note"
+    ])
+
+    applications = connection.execute("""
+        SELECT
+            id,
+            user_id,
+            job_id,
+            status,
+            applied_at,
+            note
+        FROM applications
+        ORDER BY id
+    """).fetchall()
+
+    for application in applications:
+        ws_app.append(list(application))
+
+    # ==========================
+    # 4. RECOMMENDATIONS
+    # ==========================
+    ws_rec = wb.create_sheet("Recommendations")
+
+    ws_rec.append([
+        "Recommendation ID",
+        "User ID",
+        "Job ID",
+        "Match Score",
+        "Reason",
+        "Created At"
+    ])
+
+    recommendations = connection.execute("""
+        SELECT
+            id,
+            user_id,
+            job_id,
+            match_score,
+            reason,
+            created_at
+        FROM recommendations
+        ORDER BY id
+    """).fetchall()
+
+    for recommendation in recommendations:
+        ws_rec.append(list(recommendation))
+
+    connection.close()
+
+    # ==========================
+    # FORMAT EXCEL
+    # ==========================
+    for worksheet in wb.worksheets:
+
+        for cell in worksheet[1]:
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(
+                horizontal="center",
+                vertical="center"
+            )
+
+        worksheet.freeze_panes = "A2"
+
+        # Tá»± chá»‰nh Ä‘á»™ rá»™ng cá»™t
+        for column in worksheet.columns:
+
+            max_length = 0
+            column_letter = column[0].column_letter
+
+            for cell in column:
+
+                if cell.value is not None:
+                    length = len(str(cell.value))
+
+                    if length > max_length:
+                        max_length = length
+
+            worksheet.column_dimensions[
+                column_letter
+            ].width = min(max_length + 3, 45)
+
+    # ==========================
+    # SAVE TO MEMORY
+    # ==========================
+    output = BytesIO()
+
+    wb.save(output)
+
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="IT_Career_Match_Admin_Data.xlsx",
+        mimetype=(
+            "application/vnd.openxmlformats-"
+            "officedocument.spreadsheetml.sheet"
+        )
+    )
+
+# =========================================================
+# ADMIN - JOB MANAGEMENT
+# =========================================================
+
+@app.route("/admin/jobs")
+def admin_jobs():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if not is_admin():
+        return "Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p.", 403
+
+    q = request.args.get("q", "").strip()
+    status = request.args.get("status", "").strip().lower()
+
+    if status not in ("", "active", "inactive"):
+        status = ""
+
+    connection = get_connection()
+
+    where = ["1=1"]
+    params = []
+
+    if q:
+        where.append(
+            "(title LIKE ? OR company LIKE ? OR category LIKE ?)"
+        )
+        keyword = f"%{q}%"
+        params.extend([keyword, keyword, keyword])
+
+    if status:
+        where.append("COALESCE(status, 'active') = ?")
+        params.append(status)
+
+    sql = """
+        SELECT *
+        FROM jobs
+        WHERE """ + " AND ".join(where) + """
+        ORDER BY created_at DESC, job_id DESC
+    """
+
+    jobs_data = connection.execute(sql, params).fetchall()
+
+    stats = connection.execute("""
+        SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN COALESCE(status, 'active') = 'active'
+                THEN 1 ELSE 0 END) AS active,
+            SUM(CASE WHEN status = 'inactive'
+                THEN 1 ELSE 0 END) AS inactive
+        FROM jobs
+    """).fetchone()
+
+    connection.close()
+
+    return render_template(
+        "admin/jobs.html",
+        jobs=jobs_data,
+        stats=stats,
+        q=q,
+        selected_status=status
+    )
+
+
+@app.route("/admin/jobs/<int:job_id>/status", methods=["POST"])
+def admin_job_status(job_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    if not is_admin():
+        return "Báº¡n khÃ´ng cÃ³ quyá»n truy cáº­p.", 403
+
+    new_status = request.form.get("status", "")
+
+    if new_status not in ("active", "inactive"):
+        return "Tráº¡ng thÃ¡i khÃ´ng há»£p lá»‡.", 400
+
+    connection = get_connection()
+
+    cursor = connection.execute("""
+        UPDATE jobs
+        SET status = ?
+        WHERE job_id = ?
+    """, (new_status, job_id))
+
+    connection.commit()
+    connection.close()
+
+    if cursor.rowcount == 0:
+        return "KhÃ´ng tÃ¬m tháº¥y cÃ´ng viá»‡c.", 404
+
+    return redirect(url_for("admin_jobs"))
+def chatbot_normalize(text):
+    text = unicodedata.normalize("NFD", text.lower())
+    text = "".join(
+        c for c in text
+        if unicodedata.category(c) != "Mn"
+    )
+    text = text.replace("Ä‘", "d")
+    text = re.sub(r"[^a-z0-9+#/.\s]", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+CHATBOT_KNOWLEDGE = [
+    {
+        "keywords": [
+            "viet cv", "lam cv", "cv it",
+            "ho so xin viec", "resume"
+        ],
+        "reply": (
+            "ðŸ“„ CÃCH VIáº¾T CV IT\n\n"
+            "1. Giá»›i thiá»‡u ngáº¯n gá»n báº£n thÃ¢n vÃ  má»¥c tiÃªu nghá» nghiá»‡p.\n"
+            "2. Liá»‡t kÃª ká»¹ nÄƒng láº­p trÃ¬nh vÃ  cÃ´ng nghá»‡ Ä‘Ã£ há»c.\n"
+            "3. TrÃ¬nh bÃ y 2â€“3 dá»± Ã¡n thá»±c táº¿, nÃªu rÃµ vai trÃ² cá»§a báº¡n.\n"
+            "4. ThÃªm GitHub, portfolio vÃ  cÃ¡c chá»©ng chá»‰ liÃªn quan.\n"
+            "5. Kiá»ƒm tra lá»—i chÃ­nh táº£ trÆ°á»›c khi gá»­i.\n\n"
+            "Báº¡n cÅ©ng cÃ³ thá»ƒ táº£i CV lÃªn IT Career Match "
+            "Ä‘á»ƒ há»‡ thá»‘ng phÃ¢n tÃ­ch ká»¹ nÄƒng vÃ  gá»£i Ã½ viá»‡c lÃ m."
+        )
+    },
+    {
+        "keywords": [
+            "backend", "back end",
+            "flask", "django", "spring boot"
+        ],
+        "reply": (
+            "ðŸ’» Lá»˜ TRÃŒNH BACKEND DEVELOPER\n\n"
+            "1. Há»c Python, Java, C# hoáº·c JavaScript.\n"
+            "2. Náº¯m vá»¯ng OOP vÃ  cáº¥u trÃºc dá»¯ liá»‡u.\n"
+            "3. Há»c SQL vÃ  thiáº¿t káº¿ cÆ¡ sá»Ÿ dá»¯ liá»‡u.\n"
+            "4. XÃ¢y dá»±ng REST API vá»›i Flask, FastAPI hoáº·c Spring Boot.\n"
+            "5. Há»c Authentication, Testing, Git vÃ  Docker.\n"
+            "6. Triá»ƒn khai má»™t dá»± Ã¡n thá»±c táº¿ lÃªn server.\n\n"
+            "Dá»± Ã¡n gá»£i Ã½: Há»‡ thá»‘ng quáº£n lÃ½ tuyá»ƒn dá»¥ng."
+        )
+    },
+    {
+        "keywords": [
+            "frontend", "front end",
+            "react", "vue", "html css"
+        ],
+        "reply": (
+            "ðŸŽ¨ Lá»˜ TRÃŒNH FRONTEND DEVELOPER\n\n"
+            "1. HTML, CSS vÃ  JavaScript.\n"
+            "2. Responsive Design vÃ  Flexbox/Grid.\n"
+            "3. Git vÃ  GitHub.\n"
+            "4. React hoáº·c Vue.\n"
+            "5. REST API, xá»­ lÃ½ form vÃ  quáº£n lÃ½ state.\n"
+            "6. Accessibility, Testing vÃ  tá»‘i Æ°u hiá»‡u nÄƒng.\n\n"
+            "Dá»± Ã¡n gá»£i Ã½: Portfolio vÃ  website tÃ¬m viá»‡c IT."
+        )
+    },
+    {
+        "keywords": [
+            "machine learning", "ai/ml",
+            "tri tue nhan tao", "hoc may",
+            "data science"
+        ],
+        "reply": (
+            "ðŸ¤– Lá»˜ TRÃŒNH AI / MACHINE LEARNING\n\n"
+            "1. Há»c Python vÃ  NumPy, pandas.\n"
+            "2. Ã”n xÃ¡c suáº¥t thá»‘ng kÃª vÃ  Ä‘áº¡i sá»‘ tuyáº¿n tÃ­nh.\n"
+            "3. Há»c Supervised vÃ  Unsupervised Learning.\n"
+            "4. Thá»±c hÃ nh scikit-learn.\n"
+            "5. TÃ¬m hiá»ƒu Ä‘Ã¡nh giÃ¡ mÃ´ hÃ¬nh: Accuracy, Precision, Recall, F1.\n"
+            "6. XÃ¢y dá»±ng dá»± Ã¡n ML vÃ  triá»ƒn khai lÃªn web.\n\n"
+            "Dá»± Ã¡n gá»£i Ã½: Há»‡ thá»‘ng gá»£i Ã½ viá»‡c lÃ m theo CV."
+        )
+    },
+    {
+        "keywords": [
+            "cybersecurity", "an ninh mang",
+            "bao mat", "security"
+        ],
+        "reply": (
+            "ðŸ” Lá»˜ TRÃŒNH CYBERSECURITY\n\n"
+            "1. Náº¯m vá»¯ng máº¡ng mÃ¡y tÃ­nh vÃ  TCP/IP.\n"
+            "2. Há»c Linux vÃ  quáº£n trá»‹ há»‡ thá»‘ng.\n"
+            "3. Há»c Python hoáº·c Bash Ä‘á»ƒ tá»± Ä‘á»™ng hÃ³a.\n"
+            "4. TÃ¬m hiá»ƒu báº£o máº­t web vÃ  OWASP Top 10.\n"
+            "5. Thá»±c hÃ nh trong mÃ´i trÆ°á»ng lab Ä‘Æ°á»£c cho phÃ©p.\n"
+            "6. Há»c phÃ¢n tÃ­ch log, giÃ¡m sÃ¡t vÃ  á»©ng phÃ³ sá»± cá»‘."
+        )
+    },
+    {
+        "keywords": [
+            "devops", "cloud", "docker",
+            "kubernetes", "aws"
+        ],
+        "reply": (
+            "â˜ï¸ Lá»˜ TRÃŒNH DEVOPS / CLOUD\n\n"
+            "1. Há»c Linux, máº¡ng mÃ¡y tÃ­nh vÃ  Git.\n"
+            "2. LÃ m quen Bash hoáº·c Python.\n"
+            "3. Há»c Docker vÃ  container.\n"
+            "4. XÃ¢y dá»±ng CI/CD vá»›i GitHub Actions.\n"
+            "5. TÃ¬m hiá»ƒu AWS, Azure hoáº·c Google Cloud.\n"
+            "6. Há»c Kubernetes, Monitoring vÃ  Logging."
+        )
+    },
+    {
+        "keywords": [
+            "data analyst", "phan tich du lieu",
+            "power bi", "sql"
+        ],
+        "reply": (
+            "ðŸ“Š Lá»˜ TRÃŒNH DATA ANALYST\n\n"
+            "1. Há»c Excel vÃ  SQL.\n"
+            "2. Há»c Python vá»›i pandas, NumPy.\n"
+            "3. LÃ m sáº¡ch vÃ  phÃ¢n tÃ­ch dá»¯ liá»‡u.\n"
+            "4. Trá»±c quan hÃ³a báº±ng Matplotlib hoáº·c Power BI.\n"
+            "5. Há»c thá»‘ng kÃª cÆ¡ báº£n.\n"
+            "6. XÃ¢y dá»±ng dashboard vÃ  portfolio dá»¯ liá»‡u."
+        )
+    },
+    {
+        "keywords": [
+            "phong van", "interview",
+            "xin viec", "thuc tap"
+        ],
+        "reply": (
+            "ðŸŽ¯ CHUáº¨N Bá»Š PHá»ŽNG Váº¤N IT\n\n"
+            "1. Ã”n kiáº¿n thá»©c ná»n táº£ng cá»§a vá»‹ trÃ­ á»©ng tuyá»ƒn.\n"
+            "2. Luyá»‡n giáº£i thÃ­ch cÃ¡c dá»± Ã¡n trong CV.\n"
+            "3. Ã”n Git, SQL, OOP vÃ  DSA á»Ÿ má»©c phÃ¹ há»£p.\n"
+            "4. Chuáº©n bá»‹ vÃ­ dá»¥ vá» cÃ¡ch giáº£i quyáº¿t váº¥n Ä‘á».\n"
+            "5. Luyá»‡n giá»›i thiá»‡u báº£n thÃ¢n báº±ng tiáº¿ng Anh.\n"
+            "6. TÃ¬m hiá»ƒu cÃ´ng ty vÃ  mÃ´ táº£ cÃ´ng viá»‡c."
+        )
+    },
+    {
+        "keywords": [
+            "tai cv", "upload cv", "phan tich cv",
+            "goi y viec lam", "su dung website",
+            "it career match"
+        ],
+        "reply": (
+            "ðŸš€ Sá»¬ Dá»¤NG IT CAREER MATCH\n\n"
+            "1. ÄÄƒng nháº­p tÃ i khoáº£n sinh viÃªn.\n"
+            "2. Cáº­p nháº­t há»“ sÆ¡ cÃ¡ nhÃ¢n vÃ  ká»¹ nÄƒng.\n"
+            "3. Táº£i CV PDF hoáº·c DOCX lÃªn há»‡ thá»‘ng.\n"
+            "4. Xem káº¿t quáº£ phÃ¢n tÃ­ch CV.\n"
+            "5. KhÃ¡m phÃ¡ danh sÃ¡ch cÃ´ng viá»‡c Ä‘Æ°á»£c gá»£i Ã½.\n"
+            "6. So sÃ¡nh ká»¹ nÄƒng hiá»‡n cÃ³ vá»›i yÃªu cáº§u tuyá»ƒn dá»¥ng.\n\n"
+            "Äiá»ƒm phÃ¹ há»£p lÃ  káº¿t quáº£ Æ°á»›c tÃ­nh cá»§a há»‡ thá»‘ng, "
+            "khÃ´ng Ä‘áº£m báº£o báº¡n sáº½ Ä‘Æ°á»£c tuyá»ƒn dá»¥ng."
+        )
+    },
+    {
+        "keywords": [
+            "xin chao", "hello", "hi",
+            "chao ban"
+        ],
+        "reply": (
+            "Xin chÃ o! ðŸ‘‹\n\n"
+            "MÃ¬nh lÃ  IT Career Assistant.\n"
+            "Báº¡n cÃ³ thá»ƒ há»i mÃ¬nh vá» CV, Backend, Frontend, "
+            "AI/ML, Data, Cybersecurity, DevOps hoáº·c "
+            "cÃ¡ch sá»­ dá»¥ng IT Career Match."
+        )
+    }
+]
+
+
+def chatbot_get_reply(message):
+    normalized = chatbot_normalize(message)
+
+    best_score = 0
+    best_reply = None
+
+    for item in CHATBOT_KNOWLEDGE:
+        score = 0
+
+        for keyword in item["keywords"]:
+            normalized_keyword = chatbot_normalize(keyword)
+
+            if normalized_keyword in normalized:
+                score = max(score, len(normalized_keyword))
+
+        if score > best_score:
+            best_score = score
+            best_reply = item["reply"]
+
+    if best_reply:
+        return best_reply
+
+    return (
+        "MÃ¬nh chÆ°a hiá»ƒu rÃµ cÃ¢u há»i cá»§a báº¡n. ðŸ¤”\n\n"
+        "Báº¡n cÃ³ thá»ƒ há»i vá»:\n"
+        "â€¢ CÃ¡ch viáº¿t CV IT\n"
+        "â€¢ Lá»™ trÃ¬nh Backend / Frontend\n"
+        "â€¢ AI vÃ  Machine Learning\n"
+        "â€¢ Cybersecurity / DevOps\n"
+        "â€¢ Chuáº©n bá»‹ phá»ng váº¥n\n"
+        "â€¢ CÃ¡ch sá»­ dá»¥ng IT Career Match\n\n"
+        "Báº¡n hÃ£y thá»­ diá»…n Ä‘áº¡t cÃ¢u há»i cá»¥ thá»ƒ hÆ¡n nhÃ©!"
+    )
+
+
+@app.route("/api/chatbot", methods=["POST"])
+def chatbot_api():
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": "Dá»¯ liá»‡u khÃ´ng há»£p lá»‡."
+        }), 400
+
+    message = data.get("message", "")
+
+    if not isinstance(message, str):
+        return jsonify({
+            "error": "Tin nháº¯n pháº£i lÃ  chuá»—i vÄƒn báº£n."
+        }), 400
+
+    message = message.strip()
+
+    if not message:
+        return jsonify({
+            "error": "Vui lÃ²ng nháº­p cÃ¢u há»i."
+        }), 400
+
+    if len(message) > 500:
+        return jsonify({
+            "error": "CÃ¢u há»i khÃ´ng Ä‘Æ°á»£c vÆ°á»£t quÃ¡ 500 kÃ½ tá»±."
+        }), 400
+
+    reply = chatbot_get_reply(message)
+
+    return jsonify({
+        "reply": reply
+    })
+# =========================================================
+# RUN LOCAL
+# =========================================================
+if __name__ == "__main__":
+
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=False
+    )

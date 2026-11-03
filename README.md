@@ -2,488 +2,164 @@
 
 ## Personalized Job Recommendation System for IT Students
 
-IT Career Match là hệ thống web hỗ trợ sinh viên Công nghệ Thông tin
-phân tích CV, xác định nhóm nghề nghiệp phù hợp và gợi ý các công việc
-IT dựa trên kỹ năng, nội dung CV và Machine Learning.
-
-Hệ thống kết hợp **Natural Language Processing (NLP)**, **Machine
-Learning** và **Content-Based Recommendation** để phân tích hồ sơ sinh
-viên và đưa ra các gợi ý việc làm phù hợp.
-
-------------------------------------------------------------------------
+IT Career Match là hệ thống web hỗ trợ sinh viên Công nghệ Thông tin phân tích CV, xác định nhóm nghề nghiệp phù hợp và gợi ý công việc IT dựa trên kỹ năng, nội dung CV và Machine Learning. Hệ thống kết hợp **Natural Language Processing (NLP)**, **Machine Learning** và **Content-Based Recommendation**.
 
 ## 🌐 Live Demo
 
-**Website:**\
-https://it-career-match.onrender.com
+**Website:** https://it-career-match.onrender.com
 
-> Website được triển khai trên Render Free nên lần truy cập đầu tiên có
-> thể cần một khoảng thời gian để server khởi động.
+> Website được triển khai trên Render Free nên lần truy cập đầu tiên có thể cần thời gian để server khởi động.
 
-------------------------------------------------------------------------
+---
 
-# ✨ Chức năng chính
+## ✨ Chức năng chính
 
-## 👨‍🎓 Student
+### Student
+- **Authentication:** đăng ký, đăng nhập/đăng xuất, password hashing, xác thực OTP qua email (OTP có thời hạn 5 phút và giới hạn gửi lại).
+- **Profile Management:** xem và cập nhật họ tên, ngày sinh, ngành học, giới thiệu bản thân.
+- **CV Analysis:** upload CV PDF/DOCX, kiểm tra định dạng, trích xuất nội dung, tiền xử lý văn bản, trích xuất kỹ năng và lưu thông tin CV.
+- **Career Prediction:** phân loại CV thành 7 nhóm nghề: AI / Machine Learning, Backend Development, Cybersecurity, Data, DevOps / Cloud, Network / System và Other IT.
+- **Job Recommendation:** Content-Based Filtering + Cosine Similarity; hiển thị Career Prediction, Top-K Jobs, Match Score, Matched Skills, Missing Skills, Skill Gap Analysis và Recommendation Explanation.
+- **Chatbot:** hỗ trợ tìm hiểu nhóm nghề IT, kỹ năng thường cần cho từng vị trí và định hướng học tập. Nội dung chỉ mang tính tham khảo.
+- **Job Search:** tìm kiếm theo từ khóa; lọc theo nhóm nghề, địa điểm, loại công việc, kinh nghiệm, cấp độ, mức lương; sắp xếp và phân trang.
 
-### 🔐 Authentication
+### Admin Management
+- **Dashboard:** thống kê người dùng, sinh viên, Admin, công việc, CV, Application và người dùng đăng ký gần đây.
+- **User Management:** xem, tìm kiếm, lọc, xem chi tiết, tạo, sửa, đổi role Student/Admin và xóa tài khoản. Admin không thể tự xóa tài khoản hoặc tự hạ quyền của mình.
+- **Job Management:** thêm, sửa, xóa, xem chi tiết và quản lý trạng thái công việc.
+- **Export Data:** xuất Excel `IT_Career_Match_Admin_Data.xlsx` gồm Users, Jobs, Applications và Recommendations. Password và password hash không được xuất.
 
--   Đăng ký tài khoản
--   Đăng nhập / đăng xuất
--   Mã hóa mật khẩu
--   Xác thực OTP qua email
--   OTP có thời hạn 5 phút
--   Giới hạn thời gian gửi lại OTP
+---
 
-### 👤 Profile Management
+## 🧠 Machine Learning
 
-Sinh viên có thể:
+### Dataset
 
--   Xem hồ sơ cá nhân
--   Cập nhật họ tên
--   Cập nhật ngày sinh
--   Cập nhật ngành học
--   Cập nhật giới thiệu bản thân
+Dataset ban đầu có 289 job-role samples. Sau xử lý, dataset dùng để train gồm **275 samples, 7 classes**.
 
-### 📄 CV Analysis
+| Career Category | Samples |
+|---|---:|
+| Other IT | 99 |
+| DevOps / Cloud | 49 |
+| Network / System | 36 |
+| Data | 35 |
+| Backend | 22 |
+| Cybersecurity | 19 |
+| AI / ML | 15 |
+| **Total** | **275** |
 
-Hệ thống hỗ trợ:
+### Pipeline
 
--   Upload CV PDF
--   Upload CV DOCX
--   Kiểm tra định dạng file
--   Trích xuất nội dung CV
--   Tiền xử lý văn bản
--   Trích xuất kỹ năng
--   Lưu thông tin CV
-
-### 🤖 Career Prediction
-
-Quy trình:
-
-``` text
-CV
-↓
-Text Preprocessing
-↓
-TF-IDF
-↓
-Logistic Regression
-↓
-Career Category
-```
-
-Mô hình hiện phân loại **7 nhóm nghề chính**:
-
-1.  AI / Machine Learning
-2.  Backend Development
-3.  Cybersecurity
-4.  Data
-5.  DevOps / Cloud
-6.  Network / System
-7.  Other IT
-
-### 💼 Job Recommendation
-
-Hệ thống sử dụng:
-
-**Content-Based Filtering + Cosine Similarity**
-
-để so sánh hồ sơ sinh viên với dữ liệu công việc.
-
-Kết quả bao gồm:
-
--   Career Prediction
--   Top-K công việc phù hợp
--   Match Score
--   Matched Skills
--   Missing Skills
--   Skill Gap Analysis
--   Recommendation Explanation
-
-### 💬 Chatbot hỗ trợ nghề nghiệp
-
-Chatbot giúp người dùng trao đổi và tìm hiểu thông tin liên quan đến
-định hướng nghề nghiệp IT ngay trong hệ thống.
-
-Các mục đích hỗ trợ có thể bao gồm:
-
--   Giải đáp câu hỏi cơ bản về các nhóm nghề IT.
--   Hỗ trợ người dùng tìm hiểu kỹ năng thường cần cho từng vị trí.
--   Gợi ý nội dung nên tìm hiểu thêm khi người dùng muốn phát triển kỹ
-    năng nghề nghiệp.
--   Hỗ trợ người dùng hiểu rõ hơn về thông tin nghề nghiệp và việc làm
-    trong IT Career Match.
-
-Chatbot đóng vai trò hỗ trợ tham khảo; thông tin tư vấn không thay thế
-yêu cầu tuyển dụng chính thức hoặc lời khuyên từ chuyên gia tuyển dụng.
-
-### 🔎 Job Search
-
-Sinh viên có thể:
-
--   Xem danh sách việc làm
--   Xem chi tiết công việc
--   Tìm kiếm theo từ khóa
--   Lọc theo nhóm nghề
--   Lọc theo địa điểm
--   Lọc theo loại công việc
--   Lọc theo kinh nghiệm
--   Lọc theo cấp độ
--   Lọc theo mức lương
--   Sắp xếp kết quả
--   Phân trang
-
-------------------------------------------------------------------------
-
-# 🛡️ Admin Management
-
-Hệ thống có khu vực quản trị riêng dành cho tài khoản có role `admin`.
-
-## 📊 Admin Dashboard
-
-Admin có thể theo dõi:
-
--   Tổng số người dùng
--   Tổng số sinh viên
--   Tổng số Admin
--   Tổng số công việc
--   Tổng số CV
--   Tổng số Application
--   Người dùng đăng ký gần đây
-
-## 👥 User Management
-
-Admin có thể:
-
--   Xem danh sách người dùng
--   Tìm kiếm người dùng
--   Lọc theo role
--   Xem chi tiết tài khoản
--   Tạo tài khoản mới
--   Sửa thông tin người dùng
--   Thay đổi role Student / Admin
--   Xóa tài khoản
--   Không cho Admin tự xóa tài khoản đang đăng nhập
--   Không cho Admin tự hạ quyền chính mình
-
-Tài khoản được Admin tạo trực tiếp không cần xác thực OTP.
-
-## 💼 Job Management
-
-Admin có thể:
-
--   Thêm công việc
--   Sửa công việc
--   Xóa công việc
--   Xem chi tiết công việc
--   Quản lý trạng thái công việc
-
-Thông tin Job bao gồm:
-
--   Job Title
--   Company
--   Location
--   Job Type
--   Career Category
--   Description
--   Requirements
--   Benefits
--   Skills
--   Salary
--   Experience
--   Level
--   Deadline
--   Source
--   Status
-
-## 📊 Export Data
-
-Admin có thể xuất dữ liệu hệ thống thành file Excel:
-
-``` text
-IT_Career_Match_Admin_Data.xlsx
-```
-
-File Excel gồm các sheet:
-
--   Users
--   Jobs
--   Applications
--   Recommendations
-
-Password và password hash **không được xuất**.
-
-------------------------------------------------------------------------
-
-# 🧠 Machine Learning
-
-## Dataset
-
-Dataset ban đầu:
-
-``` text
-289 job-role samples
-```
-
-Sau quá trình xử lý và loại bỏ các nhóm nghề có quá ít dữ liệu, dataset
-dùng để train gồm:
-
-``` text
-275 samples
-7 classes
-```
-
-  Career Category      Samples
-  ------------------ ---------
-  Other IT                  99
-  DevOps / Cloud            49
-  Network / System          36
-  Data                      35
-  Backend                   22
-  Cybersecurity             19
-  AI / ML                   15
-
-------------------------------------------------------------------------
-
-# ⚙️ Machine Learning Pipeline
-
-``` text
+```text
 Career Dataset
-↓
+      ↓
 Text Preprocessing
-↓
+      ↓
 TF-IDF Vectorization
-↓
+      ↓
 Train / Test Split
-↓
+      ↓
 Logistic Regression
-↓
+      ↓
 Career Classification
-↓
+      ↓
 Model Evaluation
 ```
 
-### TF-IDF
-
-``` python
+**TF-IDF**
+```python
 max_features = 2000
 ngram_range = (1, 2)
 ```
 
-### Logistic Regression
-
-``` text
-class_weight = balanced
+**Logistic Regression**
+```python
+class_weight = "balanced"
 max_iter = 1000
 ```
 
-### Train / Test Split
+**Train/Test Split:** 80% Training, 20% Testing.
 
-``` text
-80% Training
-20% Testing
-```
+### Model Performance
 
-------------------------------------------------------------------------
+| Metric | Score |
+|---|---:|
+| Accuracy | 83.64% |
+| Precision (Weighted) | 83.94% |
+| Recall (Weighted) | 83.64% |
+| F1-Score (Weighted) | 83.43% |
 
-# 📈 Model Performance
+Accuracy tương ứng **46 / 55 test samples = 83.64%**.
 
-  Metric                    Score
-  ---------------------- --------
-  Accuracy                 83.64%
-  Precision (Weighted)     83.94%
-  Recall (Weighted)        83.64%
-  F1-Score (Weighted)      83.43%
+---
 
-Kết quả Accuracy:
+## 🎯 Recommendation Algorithm
 
-``` text
-46 / 55 test samples
-= 83.64%
-```
-
-------------------------------------------------------------------------
-
-# 🎯 Recommendation Algorithm
-
-Sau khi dự đoán nhóm nghề, hệ thống sử dụng Recommendation Engine để xếp
-hạng công việc.
-
-``` text
+```text
 Student CV
-↓
+    ↓
 Extract Skills
-↓
+    ↓
 Career Prediction
-↓
+    ↓
 Load Job Database
-↓
+    ↓
 TF-IDF Vectorization
-↓
+    ↓
 Cosine Similarity
-↓
+    ↓
 Career Category Bonus
-↓
+    ↓
 Match Score
-↓
+    ↓
 Job Ranking
-↓
+    ↓
 Top-K Jobs
 ```
 
-## Match Score
+Match Score hiện sử dụng độ tương đồng nội dung và điểm cộng theo nhóm nghề. Nếu Career Category của công việc trùng với Career Prediction, hệ thống cộng bonus 30 điểm.
 
-Công thức hiện tại:
+### Skill Gap Analysis
 
-``` text
-Match Score =
-Cosine Similarity × 70
-+
-Career Category Bonus × 30
+Hệ thống so sánh Student Skills với Job Required Skills để xác định:
+- **Matched Skills:** kỹ năng đã phù hợp.
+- **Missing Skills:** kỹ năng còn thiếu.
+
+Recommendation Explanation giúp người dùng hiểu lý do công việc được đề xuất dựa trên nhóm nghề dự đoán, kỹ năng phù hợp/còn thiếu, độ tương đồng CV và nội dung công việc.
+
+---
+
+## 🏗️ System Architecture
+
+```text
+Web Browser (HTML / CSS / Bootstrap / JavaScript)
+                         |
+                         v
+                   Flask Backend
+                         |
+          +--------------+--------------+
+          |              |              |
+          v              v              v
+      PostgreSQL    CV Processing    AI / ML Module
+      Database      PDF / DOCX       TF-IDF
+                    Text Processing  Logistic Regression
+                    Skill Extraction Career Classification
+                                          |
+                                          v
+                                 Recommendation Engine
+                                 Content-Based Filtering
+                                 Cosine Similarity
+                                 Match Score / Skill Gap
+                                 Recommendation Explanation
 ```
 
-Nếu Career Category của công việc trùng với Career Prediction:
+---
 
-``` text
-Career Category Bonus = 30
-```
+## 🗄️ Database
 
-------------------------------------------------------------------------
+Hệ thống sử dụng **PostgreSQL**. Các bảng nghiệp vụ chính gồm:
 
-# 🧩 Skill Gap Analysis
-
-Hệ thống so sánh:
-
-``` text
-Student Skills
-VS
-Job Required Skills
-```
-
-để tìm:
-
-``` text
-Matched Skills
-Missing Skills
-```
-
-Ví dụ:
-
-``` text
-Student Skills:
-Python
-Flask
-SQL
-Git
-
-Job Required Skills:
-Python
-Flask
-SQL
-Docker
-AWS
-
-Matched Skills:
-Python
-Flask
-SQL
-
-Missing Skills:
-Docker
-AWS
-```
-
-Nhờ đó sinh viên có thể biết những kỹ năng còn thiếu để cải thiện hồ sơ.
-
-------------------------------------------------------------------------
-
-# 💡 Recommendation Explanation
-
-Ngoài Match Score, hệ thống tạo giải thích recommendation dựa trên:
-
--   Nhóm nghề được dự đoán
--   Kỹ năng phù hợp
--   Kỹ năng còn thiếu
--   Độ tương đồng giữa CV và Job
--   Nội dung công việc
-
-Điều này giúp người dùng hiểu **vì sao một công việc được đề xuất** thay
-vì chỉ nhận một con số Match Score.
-
-------------------------------------------------------------------------
-
-# 🏗️ System Architecture
-
-``` text
-┌─────────────────────────────┐
-│         Web Browser         │
-│ HTML / CSS / Bootstrap / JS │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│        Flask Backend        │
-│                             │
-│ Authentication              │
-│ Profile Management          │
-│ CV Management               │
-│ Job Management              │
-│ Chatbot Support             │
-│ Admin Management            │
-└───────┬─────────┬───────────┘
-        │         │
-        │         ▼
-        │   ┌─────────────────┐
-        │   │ SQLite Database │
-        │   └─────────────────┘
-        │
-        ▼
-┌─────────────────────────────┐
-│     CV Processing Module    │
-│ PDF / DOCX Parser           │
-│ Text Preprocessing          │
-│ Skill Extraction            │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│        AI / ML Module       │
-│ TF-IDF                      │
-│ Logistic Regression         │
-│ Career Classification       │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│   Recommendation Engine     │
-│ Content-Based Filtering     │
-│ Cosine Similarity           │
-│ Match Score                 │
-│ Skill Gap                   │
-│ Explanation                 │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│   Recommendation Results    │
-│ Career Prediction           │
-│ Top-K Jobs                  │
-│ Match Score                 │
-│ Skill Gap                   │
-│ Explanation                 │
-└─────────────────────────────┘
-```
-
-------------------------------------------------------------------------
-
-# 🗄️ Database
-
-Hệ thống sử dụng **SQLite**.
-
-Các bảng chính:
-
-``` text
+```text
 users
 student_profiles
 cvs
@@ -496,31 +172,117 @@ favourites
 applications
 ```
 
-Database lưu trữ:
+Database lưu trữ tài khoản, hồ sơ sinh viên, CV, kỹ năng, công việc, recommendation, favourite và application. Tên bảng thực tế phụ thuộc schema hiện tại của dự án.
 
--   Tài khoản
--   Hồ sơ sinh viên
--   CV
--   Kỹ năng
--   Công việc
--   Recommendation
--   Favourite
--   Application
+---
 
-------------------------------------------------------------------------
+## 🐳 Docker & Docker Compose
 
-# 📁 Project Structure
+Dự án sử dụng Docker để các thành viên có thể chạy ứng dụng và PostgreSQL trong container, hạn chế việc phải cài đặt/cấu hình database thủ công trên từng máy.
 
-``` text
+### Requirements
+- Git
+- Docker Desktop đã khởi động Docker Engine
+- Docker Compose (được tích hợp trong Docker Desktop)
+
+### Run with Docker Compose
+
+**1. Clone repository**
+
+```bash
+git clone https://github.com/Storqh/IT-Career-Match.git
+cd IT-Career-Match
+```
+
+**2. Tạo file môi trường**
+
+Nếu repository có `.env.example`, tạo file `.env`:
+
+Windows PowerShell:
+```powershell
+Copy-Item .env.example .env
+```
+
+macOS / Linux:
+```bash
+cp .env.example .env
+```
+
+Mở `.env` và điền các giá trị theo cấu hình dự án. Tên biến môi trường phải khớp với file Compose và cách ứng dụng đọc cấu hình. Không dùng mật khẩu/API key mẫu cho môi trường thật.
+
+**3. Build và khởi chạy**
+
+```bash
+docker compose up -d --build
+```
+
+**4. Kiểm tra container**
+
+```bash
+docker compose ps
+```
+
+**5. Xem log**
+
+```bash
+docker compose logs -f
+```
+
+Xem log một service:
+```bash
+docker compose logs -f <service>
+```
+
+**6. Truy cập ứng dụng**
+
+Mở port được ánh xạ trong `ports` của service ứng dụng ở file Compose. Ví dụ, nếu cấu hình `5000:5000`:
+
+```text
+http://localhost:5000
+```
+
+### Docker commands
+
+```bash
+# Khởi động
+docker compose up -d
+
+# Build lại image và khởi động
+docker compose up -d --build
+
+# Kiểm tra container
+docker compose ps
+
+# Xem log
+docker compose logs -f
+
+# Dừng và xóa container/network do Compose tạo
+docker compose down
+```
+
+> **Lưu ý dữ liệu:** PostgreSQL thường được lưu trong Docker volume. `docker compose down` không xóa volume. Không chạy `docker compose down -v` nếu muốn giữ dữ liệu database, vì lệnh này có thể xóa volume PostgreSQL.
+
+### Chia sẻ môi trường cho thành viên
+
+Mỗi thành viên clone repository, tạo file `.env` riêng và chạy `docker compose up -d --build`. Mỗi máy có container và volume database riêng; dữ liệu trong database trên máy của bạn **không tự động** được chuyển sang máy thành viên. Nếu cần dữ liệu mẫu chung, dự án cần có migration hoặc seed script.
+
+---
+
+## 📁 Project Structure
+
+Cấu trúc minh họa các thành phần chính; tên file/thư mục có thể thay đổi theo phiên bản repository.
+
+```text
 IT-Career-Match/
-│
 ├── app.py
 ├── requirements.txt
 ├── README.md
+├── Dockerfile
+├── compose.yaml
+├── .dockerignore
+├── .env.example
 ├── .gitignore
-│
 ├── ai/
-│   ├── __init__.py
 │   ├── career_classifier.py
 │   ├── cv_parser.py
 │   ├── explanation.py
@@ -529,360 +291,163 @@ IT-Career-Match/
 │   ├── skill_extractor.py
 │   ├── skill_gap.py
 │   └── text_preprocessing.py
-│
 ├── data/
 │   ├── career_dataset.csv
 │   ├── career_ml_dataset.csv
 │   ├── career_preprocessed.csv
 │   ├── jobs.csv
-│   ├── seed_jobs.py
-│   └── upgrade_jobs_database.py
-│
+│   └── seed_jobs.py
 ├── database/
-│   ├── __init__.py
-│   ├── database.py
-│   └── it_career_match.db
-│
+│   └── database.py
 ├── models/
 │   ├── career_classifier.joblib
 │   └── tfidf_vectorizer.joblib
-│
 ├── static/
 │   ├── css/
-│   │   └── style.css
 │   └── js/
-│       └── main.js
-│
 ├── templates/
 │   ├── admin/
-│   │   ├── dashboard.html
-│   │   ├── users.html
-│   │   ├── user_detail.html
-│   │   ├── add_user.html
-│   │   └── edit_user.html
-│   │
-│   ├── base.html
-│   ├── dashboard.html
-│   ├── index.html
-│   ├── jobs.html
-│   ├── job_detail.html
-│   ├── login.html
-│   ├── profile.html
-│   ├── recommendations.html
-│   ├── register.html
-│   ├── result.html
-│   ├── upload_cv.html
-│   └── verify_otp.html
-│
+│   └── ...
 └── uploads/
     └── .gitkeep
 ```
 
-------------------------------------------------------------------------
+---
 
-# 🛠️ Technologies
+## 🛠️ Technologies
 
-## Backend
+- **Backend:** Python, Flask, PostgreSQL, psycopg.
+- **Machine Learning:** scikit-learn, pandas, NumPy, TF-IDF, Logistic Regression, Cosine Similarity.
+- **CV Processing:** pypdf, python-docx.
+- **Frontend:** HTML5, CSS3, Bootstrap, JavaScript, Jinja2.
+- **Other:** Werkzeug, joblib, openpyxl, requests, python-dotenv, Gunicorn, Brevo Email API.
+- **Deployment & Development:** Git, GitHub, Docker, Docker Compose, Render.
 
--   Python
--   Flask
--   SQLite
+---
 
-## Machine Learning
+## 🚀 Run Locally Without Docker
 
--   scikit-learn
--   pandas
--   NumPy
--   TF-IDF
--   Logistic Regression
--   Cosine Similarity
+Nếu chạy Flask trực tiếp trên máy, cần có Python và PostgreSQL đang hoạt động.
 
-## CV Processing
-
--   pypdf
--   python-docx
-
-## Frontend
-
--   HTML5
--   CSS3
--   Bootstrap
--   JavaScript
--   Jinja2
-
-## Other
-
--   Werkzeug
--   joblib
--   openpyxl
--   requests
--   python-dotenv
--   Gunicorn
--   Brevo Email API
-
-## Deployment
-
--   Git
--   GitHub
--   Render
-
-------------------------------------------------------------------------
-
-# 🚀 Installation
-
-## 1. Clone Repository
-
-``` bash
+**1. Clone repository**
+```bash
 git clone https://github.com/Storqh/IT-Career-Match.git
-
 cd IT-Career-Match
 ```
 
-## 2. Create Virtual Environment
+**2. Tạo virtual environment**
 
 Windows:
-
-``` bash
+```powershell
 python -m venv .venv
-
 .venv\Scripts\activate
 ```
 
-## 3. Install Dependencies
+macOS / Linux:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-``` bash
+**3. Cài dependencies**
+```bash
 pip install -r requirements.txt
 ```
 
-## 4. How to Get Environment Variables
+**4. Tạo `.env`**
 
-Để chạy đầy đủ chức năng đăng nhập, quản lý session và xác minh email OTP, người dùng cần tự cấu hình các biến môi trường sau.
+Tham khảo `.env.example` và khai báo các biến mà ứng dụng yêu cầu. Ví dụ:
 
 ```env
-SECRET_KEY=your_secret_key
+SECRET_KEY=your_generated_secret_key
+DATABASE_URL=your_postgresql_connection_string
 BREVO_API_KEY=your_brevo_api_key
 ```
 
-### 4.1. Generate Flask SECRET_KEY
+Tên biến phải khớp với mã nguồn/cấu hình thực tế. Có thể tạo Flask secret key bằng:
 
-`SECRET_KEY` được Flask sử dụng để ký session và bảo vệ dữ liệu session khỏi bị chỉnh sửa trái phép.
-
-**Cách tạo:**
-
-1. Cài đặt Python trên máy tính.
-2. Mở Terminal hoặc Command Prompt.
-3. Chạy lệnh:
-
-   ```bash
-   python -c "import secrets; print(secrets.token_hex(32))"
-   ```
-
-4. Sao chép chuỗi được tạo ra.
-5. Dán chuỗi đó vào biến `SECRET_KEY` trong file `.env`.
-
-Ví dụ:
-
-```env
-SECRET_KEY=paste_your_generated_secret_key_here
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-Mỗi người dùng nên tạo một khóa riêng. Không sử dụng khóa ví dụ làm khóa thật.
+Không commit file `.env` lên Git.
 
-### 4.2. Get Brevo API Key
-
-Brevo API Key được sử dụng để kết nối ứng dụng với Brevo và gửi email xác minh OTP.
-
-**Các bước thực hiện:**
-
-1. Truy cập [Brevo](https://www.brevo.com/) và đăng nhập hoặc tạo tài khoản.
-2. Mở phần **Settings** trong tài khoản.
-3. Chọn **SMTP & API** → **API Keys & MCP**.
-4. Nhấn **Generate a new API key**.
-5. Đặt tên dễ nhận biết, ví dụ `IT Career Match`.
-6. Chọn thời hạn sử dụng phù hợp và tạo khóa.
-7. Sao chép API Key ngay khi khóa được hiển thị và lưu ở nơi an toàn.
-8. Dán khóa vào biến `BREVO_API_KEY` trong file `.env`.
-
-Tài liệu chính thức: [Create and manage your API keys – Brevo](https://help.brevo.com/hc/en-us/articles/209467485-Create-and-manage-your-API-keys).
-
-**Important:** Brevo chỉ hiển thị đầy đủ API Key khi tạo. Nếu làm mất khóa, bạn cần tạo khóa mới.
-
-### 4.3. Configure the `.env` File
-
-Tạo file `.env` ở thư mục gốc của dự án, cùng cấp với `app.py`.
-
-```text
-IT-Career-Match/
-├── app.py
-├── .env
-├── .gitignore
-├── requirements.txt
-└── README.md
-```
-
-Nội dung file `.env`:
-
-```env
-SECRET_KEY=paste_your_generated_secret_key_here
-BREVO_API_KEY=paste_your_brevo_api_key_here
-```
-
-Thay các giá trị ví dụ bằng khóa thực tế của bạn.
-
-### 4.4. Keep Your Keys Secure
-
-- Không đăng `SECRET_KEY` hoặc `BREVO_API_KEY` lên GitHub.
-- Không gửi API Key trong ảnh chụp màn hình hoặc bài đăng công khai.
-- Đảm bảo `.env` nằm trong `.gitignore`.
-- Nếu khóa bị lộ, hãy thay khóa bị lộ và cập nhật cấu hình ứng dụng.
-
-Ví dụ `.gitignore`:
-
-```gitignore
-.env
-.venv/
-venv/
-__pycache__/
-*.pyc
-```
-
-### 4.5. Troubleshooting
-
-Nếu email OTP không được gửi:
-
-- Kiểm tra `BREVO_API_KEY` đã được nhập đúng chưa.
-- Kiểm tra tài khoản Brevo và quyền sử dụng API.
-- Kiểm tra cấu hình gửi email trong dự án.
-- Kiểm tra log lỗi trong Terminal.
-
-Nếu ứng dụng báo lỗi liên quan đến session hoặc secret key, hãy kiểm tra `SECRET_KEY` đã được cấu hình và Flask đã đọc biến môi trường đúng cách chưa.
-
-
-## 5. Run Application
-
-``` bash
+**5. Chạy ứng dụng**
+```bash
 python app.py
 ```
 
-Truy cập:
+Mở địa chỉ/port Flask hiển thị trong terminal. Với cấu hình mặc định thường dùng:
 
-``` text
+```text
 http://127.0.0.1:5000
 ```
 
-------------------------------------------------------------------------
+---
 
-# 📦 Main Dependencies
-
-``` text
-Flask
-pandas
-numpy
-scikit-learn
-pypdf
-python-docx
-joblib
-gunicorn
-requests
-python-dotenv
-openpyxl
-```
-
-------------------------------------------------------------------------
-
-# 🔒 Security
+## 🔒 Security
 
 Hệ thống hiện áp dụng:
+- Password hashing.
+- Session-based authentication.
+- Role-based authorization.
+- Admin route protection.
+- OTP email verification, expiration và resend cooldown.
+- File extension validation.
+- File upload size limit.
+- Secure filename handling.
+- Environment variables cho Secret/API Key.
+- Không export password hash.
 
--   Password hashing
--   Session-based authentication
--   Role-based authorization
--   Admin route protection
--   OTP email verification
--   OTP expiration
--   OTP resend cooldown
--   File extension validation
--   File upload size limit
--   Secure filename handling
--   Environment variables cho Secret/API Key
--   Không export password hash
+Không commit `.env`, `SECRET_KEY`, `BREVO_API_KEY`, mật khẩu database, CV người dùng hoặc dữ liệu cá nhân. Kiểm tra `.gitignore` trước khi push.
 
-------------------------------------------------------------------------
+---
 
-# ⚠️ Current Limitations
+## ⚠️ Current Limitations
 
-Phiên bản hiện tại vẫn có một số giới hạn:
+- Dataset Machine Learning còn tương đối nhỏ.
+- Một số nhóm nghề có ít dữ liệu nên chưa được đưa vào classifier chính.
+- Skill Extraction chủ yếu dựa trên danh sách kỹ năng đã định nghĩa.
+- Recommendation chủ yếu dựa trên nội dung CV và thông tin công việc.
+- Render Free có thể sleep khi không có request.
+- Cần cấu hình lưu trữ bền vững phù hợp cho file upload và database khi triển khai production.
 
--   Dataset Machine Learning còn tương đối nhỏ
--   Một số nhóm nghề có quá ít dữ liệu nên chưa được đưa vào classifier
-    chính
--   Skill Extraction chủ yếu dựa trên danh sách kỹ năng đã định nghĩa
--   Recommendation chủ yếu dựa trên nội dung CV và thông tin công việc
--   SQLite phù hợp với demo/đồ án hơn hệ thống production lớn
--   Render Free có thể sleep khi không có request
--   File/database local trên môi trường deploy miễn phí chưa phù hợp cho
-    lưu trữ production lâu dài
+---
 
-------------------------------------------------------------------------
+## 🔮 Future Development
 
-# 🔮 Future Development
+- REST API.
+- Semantic Embeddings / Sentence Transformers.
+- Transformer-based NLP.
+- Collaborative Filtering và Hybrid Recommendation.
+- Job API Integration.
+- CV Scoring.
+- Learning Path Recommendation.
+- Skill / Course Recommendation.
+- Advanced Admin Analytics.
+- Cloud File Storage.
+- Automated Testing và CI/CD.
+- Chatbot tư vấn nghề nghiệp có khả năng truy xuất thông tin việc làm và kỹ năng.
 
-Hệ thống có thể tiếp tục phát triển:
+---
 
--   PostgreSQL
--   REST API
--   Semantic Embeddings
--   Sentence Transformers
--   Transformer-based NLP
--   Collaborative Filtering
--   Hybrid Recommendation
--   Job API Integration
--   CV Scoring
--   Learning Path Recommendation
--   Skill/Course Recommendation
--   Advanced Admin Analytics
--   Cloud File Storage
--   Docker
--   Automated Testing
--   CI/CD
--   Chatbot tư vấn nghề nghiệp với khả năng truy xuất thông tin việc làm
-    và kỹ năng
+## 🎓 Project Purpose
 
-------------------------------------------------------------------------
+Dự án được xây dựng nhằm nghiên cứu và áp dụng Machine Learning, Natural Language Processing, Recommendation System, Web Development, Database Design, Software Engineering, Scrum và Deployment.
 
-# 🎓 Project Purpose
+> **Gợi ý việc làm cá nhân hóa cho sinh viên Công nghệ Thông tin dựa trên CV, kỹ năng và Machine Learning.**
 
-Dự án được xây dựng nhằm nghiên cứu và áp dụng:
+---
 
--   Machine Learning
--   Natural Language Processing
--   Recommendation System
--   Web Development
--   Database Design
--   Software Engineering
--   Scrum
--   Deployment
+## 👨‍💻 Author
 
-Đề tài tập trung giải quyết bài toán:
+**Nhóm 4**  
+GitHub: [Storqh](https://github.com/Storqh)
 
-> **Gợi ý việc làm cá nhân hóa cho sinh viên Công nghệ Thông tin dựa
-> trên CV, kỹ năng và Machine Learning.**
+**IT Career Match — Personalized Job Recommendation System for IT Students**
 
-------------------------------------------------------------------------
+---
 
-# 👨‍💻 Author
+## 📄 License
 
-**NHóm 4**
-
-GitHub: **Storqh**
-
-Project:
-
-**IT Career Match -- Personalized Job Recommendation System for IT
-Students**
-
-------------------------------------------------------------------------
-
-# 📄 License
-
-Dự án được xây dựng phục vụ mục đích **học tập và nghiên cứu**.
+Dự án được xây dựng phục vụ mục đích học tập và nghiên cứu.

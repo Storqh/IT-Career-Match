@@ -1,63 +1,75 @@
-import sqlite3
+from database.database import get_connection
 
-DB_PATH = "database/it_career_match.db"
 
-connection = sqlite3.connect(DB_PATH)
-cursor = connection.cursor()
-
-# Lấy danh sách cột hiện tại
-cursor.execute("PRAGMA table_info(jobs)")
-existing_columns = [row[1] for row in cursor.fetchall()]
-
-print("Các cột hiện tại:")
-print(existing_columns)
-
-# Các cột mới cần bổ sung
-new_columns = {
-    "requirements": "TEXT",
-    "benefits": "TEXT",
-    "skills": "TEXT",
-    "salary_min": "INTEGER DEFAULT 0",
-    "salary_max": "INTEGER DEFAULT 0",
-    "salary_text": "TEXT",
-    "experience": "TEXT",
-    "level": "TEXT",
-    "deadline": "TEXT",
-    "source": "TEXT DEFAULT 'IT Career Match'",
-    "source_url": "TEXT",
-    "status": "TEXT DEFAULT 'active'"
+EXPECTED_COLUMNS = {
+    "job_id",
+    "title",
+    "description",
+    "company",
+    "location",
+    "job_type",
+    "category",
+    "created_at",
+    "requirements",
+    "benefits",
+    "skills",
+    "salary_min",
+    "salary_max",
+    "salary_text",
+    "experience",
+    "level",
+    "deadline",
+    "source",
+    "source_url",
+    "status"
 }
 
-for column_name, column_type in new_columns.items():
 
-    if column_name not in existing_columns:
+def verify_jobs_table():
 
-        sql = f"""
-        ALTER TABLE jobs
-        ADD COLUMN {column_name} {column_type}
-        """
+    connection = get_connection()
 
-        cursor.execute(sql)
+    try:
+        rows = connection.execute(
+            """
+            SELECT
+                column_name,
+                data_type
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = %s
+            ORDER BY ordinal_position
+            """,
+            ("jobs",)
+        ).fetchall()
 
-        print(f"Đã thêm cột: {column_name}")
+        existing_columns = {
+            row["column_name"]
+            for row in rows
+        }
 
-    else:
-        print(f"Cột {column_name} đã tồn tại.")
+        print("===== JOBS TABLE =====")
 
-connection.commit()
+        for row in rows:
+            print(
+                row["column_name"],
+                row["data_type"]
+            )
 
-# Kiểm tra lại
-cursor.execute("PRAGMA table_info(jobs)")
+        missing_columns = EXPECTED_COLUMNS - existing_columns
 
-print("\n===== JOBS TABLE =====")
+        if missing_columns:
+            raise RuntimeError(
+                "PostgreSQL đang thiếu các cột: "
+                + ", ".join(sorted(missing_columns))
+            )
 
-for column in cursor.fetchall():
-    print(
-        column[0],
-        column[1],
-        column[2]
-    )
+        print("\nĐã tìm thấy đầy đủ các cột.")
+        print("Kiểm tra bảng jobs thành công!")
 
-connection.close()
+    finally:
+        connection.close()
 
-print("\nUpgrade database thành công!")
+
+if __name__ == "__main__":
+    verify_jobs_table()

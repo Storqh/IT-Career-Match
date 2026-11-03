@@ -70,7 +70,27 @@ os.makedirs(
 # =========================================================
 # HELPER FUNCTIONS
 # =========================================================
+def execute_sql(connection, query, params=None):
+    """
+    Thực thi câu SQL bằng psycopg 3.
 
+    Chuyển placeholder ? của SQLite thành %s
+    và chuyển LIKE thành ILIKE cho PostgreSQL.
+    """
+
+    query = query.replace("?", "%s")
+
+    query = re.sub(
+        r"\bLIKE\b",
+        "ILIKE",
+        query,
+        flags=re.IGNORECASE
+    )
+
+    cursor = connection.cursor()
+    cursor.execute(query, params or ())
+
+    return cursor
 def allowed_file(filename):
     return (
         "." in filename
@@ -239,7 +259,7 @@ def register():
 
         connection = get_connection()
 
-        existing_user = connection.execute(
+        existing_user = execute_sql(connection,
             """
             SELECT user_id
             FROM users
@@ -288,10 +308,27 @@ def register():
 
         try:
 
-            send_otp_email(
+            email_sent = send_otp_email(
                 email,
                 otp
             )
+
+            if not email_sent:
+                session.pop(
+                    "pending_register",
+                    None
+                )
+
+                return render_template(
+                    "register.html",
+                    message=(
+                        "Không thể gửi OTP. "
+                        "Vui lòng kiểm tra cấu hình email và thử lại."
+                    ),
+                    message_type="danger",
+                    full_name=full_name,
+                    email=email
+                )
 
         except Exception as error:
 
@@ -421,11 +458,13 @@ def verify_otp():
 
         try:
 
-            cursor = connection.execute(
+            cursor = execute_sql(
+                connection,
                 """
                 INSERT INTO users
                 (email, password, role)
                 VALUES (?, ?, ?)
+                RETURNING user_id
                 """,
                 (
                     pending["email"],
@@ -434,13 +473,12 @@ def verify_otp():
                 )
             )
 
-            user_id = cursor.lastrowid
-
+            user_id = cursor.fetchone()["user_id"]
             # -------------------------
             # CREATE PROFILE
             # -------------------------
 
-            connection.execute(
+            execute_sql(connection,
                 """
                 INSERT INTO student_profiles
                 (user_id, full_name)
@@ -529,7 +567,18 @@ def resend_otp():
 
     # Gửi email trước khi cập nhật OTP trong session
     try:
-        send_otp_email(pending["email"], otp)
+        email_sent = send_otp_email(
+            pending["email"],
+            otp
+        )
+
+        if not email_sent:
+            return render_template(
+                "verify_otp.html",
+                email=pending["email"],
+                message="Không thể gửi lại OTP. Vui lòng thử lại.",
+                message_type="danger"
+            )
 
     except Exception as error:
         print("EMAIL API ERROR:", repr(error))
@@ -602,11 +651,11 @@ def login():
 
         connection = get_connection()
 
-        user = connection.execute(
+        user = execute_sql(connection,
             """
             SELECT *
             FROM users
-            WHERE email = ?
+            WHERE email = %s
             """,
             (email,)
         ).fetchone()
@@ -736,7 +785,7 @@ def profile():
             ""
         ).strip()
 
-        connection.execute(
+        execute_sql(connection,
             """
             UPDATE student_profiles
             SET full_name = ?,
@@ -765,7 +814,7 @@ def profile():
     # GET PROFILE
     # -----------------------------
 
-    profile_data = connection.execute(
+    profile_data = execute_sql(connection,
         """
         SELECT *
         FROM student_profiles
@@ -956,7 +1005,7 @@ def jobs():
         + where_sql
     )
 
-    total_row = connection.execute(
+    total_row = execute_sql(connection,
         count_sql,
         params
     ).fetchone()
@@ -983,7 +1032,7 @@ def jobs():
         offset
     ]
 
-    jobs_data = connection.execute(
+    jobs_data = execute_sql(connection,
         query,
         query_params
     ).fetchall()
@@ -992,7 +1041,7 @@ def jobs():
     # FILTER OPTIONS
     # -----------------------------------------------------
 
-    categories = connection.execute("""
+    categories = execute_sql(connection,"""
         SELECT DISTINCT category
         FROM jobs
         WHERE category IS NOT NULL
@@ -1000,7 +1049,7 @@ def jobs():
         ORDER BY category
     """).fetchall()
 
-    locations = connection.execute("""
+    locations = execute_sql(connection,"""
         SELECT DISTINCT location
         FROM jobs
         WHERE location IS NOT NULL
@@ -1008,7 +1057,7 @@ def jobs():
         ORDER BY location
     """).fetchall()
 
-    job_types = connection.execute("""
+    job_types = execute_sql(connection,"""
         SELECT DISTINCT job_type
         FROM jobs
         WHERE job_type IS NOT NULL
@@ -1016,7 +1065,7 @@ def jobs():
         ORDER BY job_type
     """).fetchall()
 
-    experiences = connection.execute("""
+    experiences = execute_sql(connection,"""
         SELECT DISTINCT experience
         FROM jobs
         WHERE experience IS NOT NULL
@@ -1024,7 +1073,7 @@ def jobs():
         ORDER BY experience
     """).fetchall()
 
-    levels = connection.execute("""
+    levels = execute_sql(connection,"""
         SELECT DISTINCT level
         FROM jobs
         WHERE level IS NOT NULL
@@ -1090,7 +1139,7 @@ def job_detail(job_id):
 
     connection = get_connection()
 
-    job = connection.execute(
+    job = execute_sql(connection,
         """
         SELECT *
         FROM jobs
@@ -1163,7 +1212,7 @@ def add_job():
 
         connection = get_connection()
 
-        connection.execute(
+        execute_sql(connection,
             """
             INSERT INTO jobs
             (
@@ -1221,7 +1270,7 @@ def edit_job(job_id):
 
     connection = get_connection()
 
-    job = connection.execute(
+    job = execute_sql(connection,
         """
         SELECT *
         FROM jobs
@@ -1270,7 +1319,7 @@ def edit_job(job_id):
             ""
         ).strip()
 
-        connection.execute(
+        execute_sql(connection,
             """
             UPDATE jobs
             SET title = ?,
@@ -1330,7 +1379,7 @@ def delete_job(job_id):
 
     connection = get_connection()
 
-    job = connection.execute(
+    job = execute_sql(connection,
         """
         SELECT *
         FROM jobs
@@ -1347,7 +1396,7 @@ def delete_job(job_id):
             404
         )
 
-    connection.execute(
+    execute_sql(connection,
         """
         DELETE FROM jobs
         WHERE job_id = ?
@@ -1498,7 +1547,7 @@ def upload_cv():
 
         try:
 
-            connection.execute(
+            execute_sql(connection,
                 """
                 INSERT INTO cvs
                 (
@@ -1523,16 +1572,17 @@ def upload_cv():
 
             for skill_name in found_skills:
 
-                connection.execute(
+                execute_sql(
+                    connection,
                     """
-                    INSERT OR IGNORE
-                    INTO skills (name)
+                    INSERT INTO skills (name)
                     VALUES (?)
+                    ON CONFLICT (name) DO NOTHING
                     """,
                     (skill_name,)
                 )
 
-                skill = connection.execute(
+                skill = execute_sql(connection,
                     """
                     SELECT skill_id
                     FROM skills
@@ -1543,15 +1593,16 @@ def upload_cv():
 
                 if skill:
 
-                    connection.execute(
+                    execute_sql(
+                        connection,
                         """
-                        INSERT OR IGNORE
-                        INTO student_skills
+                        INSERT INTO student_skills
                         (
                             user_id,
                             skill_id
                         )
                         VALUES (?, ?)
+                        ON CONFLICT (user_id, skill_id) DO NOTHING
                         """,
                         (
                             session["user_id"],
@@ -1608,7 +1659,7 @@ def recommendations():
     connection = get_connection()
 
     # CV mới nhất
-    cv = connection.execute(
+    cv = execute_sql(connection,    
         """
         SELECT parsed_text
         FROM cvs
@@ -1684,11 +1735,11 @@ def admin_dashboard():
 
     connection = get_connection()
 
-    total_users = connection.execute(
+    total_users = execute_sql(connection,
         "SELECT COUNT(*) AS total FROM users"
     ).fetchone()["total"]
 
-    total_students = connection.execute(
+    total_students = execute_sql(connection,
         """
         SELECT COUNT(*) AS total
         FROM users
@@ -1696,7 +1747,7 @@ def admin_dashboard():
         """
     ).fetchone()["total"]
 
-    total_admins = connection.execute(
+    total_admins = execute_sql(connection,
         """
         SELECT COUNT(*) AS total
         FROM users
@@ -1704,19 +1755,19 @@ def admin_dashboard():
         """
     ).fetchone()["total"]
 
-    total_jobs = connection.execute(
+    total_jobs = execute_sql(connection,
         "SELECT COUNT(*) AS total FROM jobs"
     ).fetchone()["total"]
 
-    total_cvs = connection.execute(
+    total_cvs = execute_sql(connection,
         "SELECT COUNT(*) AS total FROM cvs"
     ).fetchone()["total"]
 
-    total_applications = connection.execute(
+    total_applications = execute_sql(connection,
         "SELECT COUNT(*) AS total FROM applications"
     ).fetchone()["total"]
 
-    recent_users = connection.execute(
+    recent_users = execute_sql(connection,
         """
         SELECT
             u.user_id,
@@ -1810,7 +1861,7 @@ def admin_users():
 
     sql += " ORDER BY u.created_at DESC"
 
-    users = connection.execute(
+    users = execute_sql(connection,
         sql,
         params
     ).fetchall()
@@ -1837,7 +1888,7 @@ def admin_user_detail(user_id):
 
     connection = get_connection()
 
-    user = connection.execute(
+    user = execute_sql(connection,
         """
         SELECT
             u.user_id,
@@ -1860,7 +1911,7 @@ def admin_user_detail(user_id):
         connection.close()
         return "Không tìm thấy tài khoản.", 404
 
-    skills = connection.execute(
+    skills = execute_sql(connection,
         """
         SELECT s.name
         FROM student_skills ss
@@ -1872,7 +1923,7 @@ def admin_user_detail(user_id):
         (user_id,)
     ).fetchall()
 
-    cvs = connection.execute(
+    cvs = execute_sql(connection,
         """
         SELECT
             cv_id,
@@ -1929,7 +1980,7 @@ def admin_change_user_role(user_id):
 
     connection = get_connection()
 
-    user = connection.execute(
+    user = execute_sql(connection,
         """
         SELECT user_id
         FROM users
@@ -1942,7 +1993,7 @@ def admin_change_user_role(user_id):
         connection.close()
         return "Không tìm thấy tài khoản.", 404
 
-    connection.execute(
+    execute_sql(connection,
         """
         UPDATE users
         SET role = ?
@@ -1988,7 +2039,7 @@ def admin_delete_user(user_id):
 
     connection = get_connection()
 
-    user = connection.execute(
+    user = execute_sql(connection,
         """
         SELECT user_id
         FROM users
@@ -2004,37 +2055,37 @@ def admin_delete_user(user_id):
     try:
 
         # Các bảng liên quan
-        connection.execute(
+        execute_sql(connection,
             "DELETE FROM recommendations WHERE user_id = ?",
             (user_id,)
         )
 
-        connection.execute(
+        execute_sql(connection,
             "DELETE FROM applications WHERE user_id = ?",
             (user_id,)
         )
 
-        connection.execute(
+        execute_sql(connection,
             "DELETE FROM favourites WHERE user_id = ?",
             (user_id,)
         )
 
-        connection.execute(
+        execute_sql(connection,
             "DELETE FROM student_skills WHERE user_id = ?",
             (user_id,)
         )
 
-        connection.execute(
+        execute_sql(connection,
             "DELETE FROM cvs WHERE user_id = ?",
             (user_id,)
         )
 
-        connection.execute(
+        execute_sql(connection,
             "DELETE FROM student_profiles WHERE user_id = ?",
             (user_id,)
         )
 
-        connection.execute(
+        execute_sql(connection,
             "DELETE FROM users WHERE user_id = ?",
             (user_id,)
         )
@@ -2110,7 +2161,7 @@ def admin_add_user():
 
         connection = get_connection()
 
-        existing_user = connection.execute(
+        existing_user = execute_sql(connection,
             """
             SELECT user_id
             FROM users
@@ -2129,11 +2180,13 @@ def admin_add_user():
 
         try:
 
-            cursor = connection.execute(
+            cursor = execute_sql(
+                connection,
                 """
                 INSERT INTO users
                     (email, password, role)
                 VALUES (?, ?, ?)
+                RETURNING user_id
                 """,
                 (
                     email,
@@ -2142,9 +2195,9 @@ def admin_add_user():
                 )
             )
 
-            user_id = cursor.lastrowid
+            user_id = cursor.fetchone()["user_id"]
 
-            connection.execute(
+            execute_sql(connection,
                 """
                 INSERT INTO student_profiles
                     (user_id, full_name, major)
@@ -2194,7 +2247,7 @@ def admin_edit_user(user_id):
 
     connection = get_connection()
 
-    user = connection.execute(
+    user = execute_sql(connection,
         """
         SELECT
             u.user_id,
@@ -2263,7 +2316,7 @@ def admin_edit_user(user_id):
                 400
             )
 
-        duplicate = connection.execute(
+        duplicate = execute_sql(connection,
             """
             SELECT user_id
             FROM users
@@ -2279,7 +2332,7 @@ def admin_edit_user(user_id):
 
         try:
 
-            connection.execute(
+            execute_sql(connection,
                 """
                 UPDATE users
                 SET email = ?,
@@ -2293,7 +2346,7 @@ def admin_edit_user(user_id):
                 )
             )
 
-            connection.execute(
+            execute_sql(connection,
                 """
                 INSERT INTO student_profiles
                 (
@@ -2381,7 +2434,7 @@ def admin_export_excel():
         "Created At"
     ])
 
-    users = connection.execute("""
+    users = execute_sql(connection,"""
         SELECT
             u.user_id,
             p.full_name,
@@ -2427,7 +2480,7 @@ def admin_export_excel():
         "Created At"
     ])
 
-    jobs = connection.execute("""
+    jobs = execute_sql(connection,"""
         SELECT
             job_id,
             title,
@@ -2446,7 +2499,20 @@ def admin_export_excel():
     """).fetchall()
 
     for job in jobs:
-        ws_jobs.append(list(job))
+        ws_jobs.append([
+            job["job_id"],
+            job["title"],
+            job["company"],
+            job["category"],
+            job["location"],
+            job["job_type"],
+            job["level"],
+            job["experience"],
+            job["salary_min"],
+            job["salary_max"],
+            job["status"],
+            job["created_at"]
+        ])
 
     # ==========================
     # 3. APPLICATIONS
@@ -2462,7 +2528,7 @@ def admin_export_excel():
         "Note"
     ])
 
-    applications = connection.execute("""
+    applications = execute_sql(connection,"""
         SELECT
             id,
             user_id,
@@ -2475,7 +2541,14 @@ def admin_export_excel():
     """).fetchall()
 
     for application in applications:
-        ws_app.append(list(application))
+        ws_app.append([
+            application["id"],
+            application["user_id"],
+            application["job_id"],
+            application["status"],
+            application["applied_at"],
+            application["note"]
+        ])
 
     # ==========================
     # 4. RECOMMENDATIONS
@@ -2491,7 +2564,7 @@ def admin_export_excel():
         "Created At"
     ])
 
-    recommendations = connection.execute("""
+    recommendations = execute_sql(connection,"""
         SELECT
             id,
             user_id,
@@ -2504,7 +2577,14 @@ def admin_export_excel():
     """).fetchall()
 
     for recommendation in recommendations:
-        ws_rec.append(list(recommendation))
+        ws_rec.append([
+            recommendation["id"],
+            recommendation["user_id"],
+            recommendation["job_id"],
+            recommendation["match_score"],
+            recommendation["reason"],
+            recommendation["created_at"]
+        ])
 
     connection.close()
 
@@ -2601,9 +2681,9 @@ def admin_jobs():
         ORDER BY created_at DESC, job_id DESC
     """
 
-    jobs_data = connection.execute(sql, params).fetchall()
+    jobs_data = execute_sql(connection,sql, params).fetchall()
 
-    stats = connection.execute("""
+    stats = execute_sql(connection,"""
         SELECT
             COUNT(*) AS total,
             SUM(CASE WHEN COALESCE(status, 'active') = 'active'
@@ -2640,7 +2720,7 @@ def admin_job_status(job_id):
 
     connection = get_connection()
 
-    cursor = connection.execute("""
+    cursor = execute_sql(connection,"""
         UPDATE jobs
         SET status = ?
         WHERE job_id = ?

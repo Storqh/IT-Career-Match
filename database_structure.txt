@@ -1,0 +1,196 @@
+======================================================================
+CHI TIß║╛T Cß║ñU TR├ÜC SQLITE
+======================================================================
+
+
+======================================================================
+Bß║óNG: applications
+======================================================================
+
+[COLUMNS]
+- id: INTEGER | NOT NULL: False | DEFAULT: None | PRIMARY KEY: True
+- user_id: INTEGER | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- job_id: INTEGER | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- status: TEXT | NOT NULL: False | DEFAULT: 'Saved' | PRIMARY KEY: False
+- applied_at: TIMESTAMP | NOT NULL: False | DEFAULT: CURRENT_TIMESTAMP | PRIMARY KEY: False
+- note: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+
+[FOREIGN KEYS]
+- job_id -> jobs.job_id
+- user_id -> users.user_id
+
+[ROW COUNT]: 0
+
+
+======================================================================
+Bß║óNG: cvs
+======================================================================
+
+[COLUMNS]
+- cv_id: INTEGER | NOT NULL: False | DEFAULT: None | PRIMARY KEY: True
+- user_id: INTEGER | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- file_name: TEXT | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- file_path: TEXT | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- parsed_text: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- created_at: TIMESTAMP | NOT NULL: False | DEFAULT: CURRENT_TIMESTAMP | PRIMARY KEY: False
+
+[FOREIGN KEYS]
+- user_id -> users.user_id
+
+[ROW COUNT]: 4
+
+
+======================================================================
+Bß║óNG: favourites
+======================================================================
+
+[COLUMNS]
+- id: INTEGER | NOT NULL: False | DEFAULT: None | PRIMARY KEY: True
+- user_id: INTEGER | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- job_id: INTEGER | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- created_at: TIMESTAMP | NOT NULL: False | DEFAULT: CURRENT_TIMESTAMP | PRIMARY KEY: False
+
+[FOREIGN KEYS]
+- job_id -> jobs.job_id
+- user_id -> users.user_id
+
+[ROW COUNT]: 0
+
+
+======================================================================
+Bß║óNG: job_skills
+======================================================================
+
+[COLUMNS]
+- id: INTEGER | NOT NULL: False | DEFAULT: None | PRIMARY KEY: True
+- job_id: INTEGER | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- skill_id: INTEGER | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- importance_level: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+
+[FOREIGN KEYS]
+- skill_id -> skills.skill_id
+- job_id -> jobs.job_id
+
+[ROW COUNT]: 0
+
+
+======================================================================
+Bß║óNG: jobs
+======================================================================
+
+[COLUMNS]
+- job_id: INTEGER | NOT NULL: False | DEFAULT: None | PRIMARY KEY: True
+- title: TEXT | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- description: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- company: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- location: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- job_type: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- category: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- created_at: TIMESTAMP | NOT NULL: False | DEFAULT: CURRENT_TIMESTAMP | PRIMARY KEY: False
+- requirements: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- benefits: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- skills: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- salary_min: INTEGER | NOT NULL: False | DEFAULT: 0 | PRIMARY KEY: False
+- salary_max: INTEGER | NOT NULL: False | DEFAULT: 0 | PRIMARY KEY: False
+- salary_text: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- experience: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- level: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- deadline: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- source: TEXT | NOT NULL: False | DEFAULT: 'IT Career Match' | PRIMARY KEY: False
+- source_url: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- status: TEXT | NOT NULL: False | DEFAULT: 'active' | PRIMARY KEY: False
+
+[FOREIGN KEYS]
+- Kh├┤ng c├│ kh├│a ngoß║íi
+
+[ROW COUNT]: 70
+
+
+======================================================================
+Bß║óNG: recommendations
+======================================================================
+
+[COLUMNS]
+- id: INTEGER | NOT NULL: False | DEFAULT: None | PRIMARY KEY: True
+- user_id: INTEGER | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- job_id: INTEGER | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- match_score: REAL | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- reason: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- created_at: TIMESTAMP | NOT NULL: False | DEFAULT: CURRENT_TIMESTAMP | PRIMARY KEY: False
+
+[FOREIGN KEYS]
+- job_id -> jobs.job_id
+- user_id -> users.user_id
+
+[ROW COUNT]: 0
+
+
+======================================================================
+Bß║óNG: skills
+======================================================================
+
+[COLUMNS]
+- skill_id: INTEGER | NOT NULL: False | DEFAULT: None | PRIMARY KEY: True
+- name: TEXT | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- category: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+
+[FOREIGN KEYS]
+- Kh├┤ng c├│ kh├│a ngoß║íi
+
+[ROW COUNT]: 20
+
+
+======================================================================
+Bß║óNG: student_profiles
+======================================================================
+
+[COLUMNS]
+- profile_id: INTEGER | NOT NULL: False | DEFAULT: None | PRIMARY KEY: True
+- user_id: INTEGER | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- full_name: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- date_of_birth: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- major: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- bio: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+- avatar: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+
+[FOREIGN KEYS]
+- user_id -> users.user_id
+
+[ROW COUNT]: 4
+
+
+======================================================================
+Bß║óNG: student_skills
+======================================================================
+
+[COLUMNS]
+- id: INTEGER | NOT NULL: False | DEFAULT: None | PRIMARY KEY: True
+- user_id: INTEGER | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- skill_id: INTEGER | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- proficiency_level: TEXT | NOT NULL: False | DEFAULT: None | PRIMARY KEY: False
+
+[FOREIGN KEYS]
+- skill_id -> skills.skill_id
+- user_id -> users.user_id
+
+[ROW COUNT]: 17
+
+
+======================================================================
+Bß║óNG: users
+======================================================================
+
+[COLUMNS]
+- user_id: INTEGER | NOT NULL: False | DEFAULT: None | PRIMARY KEY: True
+- email: TEXT | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- password: TEXT | NOT NULL: True | DEFAULT: None | PRIMARY KEY: False
+- role: TEXT | NOT NULL: True | DEFAULT: 'student' | PRIMARY KEY: False
+- created_at: TIMESTAMP | NOT NULL: False | DEFAULT: CURRENT_TIMESTAMP | PRIMARY KEY: False
+
+[FOREIGN KEYS]
+- Kh├┤ng c├│ kh├│a ngoß║íi
+
+[ROW COUNT]: 4
+
+
+─É├â KIß╗éM TRA XONG DATABASE.

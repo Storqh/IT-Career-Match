@@ -1,8 +1,8 @@
-import sqlite3
 import random
 from datetime import datetime, timedelta
 
-DB_PATH = "database/it_career_match.db"
+from database.database import get_connection
+
 SOURCE = "IT Career Match Demo"
 
 # =========================================================
@@ -396,95 +396,113 @@ def create_job(title, category, config, index):
 
 
 # =========================================================
-# DATABASE
+# DATABASE - POSTGRESQL
 # =========================================================
 
 def seed_jobs():
 
-    connection = sqlite3.connect(DB_PATH)
-    cursor = connection.cursor()
+    connection = get_connection()
 
-    # Chỉ xóa dữ liệu demo do script này tạo.
-    # Không đụng đến 10 job cũ.
-    cursor.execute(
-        "DELETE FROM jobs WHERE source = ?",
-        (SOURCE,)
-    )
+    try:
+        # Xóa riêng dữ liệu demo do script này tạo.
+        # Không xóa các công việc có nguồn khác.
+        connection.execute(
+            """
+            DELETE FROM jobs
+            WHERE source = %s
+            """,
+            (SOURCE,)
+        )
 
-    inserted = 0
+        inserted = 0
 
-    sql = """
-    INSERT INTO jobs (
-        title,
-        description,
-        company,
-        location,
-        job_type,
-        category,
-        requirements,
-        benefits,
-        skills,
-        salary_min,
-        salary_max,
-        salary_text,
-        experience,
-        level,
-        deadline,
-        source,
-        source_url,
-        status
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """
+        sql = """
+        INSERT INTO jobs (
+            title,
+            description,
+            company,
+            location,
+            job_type,
+            category,
+            requirements,
+            benefits,
+            skills,
+            salary_min,
+            salary_max,
+            salary_text,
+            experience,
+            level,
+            deadline,
+            source,
+            source_url,
+            status
+        )
+        VALUES (
+            %s, %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s, %s,
+            %s, %s, %s, %s, %s, %s
+        )
+        """
 
-    for category, config in JOB_CONFIG.items():
+        for category, config in JOB_CONFIG.items():
 
-        titles = config["titles"][:config["count"]]
+            titles = config["titles"][:config["count"]]
 
-        for index, title in enumerate(titles, start=1):
+            for index, title in enumerate(
+                titles,
+                start=1
+            ):
 
-            job = create_job(
-                title,
+                job = create_job(
+                    title,
+                    category,
+                    config,
+                    index
+                )
+
+                connection.execute(sql, job)
+
+                inserted += 1
+
+        # Thống kê dữ liệu demo
+        result = connection.execute(
+            """
+            SELECT
                 category,
-                config,
-                index
+                COUNT(*) AS total
+            FROM jobs
+            WHERE source = %s
+            GROUP BY category
+            ORDER BY category
+            """,
+            (SOURCE,)
+        ).fetchall()
+
+        total_jobs = connection.execute(
+            """
+            SELECT COUNT(*) AS total
+            FROM jobs
+            """
+        ).fetchone()
+
+        # Commit khi thoát khỏi context thành công.
+        # Nếu có lỗi, transaction sẽ rollback.
+        print("\n===== JOB DATASET =====")
+
+        for row in result:
+            print(
+                f"{row['category']:<30} "
+                f"{row['total']}"
             )
 
-            cursor.execute(sql, job)
-            inserted += 1
+        print("------------------------------")
+        print("Demo jobs inserted:", inserted)
+        print("Total jobs in database:", total_jobs["total"])
 
-    connection.commit()
+        print("\nSeed jobs thành công!")
 
-    # =====================================================
-    # RESULT
-    # =====================================================
-
-    cursor.execute("""
-        SELECT category, COUNT(*)
-        FROM jobs
-        WHERE source = ?
-        GROUP BY category
-        ORDER BY category
-    """, (SOURCE,))
-
-    result = cursor.fetchall()
-
-    print("\n===== JOB DATASET =====")
-
-    for category, count in result:
-        print(f"{category:<30} {count}")
-
-    print("------------------------------")
-    print("Demo jobs inserted:", inserted)
-
-    cursor.execute("SELECT COUNT(*) FROM jobs")
-    total_jobs = cursor.fetchone()[0]
-
-    print("Total jobs in database:", total_jobs)
-
-    connection.close()
-
-    print("\nSeed jobs thành công!")
+    finally:
+        connection.close()
 
 
 if __name__ == "__main__":
