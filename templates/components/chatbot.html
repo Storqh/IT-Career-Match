@@ -44,14 +44,26 @@
 
             </div>
 
-            <button
-                type="button"
-                id="chatbotClose"
-                class="chatbot-close"
-                aria-label="Đóng chatbot"
-            >
-                <i class="bi bi-x-lg"></i>
-            </button>
+            <div class="chatbot-header-actions">
+                <button
+                    type="button"
+                    id="chatbotReset"
+                    class="chatbot-close"
+                    title="Làm mới cuộc trò chuyện"
+                    aria-label="Làm mới cuộc trò chuyện"
+                >
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+
+                <button
+                    type="button"
+                    id="chatbotClose"
+                    class="chatbot-close"
+                    aria-label="Đóng chatbot"
+                >
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
 
         </div>
 
@@ -74,12 +86,13 @@
                 <div class="chatbot-bubble">
                     <strong>Xin chào! 👋</strong>
                     <div>
-                        Mình là trợ lý hướng nghiệp của IT Career Match.
-                        Mình có thể hỗ trợ bạn về CV, kỹ năng IT,
-                        lộ trình học tập và định hướng nghề nghiệp.
+                        Mình là trợ lý tìm việc của IT Career Match.
+                        Mình có thể giúp bạn tra cứu công việc IT đang tuyển
+                        theo ngành, kỹ năng, địa điểm, mức lương, cũng như
+                        hỗ trợ viết CV và chuẩn bị phỏng vấn.
                     </div>
                     <div>
-                        Bạn muốn tìm hiểu điều gì hôm nay?
+                        Bạn đang tìm kiếm công việc ở vị trí nào hôm nay?
                     </div>
                 </div>
 
@@ -96,28 +109,28 @@
             <button
                 type="button"
                 class="chatbot-suggestion"
+                data-question="Tìm việc làm IT đang tuyển"
+            >
+                <i class="bi bi-search"></i>
+                Tìm việc IT
+            </button>
+
+            <button
+                type="button"
+                class="chatbot-suggestion"
+                data-question="Việc làm Thực tập / Fresher"
+            >
+                <i class="bi bi-mortarboard"></i>
+                Thực tập / Fresher
+            </button>
+
+            <button
+                type="button"
+                class="chatbot-suggestion"
                 data-question="Cách viết CV IT"
             >
                 <i class="bi bi-file-earmark-person"></i>
                 Viết CV IT
-            </button>
-
-            <button
-                type="button"
-                class="chatbot-suggestion"
-                data-question="Lộ trình học Backend"
-            >
-                <i class="bi bi-code-slash"></i>
-                Học Backend
-            </button>
-
-            <button
-                type="button"
-                class="chatbot-suggestion"
-                data-question="Lộ trình học Machine Learning"
-            >
-                <i class="bi bi-cpu"></i>
-                Học AI/ML
             </button>
 
             <button

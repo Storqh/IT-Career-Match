@@ -37,6 +37,10 @@ from ai.recommender import (
 from ai.text_preprocessing import preprocess_text
 from ai.skill_extractor import extract_skills
 from ai.cv_parser import read_pdf, read_docx
+from ai.chatbot_engine import (
+    generate_chatbot_response,
+    DEFAULT_SUGGESTIONS
+)
 
 
 # =========================================================
@@ -2653,211 +2657,9 @@ def admin_job_status(job_id):
         return "Không tìm thấy công việc.", 404
 
     return redirect(url_for("admin_jobs"))
-def chatbot_normalize(text):
-    text = unicodedata.normalize("NFD", text.lower())
-    text = "".join(
-        c for c in text
-        if unicodedata.category(c) != "Mn"
-    )
-    text = text.replace("đ", "d")
-    text = re.sub(r"[^a-z0-9+#/.\s]", " ", text)
-    return re.sub(r"\s+", " ", text).strip()
-
-
-CHATBOT_KNOWLEDGE = [
-    {
-        "keywords": [
-            "viet cv", "lam cv", "cv it",
-            "ho so xin viec", "resume"
-        ],
-        "reply": (
-            "📄 CÁCH VIẾT CV IT\n\n"
-            "1. Giới thiệu ngắn gọn bản thân và mục tiêu nghề nghiệp.\n"
-            "2. Liệt kê kỹ năng lập trình và công nghệ đã học.\n"
-            "3. Trình bày 2–3 dự án thực tế, nêu rõ vai trò của bạn.\n"
-            "4. Thêm GitHub, portfolio và các chứng chỉ liên quan.\n"
-            "5. Kiểm tra lỗi chính tả trước khi gửi.\n\n"
-            "Bạn cũng có thể tải CV lên IT Career Match "
-            "để hệ thống phân tích kỹ năng và gợi ý việc làm."
-        )
-    },
-    {
-        "keywords": [
-            "backend", "back end",
-            "flask", "django", "spring boot"
-        ],
-        "reply": (
-            "💻 LỘ TRÌNH BACKEND DEVELOPER\n\n"
-            "1. Học Python, Java, C# hoặc JavaScript.\n"
-            "2. Nắm vững OOP và cấu trúc dữ liệu.\n"
-            "3. Học SQL và thiết kế cơ sở dữ liệu.\n"
-            "4. Xây dựng REST API với Flask, FastAPI hoặc Spring Boot.\n"
-            "5. Học Authentication, Testing, Git và Docker.\n"
-            "6. Triển khai một dự án thực tế lên server.\n\n"
-            "Dự án gợi ý: Hệ thống quản lý tuyển dụng."
-        )
-    },
-    {
-        "keywords": [
-            "frontend", "front end",
-            "react", "vue", "html css"
-        ],
-        "reply": (
-            "🎨 LỘ TRÌNH FRONTEND DEVELOPER\n\n"
-            "1. HTML, CSS và JavaScript.\n"
-            "2. Responsive Design và Flexbox/Grid.\n"
-            "3. Git và GitHub.\n"
-            "4. React hoặc Vue.\n"
-            "5. REST API, xử lý form và quản lý state.\n"
-            "6. Accessibility, Testing và tối ưu hiệu năng.\n\n"
-            "Dự án gợi ý: Portfolio và website tìm việc IT."
-        )
-    },
-    {
-        "keywords": [
-            "machine learning", "ai/ml",
-            "tri tue nhan tao", "hoc may",
-            "data science"
-        ],
-        "reply": (
-            "🤖 LỘ TRÌNH AI / MACHINE LEARNING\n\n"
-            "1. Học Python và NumPy, pandas.\n"
-            "2. Ôn xác suất thống kê và đại số tuyến tính.\n"
-            "3. Học Supervised và Unsupervised Learning.\n"
-            "4. Thực hành scikit-learn.\n"
-            "5. Tìm hiểu đánh giá mô hình: Accuracy, Precision, Recall, F1.\n"
-            "6. Xây dựng dự án ML và triển khai lên web.\n\n"
-            "Dự án gợi ý: Hệ thống gợi ý việc làm theo CV."
-        )
-    },
-    {
-        "keywords": [
-            "cybersecurity", "an ninh mang",
-            "bao mat", "security"
-        ],
-        "reply": (
-            "🔐 LỘ TRÌNH CYBERSECURITY\n\n"
-            "1. Nắm vững mạng máy tính và TCP/IP.\n"
-            "2. Học Linux và quản trị hệ thống.\n"
-            "3. Học Python hoặc Bash để tự động hóa.\n"
-            "4. Tìm hiểu bảo mật web và OWASP Top 10.\n"
-            "5. Thực hành trong môi trường lab được cho phép.\n"
-            "6. Học phân tích log, giám sát và ứng phó sự cố."
-        )
-    },
-    {
-        "keywords": [
-            "devops", "cloud", "docker",
-            "kubernetes", "aws"
-        ],
-        "reply": (
-            "☁️ LỘ TRÌNH DEVOPS / CLOUD\n\n"
-            "1. Học Linux, mạng máy tính và Git.\n"
-            "2. Làm quen Bash hoặc Python.\n"
-            "3. Học Docker và container.\n"
-            "4. Xây dựng CI/CD với GitHub Actions.\n"
-            "5. Tìm hiểu AWS, Azure hoặc Google Cloud.\n"
-            "6. Học Kubernetes, Monitoring và Logging."
-        )
-    },
-    {
-        "keywords": [
-            "data analyst", "phan tich du lieu",
-            "power bi", "sql"
-        ],
-        "reply": (
-            "📊 LỘ TRÌNH DATA ANALYST\n\n"
-            "1. Học Excel và SQL.\n"
-            "2. Học Python với pandas, NumPy.\n"
-            "3. Làm sạch và phân tích dữ liệu.\n"
-            "4. Trực quan hóa bằng Matplotlib hoặc Power BI.\n"
-            "5. Học thống kê cơ bản.\n"
-            "6. Xây dựng dashboard và portfolio dữ liệu."
-        )
-    },
-    {
-        "keywords": [
-            "phong van", "interview",
-            "xin viec", "thuc tap"
-        ],
-        "reply": (
-            "🎯 CHUẨN BỊ PHỎNG VẤN IT\n\n"
-            "1. Ôn kiến thức nền tảng của vị trí ứng tuyển.\n"
-            "2. Luyện giải thích các dự án trong CV.\n"
-            "3. Ôn Git, SQL, OOP và DSA ở mức phù hợp.\n"
-            "4. Chuẩn bị ví dụ về cách giải quyết vấn đề.\n"
-            "5. Luyện giới thiệu bản thân bằng tiếng Anh.\n"
-            "6. Tìm hiểu công ty và mô tả công việc."
-        )
-    },
-    {
-        "keywords": [
-            "tai cv", "upload cv", "phan tich cv",
-            "goi y viec lam", "su dung website",
-            "it career match"
-        ],
-        "reply": (
-            "🚀 SỬ DỤNG IT CAREER MATCH\n\n"
-            "1. Đăng nhập tài khoản sinh viên.\n"
-            "2. Cập nhật hồ sơ cá nhân và kỹ năng.\n"
-            "3. Tải CV PDF hoặc DOCX lên hệ thống.\n"
-            "4. Xem kết quả phân tích CV.\n"
-            "5. Khám phá danh sách công việc được gợi ý.\n"
-            "6. So sánh kỹ năng hiện có với yêu cầu tuyển dụng.\n\n"
-            "Điểm phù hợp là kết quả ước tính của hệ thống, "
-            "không đảm bảo bạn sẽ được tuyển dụng."
-        )
-    },
-    {
-        "keywords": [
-            "xin chao", "hello", "hi",
-            "chao ban"
-        ],
-        "reply": (
-            "Xin chào! 👋\n\n"
-            "Mình là IT Career Assistant.\n"
-            "Bạn có thể hỏi mình về CV, Backend, Frontend, "
-            "AI/ML, Data, Cybersecurity, DevOps hoặc "
-            "cách sử dụng IT Career Match."
-        )
-    }
-]
-
-
-def chatbot_get_reply(message):
-    normalized = chatbot_normalize(message)
-
-    best_score = 0
-    best_reply = None
-
-    for item in CHATBOT_KNOWLEDGE:
-        score = 0
-
-        for keyword in item["keywords"]:
-            normalized_keyword = chatbot_normalize(keyword)
-
-            if normalized_keyword in normalized:
-                score = max(score, len(normalized_keyword))
-
-        if score > best_score:
-            best_score = score
-            best_reply = item["reply"]
-
-    if best_reply:
-        return best_reply
-
-    return (
-        "Mình chưa hiểu rõ câu hỏi của bạn. 🤔\n\n"
-        "Bạn có thể hỏi về:\n"
-        "• Cách viết CV IT\n"
-        "• Lộ trình Backend / Frontend\n"
-        "• AI và Machine Learning\n"
-        "• Cybersecurity / DevOps\n"
-        "• Chuẩn bị phỏng vấn\n"
-        "• Cách sử dụng IT Career Match\n\n"
-        "Bạn hãy thử diễn đạt câu hỏi cụ thể hơn nhé!"
-    )
-
+# =========================================================
+# CHATBOT API (DATABASE JOB SEARCH & CAREER SUPPORT)
+# =========================================================
 
 @app.route("/api/chatbot", methods=["POST"])
 def chatbot_api():
@@ -2887,10 +2689,34 @@ def chatbot_api():
             "error": "Câu hỏi không được vượt quá 500 ký tự."
         }), 400
 
-    reply = chatbot_get_reply(message)
+    user_id = session.get("user_id")
+    context = session.get("chatbot_context") or {}
+
+    result, updated_context = generate_chatbot_response(
+        message=message,
+        user_id=user_id,
+        context=context
+    )
+
+    session["chatbot_context"] = updated_context
+    session.modified = True
 
     return jsonify({
-        "reply": reply
+        "reply": result.get("reply", ""),
+        "actions": result.get("actions", []),
+        "suggestions": result.get(
+            "suggestions",
+            DEFAULT_SUGGESTIONS
+        )
+    })
+
+
+@app.route("/api/chatbot/reset", methods=["POST"])
+def chatbot_reset_api():
+    session.pop("chatbot_context", None)
+    return jsonify({
+        "status": "ok",
+        "suggestions": DEFAULT_SUGGESTIONS
     })
 # =========================================================
 # RUN LOCAL

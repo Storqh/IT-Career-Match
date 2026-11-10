@@ -756,4 +756,43 @@
     flex-shrink: 0 !important;
 }
 
+/* Nút hành động trên Header (Làm mới + Đóng) */
+#careerChatbot .chatbot-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Danh sách nút liên kết nhanh (Actions) bên dưới tin nhắn của Bot */
+#careerChatbot .chatbot-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 7px !important;
+    margin-top: 10px !important;
+    padding-top: 10px !important;
+    border-top: 1px dashed #e2e8f0 !important;
+}
+
+#careerChatbot .chatbot-action-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 6px 11px !important;
+    border-radius: 10px !important;
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    line-height: 1.35 !important;
+    transition: background .18s ease, border-color .18s ease !important;
+}
+
+#careerChatbot .chatbot-action-link:hover {
+    background: #dbeafe !important;
+    border-color: #93c5fd !important;
+    color: #1e40af !important;
+}
+
+
 
