@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Báo cáo & Phân tích - Admin - IT Career Match{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold mb-0"><i class="bi bi-bar-chart me-2"></i>Báo cáo & Phân tích</h1>
+        <span class="badge bg-danger fs-6">Admin</span>
+    </div>
+
+    <!-- Jobs by Category -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-tag me-2"></i>Việc làm theo Danh mục</h5>
+                </div>
+                <div class="card-body">
+                    {% if by_category %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Danh mục</th><th class="text-end">Số lượng</th></tr></thead>
+                            <tbody>
+                                {% for item in by_category %}
+                                <tr>
+                                    <td>{{ item.category }}</td>
+                                    <td class="text-end fw-bold">{{ item.count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">Chưa có dữ liệu</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Việc làm theo Địa điểm</h5>
+                </div>
+                <div class="card-body">
+                    {% if by_location %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Địa điểm</th><th class="text-end">Số lượng</th></tr></thead>
+                            <tbody>
+                                {% for item in by_location %}
+                                <tr>
+                                    <td>{{ item.location }}</td>
+                                    <td class="text-end fw-bold">{{ item.count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">Chưa có dữ liệu</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-briefcase me-2"></i>Việc làm theo Loại hình</h5>
+                </div>
+                <div class="card-body">
+                    {% if by_type %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Loại hình</th><th class="text-end">Số lượng</th></tr></thead>
+                            <tbody>
+                                {% for item in by_type %}
+                                <tr>
+                                    <td>{{ item.job_type }}</td>
+                                    <td class="text-end fw-bold">{{ item.count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">Chưa có dữ liệu</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-send me-2"></i>Đơn ứng tuyển theo Tháng (12 tháng gần nhất)</h5>
+                </div>
+                <div class="card-body">
+                    {% if apps_by_month %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Tháng</th><th class="text-end">Số đơn</th></tr></thead>
+                            <tbody>
+                                {% for item in apps_by_month %}
+                                <tr>
+                                    <td>{{ item.month }}</td>
+                                    <td class="text-end fw-bold">{{ item.count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">Chưa có dữ liệu</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills Demand vs Supply -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-graph-up-arrow me-2"></i>Kỹ năng được yêu cầu nhiều nhất (Demand)</h5>
+                </div>
+                <div class="card-body">
+                    {% if demand_skills %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Kỹ năng</th><th class="text-end">Số tin tuyển dụng</th></tr></thead>
+                            <tbody>
+                                {% for item in demand_skills %}
+                                <tr>
+                                    <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ item.skill_name }}</span></td>
+                                    <td class="text-end fw-bold">{{ item.job_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">Chưa có dữ liệu</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Kỹ năng ứng viên phổ biến nhất (Supply)</h5>
+                </div>
+                <div class="card-body">
+                    {% if supply_skills %}
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Kỹ năng</th><th class="text-end">Số ứng viên</th></tr></thead>
+                            <tbody>
+                                {% for item in supply_skills %}
+                                <tr>
+                                    <td><span class="badge bg-success bg-opacity-10 text-success">{{ item.skill_name }}</span></td>
+                                    <td class="text-end fw-bold">{{ item.student_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">Chưa có dữ liệu</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills Gap Analysis Hint -->
+    <div class="card border-warning">
+        <div class="card-header bg-warning bg-opacity-10">
+            <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Phân tích khoảng trống kỹ năng (Skills Gap)</h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-2">So sánh <strong>Demand</strong> (kỹ năng doanh nghiệp cần) vs <strong>Supply</strong> (kỹ năng ứng viên có) để xác định:</p>
+            <ul class="mb-0">
+                <li><strong>Kỹ năng thiếu hụt (High Demand, Low Supply):</strong> Cơ hội đào tạo, upskilling</li>
+                <li><strong>Kỹ năng bão hòa (High Demand, High Supply):</strong> Cạnh tranh gay gắt</li>
+                <li><strong>Kỹ năng ngách (Low Demand, High Supply):</strong> Cần chuyển hướng</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

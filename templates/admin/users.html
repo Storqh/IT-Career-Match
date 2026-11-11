@@ -1,223 +1,178 @@
 {% extends "base.html" %}
 
-{% block title %}
-Quản lý người dùng
-{% endblock %}
+{% block title %}Quản lý Users - Admin - IT Career Match{% endblock %}
 
 {% block content %}
-
-<div class="d-flex justify-content-between align-items-start mb-4">
-
-    <div>
-        <h1 class="fw-bold">
-            Quản lý người dùng
-        </h1>
-
-        <p class="text-muted">
-            Danh sách tài khoản trong hệ thống
-        </p>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold mb-0"><i class="bi bi-people me-2"></i>Quản lý Users</h1>
+        <span class="badge bg-danger fs-6">Admin</span>
     </div>
 
-    <div class="d-flex gap-2">
-
-        <a
-            href="{{ url_for('admin_add_user') }}"
-            class="btn btn-primary"
-        >
-            + Thêm tài khoản
-        </a>
-
-        <a
-            href="{{ url_for('admin_dashboard') }}"
-            class="btn btn-outline-secondary"
-        >
-            Dashboard
-        </a>
-
-    </div>
-
-</div>
-
-
-    <div class="card border-0 shadow-sm mb-4">
-
+    <!-- Filter Form -->
+    <div class="card mb-4">
         <div class="card-body">
-
-            <form method="GET">
-
-                <div class="row g-3">
-
-                    <div class="col-md-7">
-
-                        <input
-                            class="form-control"
-                            type="text"
-                            name="q"
-                            value="{{ keyword }}"
-                            placeholder="Tìm email, họ tên, ngành học..."
-                        >
-
-                    </div>
-
-
-                    <div class="col-md-3">
-
-                        <select
-                            class="form-select"
-                            name="role"
-                        >
-
-                            <option value="">
-                                Tất cả role
-                            </option>
-
-                            <option
-                                value="student"
-                                {% if selected_role == "student" %}
-                                selected
-                                {% endif %}
-                            >
-                                Student
-                            </option>
-
-                            <option
-                                value="admin"
-                                {% if selected_role == "admin" %}
-                                selected
-                                {% endif %}
-                            >
-                                Admin
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="col-md-2">
-
-                        <button
-                            class="btn btn-primary w-100"
-                        >
-                            Tìm kiếm
-                        </button>
-
-                    </div>
-
+            <form method="GET" class="row g-3" id="filterForm">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="search" placeholder="Tìm email..." value="{{ search or '' }}">
                 </div>
-
+                <div class="col-md-2">
+                    <select class="form-select" name="role">
+                        <option value="all">Tất cả vai trò</option>
+                        <option value="student" {% if role_filter == 'student' %}selected{% endif %}>Student</option>
+                        <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="status">
+                        <option value="all">Tất cả trạng thái</option>
+                        <option value="verified" {% if status_filter == 'verified' %}selected{% endif %}>Đã xác thực</option>
+                        <option value="unverified" {% if status_filter == 'unverified' %}selected{% endif %}>Chưa xác thực</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Lọc</button>
+                </div>
+                <div class="col-md-3">
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-x-circle me-1"></i>Xoá lọc</a>
+                </div>
             </form>
-
         </div>
-
     </div>
 
-
-    <div class="card border-0 shadow-sm">
-
-        <div class="card-body">
-
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            {% if users %}
             <div class="table-responsive">
-
-                <table class="table table-hover align-middle">
-
-                    <thead>
-
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
                         <tr>
                             <th>ID</th>
-                            <th>Họ tên</th>
                             <th>Email</th>
-                            <th>Ngành</th>
-                            <th>Role</th>
-                            <th>Thao tác</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th>Đăng nhập cuối</th>
+                            <th></th>
                         </tr>
-
                     </thead>
-
-
                     <tbody>
-
                         {% for user in users %}
-
                         <tr>
-
+                            <td>{{ user.user_id }}</td>
                             <td>
-                                #{{ user.user_id }}
-                            </td>
-
-                            <td>
-                                {{ user.full_name or "Chưa cập nhật" }}
-                            </td>
-
-                            <td>
-                                {{ user.email }}
-                            </td>
-
-                            <td>
-                                {{ user.major or "—" }}
-                            </td>
-
-                            <td>
-
-                                {% if user.role == "admin" %}
-
-                                <span class="badge bg-danger">
-                                    Admin
-                                </span>
-
-                                {% else %}
-
-                                <span class="badge bg-primary">
-                                    Student
-                                </span>
-
+                                <strong>{{ user.email }}</strong>
+                                {% if not user.is_verified %}
+                                    <span class="badge bg-warning ms-1">Chưa XT</span>
                                 {% endif %}
-
                             </td>
-
-
                             <td>
-
-                                <a
-                                    href="{{ url_for(
-                                        'admin_user_detail',
-                                        user_id=user.user_id
-                                    ) }}"
-                                    class="btn btn-sm btn-outline-primary"
-                                >
-                                    Chi tiết
-                                </a>
-
+                                <span class="badge bg-{% if user.role == 'admin' %}danger{% else %}primary{% endif %}">
+                                    {{ user.role }}
+                                </span>
                             </td>
-
-                        </tr>
-
-
-                        {% else %}
-
-                        <tr>
-
-                            <td
-                                colspan="6"
-                                class="text-center py-4 text-muted"
-                            >
-                                Không tìm thấy người dùng.
+                            <td>
+                                <span class="badge bg-{% if user.is_verified %}success{% else %}warning{% endif %}">
+                                    {% if user.is_verified %}Đã xác thực{% else %}Chưa xác thực{% endif %}
+                                </span>
                             </td>
-
-                        </tr>
-
+                            <td>{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Chưa từng' }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('admin.user_detail', user_id=user.user_id) }}"
+                                       class="btn btn-outline-primary" title="Xem chi tiết">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if user.user_id != session.user_id %}
+                                    <button class="btn btn-outline-{% if user.role == 'admin' %}warning{% else %}success{% endif %}"
+                                            onclick="toggleRole({{ user.user_id }}, '{{ user.role }}')"
+                                            title="{% if user.role == 'admin' %}Hạ quyền{% else %}Nâng quyền{% endif %}">
+                                        <i class="bi bi-{% if user.role == 'admin' %}person-dash{% else %}person-plus{% endif %}"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger"
+                                            onclick="confirmDelete({{ user.user_id }}, '{{ user.email }}')"
+                                            title="Xoá">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% else %}
+                                    <span class="text-muted small">(Bạn)</span>
+                                    {% endif %}
+                                </div>
+                            </td                        </tr>
                         {% endfor %}
-
                     </tbody>
-
                 </table>
-
             </div>
 
+            <!-- Pagination -->
+            {% if pagination.pages > 1 %}
+            <nav class="px-3 py-3" aria-label="Pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin.users', page=pagination.page-1, role=role_filter, status=status_filter, search=search) }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% for p in range(max(1, pagination.page-2), min(pagination.pages+1, pagination.page+3)) %}
+                        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin.users', page=p, role=role_filter, status=status_filter, search=search) }}">{{ p }}</a>
+                        </li>
+                    {% endfor %}
+                    <li class="page-item {% if pagination.page == pagination.pages %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin.users', page=pagination.page+1, role=role_filter, status=status_filter, search=search) }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-people text-muted" style="font-size: 4rem;"></i>
+                <h4 class="text-muted mt-3">Không tìm thấy user</h4>
+            </div>
+            {% endif %}
         </div>
-
     </div>
-
 </div>
 
+<script>
+function toggleRole(userId, currentRole) {
+    const newRole = currentRole === 'admin' ? 'student' : 'admin';
+    const action = newRole === 'admin' ? 'nâng quyền thành Admin' : 'hạ quyền thành Student';
+
+    if (!confirm(`Bạn có chắc muốn ${action} cho user này?`)) return;
+
+    fetch(`{{ url_for('admin.toggle_user_role', user_id=0) }}`.replace('0', userId), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+function confirmDelete(userId, email) {
+    if (!confirm(`Bạn có chắc muốn XOÁ user "${email}"?\nHành động này không thể hoàn tác và sẽ xoá tất cả dữ liệu liên quan!`)) return;
+
+    fetch(`{{ url_for('admin.delete_user_route', user_id=0) }}`.replace('0', userId), {
+        method: 'POST'
+    })
+    .then(res => {
+        if (res.redirected || res.ok) {
+            location.reload();
+        } else {
+            return res.json().then(data => { throw new Error(data.message || 'Xoá thất bại'); });
+        }
+    })
+    .catch(err => alert(err.message));
+}
+</script>
 {% endblock %}

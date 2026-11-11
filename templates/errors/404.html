@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Trang không tìm thấy - IT Career Match{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="mb-4" style="font-size: 8rem; color: #dee2e6;">404</div>
+            <h1 class="h2 fw-bold mb-3">Trang không tồn tại</h1>
+            <p class="text-muted mb-4">Trang bạn đang tìm kiếm có thể đã bị di chuyển, xoá hoặc không tồn tại.</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{{ url_for('jobs.list_jobs') }}" class="btn btn-primary">
+                    <i class="bi bi-house me-1"></i>Về trang chủ
+                </a>
+                <a href="{{ url_for('jobs.list_jobs') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-search me-1"></i>Tìm việc làm
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,326 +1,70 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xác minh OTP | IT Career Match</title>
+{% extends "base.html" %}
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% block title %}Xác thực OTP - IT Career Match{% endblock %}
 
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #eef2ff, #dbeafe);
-            color: #1e293b;
-        }
+{% block content %}
+<div class="container py-5 auth-page">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm auth-card">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <div class="auth-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></div>
+                        <h2 class="fw-bold">Xác thực email</h2>
+                        <p class="text-muted">
+                            Nhập mã 6 chữ số đã gửi đến
+                            <strong class="auth-email">{{ email }}</strong>.
+                            Nếu chưa nhận được, bạn có thể yêu cầu gửi lại.
+                        </p>
+                    </div>
 
-        .otp-container {
-            width: 100%;
-            max-width: 460px;
-            background: #ffffff;
-            padding: 38px 32px;
-            border-radius: 20px;
-            box-shadow: 0 15px 45px rgba(15, 23, 42, 0.12);
-        }
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
 
-        .logo {
-            text-align: center;
-            font-size: 27px;
-            font-weight: 800;
-            color: #2563eb;
-            margin-bottom: 28px;
-        }
+                    <form method="POST" id="otpForm" data-loading-form>
+                        <div class="mb-4">
+                            <label for="otp" class="form-label fw-semibold">Mã OTP</label>
+                            <input type="text" class="form-control form-control-lg text-center otp-input"
+                                   id="otp" name="otp" pattern="[0-9]{6}" required
+                                   autocomplete="one-time-code" inputmode="numeric"
+                                   aria-describedby="otpHelp">
+                            <div class="form-text text-center" id="otpHelp">
+                                Nhập mã gồm 6 chữ số. Mã mới sẽ thay thế mã đã gửi trước đó.
+                            </div>
+                        </div>
 
-        .icon {
-            width: 76px;
-            height: 76px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            border-radius: 50%;
-            background: #eff6ff;
-            font-size: 36px;
-        }
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" id="verifyBtn">
+                            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>Xác thực
+                        </button>
+                    </form>
 
-        h1 {
-            text-align: center;
-            font-size: 27px;
-            margin-bottom: 12px;
-            color: #0f172a;
-        }
+                    <div id="otpStatus" class="alert d-none mt-3 mb-0" role="status" aria-live="polite"></div>
 
-        .description {
-            text-align: center;
-            font-size: 15px;
-            line-height: 1.7;
-            color: #64748b;
-            margin-bottom: 24px;
-        }
+                    <div class="text-center mt-4">
+                        <p class="mb-1">Không nhận được mã?</p>
+                        <button type="button" class="btn btn-link p-0" id="resendBtn"
+                                data-resend-url="{{ url_for('auth.resend_otp') }}">
+                            Gửi lại mã OTP
+                        </button>
+                        <span id="countdown" class="text-muted d-block small" aria-live="polite"></span>
+                    </div>
 
-        .email {
-            color: #2563eb;
-            font-weight: 700;
-            overflow-wrap: anywhere;
-        }
-
-        .message {
-            padding: 13px 15px;
-            margin-bottom: 18px;
-            border-radius: 10px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .message.success {
-            color: #166534;
-            background: #dcfce7;
-        }
-
-        .message.warning {
-            color: #92400e;
-            background: #fef3c7;
-        }
-
-        .message.danger,
-        .message.error {
-            color: #991b1b;
-            background: #fee2e2;
-        }
-
-        .field-label {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 15px;
-            font-weight: 700;
-        }
-
-        .otp-input {
-            width: 100%;
-            height: 60px;
-            border: 2px solid #cbd5e1;
-            border-radius: 12px;
-            outline: none;
-            padding: 10px;
-            text-align: center;
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 10px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .otp-input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-        }
-
-        .hint {
-            margin-top: 10px;
-            color: #64748b;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        button {
-            width: 100%;
-            min-height: 48px;
-            border: none;
-            border-radius: 10px;
-            padding: 12px 16px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.2s;
-        }
-
-        button:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .verify-button {
-            margin-top: 24px;
-            background: #2563eb;
-            color: white;
-        }
-
-        .verify-button:hover:not(:disabled) {
-            background: #1d4ed8;
-            transform: translateY(-1px);
-        }
-
-        .divider {
-            height: 1px;
-            background: #e2e8f0;
-            margin: 25px 0;
-        }
-
-        .resend-text {
-            text-align: center;
-            color: #64748b;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 14px;
-        }
-
-        .resend-button {
-            background: #eff6ff;
-            color: #2563eb;
-            border: 1px solid #bfdbfe;
-        }
-
-        .resend-button:hover:not(:disabled) {
-            background: #dbeafe;
-        }
-
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 22px;
-            color: #64748b;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .back-link:hover {
-            color: #2563eb;
-        }
-
-        @media (max-width: 480px) {
-            .otp-container {
-                padding: 30px 22px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
-
-            .otp-input {
-                font-size: 25px;
-                letter-spacing: 8px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <main class="otp-container">
-        <div class="logo">IT Career Match</div>
-
-        <div class="icon">✉️</div>
-
-        <h1>Xác minh email</h1>
-
-        <p class="description">
-            Chúng tôi đã gửi mã xác minh đến email
-            <br>
-            <span class="email">{{ email }}</span>
-            <br>
-            Vui lòng nhập mã OTP gồm 6 chữ số để hoàn tất đăng ký.
-        </p>
-
-        {% if message %}
-            <div class="message {{ message_type | default('warning') }}" role="alert">
-                {{ message }}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('auth.register') }}" class="text-decoration-none">
+                            <i class="bi bi-arrow-left me-1"></i>Quay lại đăng ký
+                        </a>
+                    </div>
+                </div>
             </div>
-        {% endif %}
-
-        <!-- FORM XÁC MINH OTP -->
-        <form method="POST"
-              action="{{ url_for('verify_otp') }}"
-              id="verifyForm">
-
-            <label class="field-label" for="otp">
-                Mã xác minh OTP
-            </label>
-
-            <input
-                type="text"
-                id="otp"
-                name="otp"
-                class="otp-input"
-                placeholder="000000"
-                inputmode="numeric"
-                pattern="[0-9]{6}"
-                minlength="6"
-                maxlength="6"
-                autocomplete="one-time-code"
-                aria-describedby="otpHint"
-                required
-                autofocus
-            >
-
-            <p class="hint" id="otpHint">
-                Mã OTP có hiệu lực trong 5 phút.
-            </p>
-
-            <button type="submit" class="verify-button" id="verifyButton">
-                Xác minh OTP
-            </button>
-        </form>
-
-        <div class="divider"></div>
-
-        <p class="resend-text">
-            Chưa nhận được mã? Bạn có thể yêu cầu gửi lại sau 60 giây.
-        </p>
-
-        <!-- FORM GỬI LẠI OTP -->
-        <form method="POST"
-              action="{{ url_for('resend_otp') }}"
-              id="resendForm">
-
-            <button type="submit" class="resend-button" id="resendButton">
-                Gửi lại OTP
-            </button>
-        </form>
-
-        <a href="{{ url_for('register') }}" class="back-link">
-            ← Quay lại trang đăng ký
-        </a>
-    </main>
-
-    <script>
-        const otpInput = document.getElementById("otp");
-        const verifyForm = document.getElementById("verifyForm");
-        const verifyButton = document.getElementById("verifyButton");
-        const resendForm = document.getElementById("resendForm");
-        const resendButton = document.getElementById("resendButton");
-
-        // Chỉ cho phép nhập chữ số và tối đa 6 ký tự.
-        otpInput.addEventListener("input", function () {
-            this.value = this.value.replace(/\D/g, "").slice(0, 6);
-        });
-
-        // Kiểm tra dữ liệu trước khi gửi yêu cầu xác minh.
-        verifyForm.addEventListener("submit", function (event) {
-            const otp = otpInput.value.trim();
-
-            if (!/^\d{6}$/.test(otp)) {
-                event.preventDefault();
-                alert("Vui lòng nhập mã OTP gồm đúng 6 chữ số.");
-                otpInput.focus();
-                return;
-            }
-
-            verifyButton.disabled = true;
-            verifyButton.textContent = "Đang xác minh...";
-        });
-
-        // Tránh gửi form gửi lại nhiều lần do bấm liên tục.
-        resendForm.addEventListener("submit", function () {
-            resendButton.disabled = true;
-            resendButton.textContent = "Đang gửi OTP...";
-        });
-    </script>
-</body>
-</html>
+        </div>
+    </div>
+</div>
+{% endblock %}

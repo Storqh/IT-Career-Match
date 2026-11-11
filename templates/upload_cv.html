@@ -1,88 +1,175 @@
 {% extends "base.html" %}
 
-{% block title %}
-Upload CV - IT Career Match
-{% endblock %}
+{% block title %}Tải lên CV - IT Career Match{% endblock %}
 
 {% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-cloud-upload me-2"></i>Tải lên CV</h5>
+                    <a href="{{ url_for('cv.my_cvs') }}" class="btn btn-sm btn-outline-secondary">CV của tôi</a>
+                </div>
+                <div class="card-body p-4">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
 
-<div class="container py-5">
+                    <!-- Upload Area -->
+                    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                        <div class="upload-area border-2 border-dashed rounded-4 p-5 text-center mb-4"
+                             id="dropZone"
+                             style="border-color: #dee2e6; background: #fafafa; transition: all 0.2s;">
+                            <i class="bi bi-cloud-arrow-up text-muted" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3 fw-bold">Kéo thả file CV vào đây</h5>
+                            <p class="text-muted">Hoặc click để chọn file</p>
+                            <p class="text-muted small">Chấp nhận: PDF, DOCX • Tối đa 5MB</p>
+                            <input type="file" class="d-none" id="cv_file" name="cv_file" accept=".pdf,.docx" required>
+                            <button type="button" class="btn btn-primary mt-3" onclick="document.getElementById('cv_file').click()">
+                                <i class="bi bi-folder2-open me-1"></i>Chọn file
+                            </button>
+                        </div>
 
-    <div class="card form-card shadow-sm">
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg px-5" id="uploadBtn" disabled>
+                                <i class="bi bi-upload me-2"></i>Tải lên và phân tích
+                            </button>
+                        </div>
+                    </form>
 
-        <div class="card-body p-5">
-
-            <div class="text-center mb-4">
-                <h2 class="fw-bold">Phân tích CV bằng AI</h2>
-
-                <p class="text-muted">
-                    Upload CV để hệ thống phân tích kỹ năng
-                    và gợi ý công việc phù hợp.
-                </p>
-            </div>
-
-            {% if message %}
-            <div class="alert alert-info">
-                {{ message }}
-            </div>
-            {% endif %}
-
-            <form method="POST"
-                  enctype="multipart/form-data">
-
-                <div class="mb-4">
-
-                    <label class="form-label fw-bold">
-                        Chọn CV
-                    </label>
-
-                    <input
-                        type="file"
-                        name="cv"
-                        class="form-control form-control-lg"
-                        accept=".pdf,.docx"
-                        required>
-
-                    <div class="form-text">
-                        Hỗ trợ định dạng PDF và DOCX.
+                    <!-- File Info Preview -->
+                    <div id="filePreview" class="mt-4 d-none">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-file-earmark-text text-danger" style="font-size: 2rem;"></i>
+                                        <div class="ms-3">
+                                            <h6 class="mb-0" id="previewFileName"></h6>
+                                            <small class="text-muted" id="previewFileSize"></small>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-link text-danger p-0" onclick="clearFile()">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
+                    <!-- Instructions -->
+                    <div class="mt-5">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-lightbulb me-2"></i>Mẹo tối ưu CV</h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="card h-100 border-0 bg-light">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold"><i class="bi bi-check-circle text-success me-1"></i>Nên làm</h6>
+                                        <ul class="small mb-0">
+                                            <li>Dùng từ khóa kỹ thuật cụ thể (React, PostgreSQL, AWS...)</li>
+                                            <li>Định lượng kết quả (tăng 30% performance, giảm 50% bugs)</li>
+                                            <li>Liệt kê dự án có mô tả công nghệ, vai trò, kết quả</li>
+                                            <li>File PDF đảm bảo format không bị vỡ</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100 border-0 bg-light">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold"><i class="bi bi-x-circle text-danger me-1"></i>Tránh</h6>
+                                        <ul class="small mb-0">
+                                            <li>CV quá dài (>2 trang cho junior, >3 trang cho senior)</li>
+                                            <li>Liệt kê công nghệ không thực sự thành thạo</li>
+                                            <li>File scan, ảnh chụp màn hình, định dạng lạ</li>
+                                            <li>Thông tin cá nhân nhạy cảm (CMND, số tài khoản...)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <button
-                    type="submit"
-                    class="btn btn-primary w-100 btn-lg">
-
-                    Upload & Phân tích CV
-
-                </button>
-
-            </form>
-
-            <hr class="my-4">
-
-            <div class="d-grid gap-2">
-
-                <a href="{{ url_for('recommendations') }}"
-                   class="btn btn-success">
-
-                    Xem AI Job Recommendations
-
-                </a>
-
-                <a href="{{ url_for('dashboard') }}"
-                   class="btn btn-outline-secondary">
-
-                    Quay lại Dashboard
-
-                </a>
-
             </div>
 
+            <!-- My CVs List -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-files me-2"></i>CV đã tải lên</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush" id="cvList">
+                        <!-- Populated by JS or include -->
+                    </div>
+                </div>
+            </div>
         </div>
-
     </div>
-
 </div>
 
+<script>
+// Drag & Drop handling
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('cv_file');
+const filePreview = document.getElementById('filePreview');
+const previewFileName = document.getElementById('previewFileName');
+const previewFileSize = document.getElementById('previewFileSize');
+const uploadBtn = document.getElementById('uploadBtn');
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function showFilePreview(file) {
+    previewFileName.textContent = file.name;
+    previewFileSize.textContent = formatFileSize(file.size);
+    filePreview.classList.remove('d-none');
+    uploadBtn.disabled = false;
+    dropZone.classList.add('d-none');
+}
+
+function clearFile() {
+    fileInput.value = '';
+    filePreview.classList.add('d-none');
+    uploadBtn.disabled = true;
+    dropZone.classList.remove('d-none');
+}
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = '#2563eb';
+    dropZone.style.background = '#f0f4ff';
+});
+dropZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = '#dee2e6';
+    dropZone.style.background = '#fafafa';
+});
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = '#dee2e6';
+    dropZone.style.background = '#fafafa';
+    if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        showFilePreview(e.dataTransfer.files[0]);
+    }
+});
+
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length) {
+        showFilePreview(e.target.files[0]);
+    }
+});
+</script>
 {% endblock %}

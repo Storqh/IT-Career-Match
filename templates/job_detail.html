@@ -1,389 +1,477 @@
 {% extends "base.html" %}
 
-{% block title %}
-{{ job.title }} - IT Career Match
-{% endblock %}
-
+{% block title %}{{ job.title }} - {{ job.company }} - IT Career Match{% endblock %}
 
 {% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('jobs.list_jobs') }}">Việc làm</a></li>
+            <li class="breadcrumb-item active">{{ job.title }}</li>
+        </ol>
+    </nav>
 
-<div class="container py-5">
-
-    <!-- BACK -->
-
-    <div class="mb-4">
-
-        <a
-            href="{{ url_for('jobs') }}"
-            class="btn btn-outline-secondary"
-        >
-            ← Quay lại danh sách việc làm
-        </a>
-
-    </div>
-
-
-    <div class="row g-4">
-
-        <!-- ============================================= -->
-        <!-- MAIN CONTENT -->
-        <!-- ============================================= -->
-
+    <div class="row">
+        <!-- Main Job Info -->
         <div class="col-lg-8">
-
-            <!-- JOB HEADER -->
-
-            <div class="card border-0 shadow-sm mb-4">
-
-                <div class="card-body p-4">
-
-                    <span class="badge bg-primary mb-3">
-                        {{ job.category }}
-                    </span>
-
-                    <h1 class="fw-bold">
-                        {{ job.title }}
-                    </h1>
-
-                    <h5 class="text-muted">
-                        🏢 {{ job.company }}
-                    </h5>
-
-
-                    <hr>
-
-
-                    <div class="row g-3">
-
-                        <div class="col-md-6">
-
-                            <strong>📍 Địa điểm</strong>
-
-                            <p class="text-muted">
-                                {{ job.location or "Chưa cập nhật" }}
-                            </p>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <strong>💰 Mức lương</strong>
-
-                            <p class="text-success fw-semibold">
-
-                                {% if job.salary_text %}
-
-                                    {{ job.salary_text }}
-
-                                {% else %}
-
-                                    Thỏa thuận
-
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <!-- Header -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-start mb-4">
+                        <div>
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                <span class="badge bg-{% if job.job_type == 'Remote' %}success{% elif job.job_type == 'Internship' %}info{% else %}primary{% endif %} fs-6 px-3 py-2">
+                                    {{ job.job_type }}
+                                </span>
+                                {% if job.level %}
+                                <span class="badge bg-secondary fs-6 px-3 py-2">{{ job.level }}</span>
                                 {% endif %}
-
+                                {% if job.category %}
+                                <span class="badge bg-info fs-6 px-3 py-2">{{ job.category }}</span>
+                                {% endif %}
+                            </div>
+                            <h1 class="h2 fw-bold mb-1">{{ job.title }}</h1>
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-building me-1"></i>{{ job.company }}
+                                {% if job.location %}
+                                    <span class="mx-2">·</span>
+                                    <i class="bi bi-geo-alt me-1"></i>{{ job.location }}
+                                {% endif %}
                             </p>
-
                         </div>
-
-
-                        <div class="col-md-6">
-
-                            <strong>💼 Hình thức</strong>
-
-                            <p class="text-muted">
-                                {{ job.job_type or "Chưa cập nhật" }}
-                            </p>
-
+                        <div class="text-end mt-3 mt-md-0">
+                            {% if job.salary_min or job.salary_max %}
+                            <div class="fw-bold text-primary fs-5 mb-1">
+                                {% if job.salary_min and job.salary_max %}
+                                    {{ "{:,.0f}".format(job.salary_min) }} - {{ "{:,.0f}".format(job.salary_max) }} VNĐ
+                                {% elif job.salary_min %}
+                                    Từ {{ "{:,.0f}".format(job.salary_min) }} VNĐ
+                                {% else %}
+                                    Đến {{ "{:,.0f}".format(job.salary_max) }} VNĐ
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            <small class="text-muted">Đăng {{ job.created_at.strftime('%d/%m/%Y') }}</small>
                         </div>
-
-
-                        <div class="col-md-6">
-
-                            <strong>🎯 Cấp bậc</strong>
-
-                            <p class="text-muted">
-                                {{ job.level or "Chưa cập nhật" }}
-                            </p>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <strong>🕒 Kinh nghiệm</strong>
-
-                            <p class="text-muted">
-                                {{ job.experience or "Chưa cập nhật" }}
-                            </p>
-
-                        </div>
-
-
-                        <div class="col-md-6">
-
-                            <strong>📅 Hạn ứng tuyển</strong>
-
-                            <p class="text-muted">
-                                {{ job.deadline or "Chưa cập nhật" }}
-                            </p>
-
-                        </div>
-
                     </div>
 
-                </div>
-
-            </div>
-
-
-            <!-- DESCRIPTION -->
-
-            <div class="card border-0 shadow-sm mb-4">
-
-                <div class="card-body p-4">
-
-                    <h3 class="fw-bold mb-3">
-                        Mô tả công việc
-                    </h3>
-
-                    {% if job.description %}
-
-                    <div style="white-space: pre-line;">
-                        {{ job.description }}
+                    <!-- Action Buttons -->
+                    {% if session.get('user_id') %}
+                    <div class="d-flex gap-2 mb-4 pb-3 border-bottom">
+                        <button class="btn btn-primary flex-grow-1 btn-apply"
+                                data-job-id="{{ job.job_id }}"
+                                {% if has_applied %}disabled{% endif %}>
+                            <i class="bi bi-send me-1"></i>
+                            {% if has_applied %}Đã ứng tuyển{% else %}Ứng tuyển ngay{% endif %}
+                        </button>
+                        <button class="btn btn-outline-secondary btn-favourite"
+                                data-job-id="{{ job.job_id }}"
+                                data-favourited="{{ 'true' if is_favourite else 'false' }}">
+                            <i class="bi bi-{% if is_favourite %}heart-fill text-danger{% else %}heart{% endif %}"></i>
+                            <span class="ms-1">{% if is_favourite %}Đã lưu{% else %}Lưu{% endif %}</span>
+                        </button>
                     </div>
-
-                    {% else %}
-
-                    <p class="text-muted">
-                        Chưa có mô tả công việc.
-                    </p>
-
                     {% endif %}
 
-                </div>
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-file-text me-2"></i>Mô tả công việc</h5>
+                        <div class="job-description">{{ job.description | safe }}</div>
+                    </div>
 
-            </div>
-
-
-            <!-- REQUIREMENTS -->
-
-            <div class="card border-0 shadow-sm mb-4">
-
-                <div class="card-body p-4">
-
-                    <h3 class="fw-bold mb-3">
-                        Yêu cầu ứng viên
-                    </h3>
-
+                    <!-- Requirements -->
                     {% if job.requirements %}
-
-                    <div style="white-space: pre-line;">
-                        {{ job.requirements }}
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-checklist me-2"></i>Yêu cầu</h5>
+                        <div class="job-requirements">{{ job.requirements | safe }}</div>
                     </div>
-
-                    {% else %}
-
-                    <p class="text-muted">
-                        Chưa có thông tin yêu cầu.
-                    </p>
-
                     {% endif %}
 
-                </div>
-
-            </div>
-
-
-            <!-- BENEFITS -->
-
-            <div class="card border-0 shadow-sm">
-
-                <div class="card-body p-4">
-
-                    <h3 class="fw-bold mb-3">
-                        Quyền lợi
-                    </h3>
-
+                    <!-- Benefits -->
                     {% if job.benefits %}
-
-                    <div style="white-space: pre-line;">
-                        {{ job.benefits }}
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-gift me-2"></i>Quyền lợi</h5>
+                        <div class="job-benefits">{{ job.benefits | safe }}</div>
                     </div>
-
-                    {% else %}
-
-                    <p class="text-muted">
-                        Chưa có thông tin quyền lợi.
-                    </p>
-
                     {% endif %}
 
-                </div>
+                    <!-- Skills Required -->
+                    {% if skills %}
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-tags me-2"></i>Kỹ năng yêu cầu ({{ skills|length }})</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for skill in skills %}
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                                {{ skill.skill_name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
 
+                    <!-- AI Recommendation Analysis -->
+                    {% if recommendation %}
+                    <div class="card mb-4 border-primary shadow-sm">
+                        <div class="card-header bg-primary bg-opacity-10">
+                            <h5 class="mb-0 text-primary"><i class="bi bi-lightbulb me-2"></i>Phân tích AI - Độ phù hợp</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Summary Stats -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-6 col-md-3">
+                                    <div class="card stat-card h-100 border-primary text-center">
+                                        <div class="card-body">
+                                            <div class="fw-bold fs-2 text-primary">{{ "%.0f"|format(recommendation.match_score) }}%</div>
+                                            <small class="text-muted">Độ phù hợp tổng thể</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="card stat-card h-100 border-success text-center">
+                                        <div class="card-body">
+                                            <div class="fw-bold fs-2 text-success">{{ "%.0f"|format(recommendation.skill_match * 100) }}%</div>
+                                            <small class="text-muted">Khớp kỹ năng</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="card stat-card h-100 border-{% if recommendation.career_match %}success{% else %}warning{% endif %} text-center">
+                                        <div class="card-body">
+                                            <div class="fw-bold fs-2 {% if recommendation.career_match %}text-success{% else %}text-warning{% endif %}">
+                                                {% if recommendation.career_match %}✓ Match{% else %}✗ Không match{% endif %}
+                                            </div>
+                                            <small class="text-muted">Chuyên ngành</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="card stat-card h-100 border-info text-center">
+                                        <div class="card-body">
+                                            <div class="fw-bold fs-2 text-info">{{ recommendation.matched_skills|length if recommendation.matched_skills else 0 }}</div>
+                                            <small class="text-muted">Kỹ năng đã có</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Detailed Explanation from AI -->
+                            {% if recommendation.explanation %}
+                            <div class="mb-4">
+                                <button class="btn btn-sm btn-outline-primary w-100 mb-2" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#aiExplanation-{{ job.job_id }}"
+                                        aria-expanded="false" aria-controls="aiExplanation-{{ job.job_id }}">
+                                    <i class="bi bi-chevron-down me-1"></i> Xem phân tích chi tiết AI
+                                </button>
+
+                                <div class="collapse" id="aiExplanation-{{ job.job_id }}">
+                                    <div class="card card-body bg-light small">
+
+                                        <!-- Career alignment -->
+                                        {% if recommendation.explanation.career_alignment %}
+                                        <div class="mb-3 p-2 rounded bg-white border-start border-primary border-4">
+                                            {{ recommendation.explanation.career_alignment | safe }}
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Match reasons (strengths) -->
+                                        {% if recommendation.explanation.match_reasons %}
+                                        <div class="mb-3">
+                                            <h6 class="fw-bold text-success mb-2"><i class="bi bi-check-circle me-1"></i>Điểm mạnh của bạn</h6>
+                                            {% for reason in recommendation.explanation.match_reasons %}
+                                            <div class="mb-2 p-2 rounded bg-white border-start border-success border-3">
+                                                <div class="d-flex align-items-start">
+                                                    <span class="me-2">{{ reason.icon }}</span>
+                                                    <div>
+                                                        <strong>{{ reason.title }}</strong>
+                                                        <div class="text-muted">{{ reason.detail }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Gaps (missing skills) -->
+                                        {% if recommendation.explanation.gaps %}
+                                        <div class="mb-3">
+                                            <h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle me-1"></i>Kỹ năng cần bổ sung</h6>
+                                            {% for gap in recommendation.explanation.gaps %}
+                                            <div class="mb-2 p-2 rounded bg-white border-start border-{% if gap.type == 'required_missing' %}danger{% else %}warning{% endif %} border-3">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <span class="me-2">{{ gap.icon }}</span>
+                                                        <strong>{{ gap.skill }}</strong>
+                                                        <span class="badge bg-{% if gap.priority == 'Cao' %}danger{% elif gap.priority == 'Trung bình' %}warning{% else %}info{% endif %} ms-1">{{ gap.priority }}</span>
+                                                        <div class="text-muted small mt-1">{{ gap.market_context }}</div>
+                                                    </div>
+                                                </div>
+                                                {% if gap.resources %}
+                                                <div class="mt-1 ms-4">
+                                                    <small class="text-muted">Gợi ý học: </small>
+                                                    {% for res in gap.resources %}
+                                                    <a href="{{ res.url }}" target="_blank" class="badge bg-light text-decoration-none text-primary mx-1">{{ res.title }}</a>
+                                                    {% endfor %}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Action plan -->
+                                        {% if recommendation.explanation.actions %}
+                                        <div class="mb-3">
+                                            <h6 class="fw-bold text-primary mb-2"><i class="bi bi-lightning me-1"></i>Hành động đề xuất</h6>
+                                            {% for action in recommendation.explanation.actions %}
+                                            <div class="mb-2 p-2 rounded bg-white border">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <strong>{{ action.skill }}</strong>
+                                                        <span class="badge bg-{% if action.priority == 'Cao' %}danger{% elif action.priority == 'Trung bình' %}warning{% else %}info{% endif %} ms-1">{{ action.priority }}</span>
+                                                        <span class="badge bg-secondary ms-1">{{ action.time_estimate }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-1 small text-muted">{{ action.action }}</div>
+                                                {% if action.resource %}
+                                                <div class="mt-1">
+                                                    <a href="{{ action.resource.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-book me-1"></i>{{ action.resource.title }}
+                                                    </a>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Bonus skills -->
+                                        {% if recommendation.explanation.bonus_skills %}
+                                        <div class="mb-3">
+                                            <h6 class="fw-bold text-info mb-2"><i class="bi bi-star me-1"></i>Kỹ năng thêm của bạn (điểm cộng)</h6>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                {% for skill in recommendation.explanation.bonus_skills %}
+                                                <span class="badge bg-info text-dark">{{ skill }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Ranking factors -->
+                                        {% if recommendation.explanation.ranking_factors %}
+                                        <div class="mb-3">
+                                            <h6 class="fw-bold mb-2"><i class="bi bi-graph-up me-1"></i>Yếu tố xếp hạng</h6>
+                                            <div class="row g-2 small">
+                                                {% for factor in recommendation.explanation.ranking_factors %}
+                                                <div class="col-6">
+                                                    <div class="d-flex justify-content-between">
+                                                        <span>{{ factor.label }}</span>
+                                                        <span class="fw-bold">{{ factor.value }}</span>
+                                                    </div>
+                                                    <div class="progress" style="height: 4px;">
+                                                        <div class="progress-bar" style="width: {{ factor.contribution }}%"></div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <a href="{{ url_for('cv.gap_analysis', job_id=job.job_id) }}" class="btn btn-outline-primary w-100 mt-2">
+                                <i class="bi bi-graph-up me-1"></i>Xem Gap Analysis chi tiết (Full)
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
 
+            <!-- Company Info (placeholder) -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-building me-2"></i>Về {{ job.company }}</h5>
+                    <p class="text-muted">Thông tin công ty sẽ được cập nhật sớm.</p>
+                </div>
+            </div>
         </div>
 
-
-        <!-- ============================================= -->
-        <!-- SIDEBAR -->
-        <!-- ============================================= -->
-
+        <!-- Sidebar -->
         <div class="col-lg-4">
-
-            <!-- SKILLS -->
-
-            <div class="card border-0 shadow-sm mb-4">
-
-                <div class="card-body p-4">
-
-                    <h4 class="fw-bold mb-3">
-                        Kỹ năng yêu cầu
-                    </h4>
-
-                    {% if job.skills %}
-
-                        {% for skill in job.skills.split(",") %}
-
-                        <span
-                            class="badge
-                                   bg-light
-                                   text-dark
-                                   border
-                                   me-1
-                                   mb-2"
-                        >
-                            {{ skill.strip() }}
-                        </span>
-
-                        {% endfor %}
-
-                    {% else %}
-
-                    <p class="text-muted">
-                        Chưa cập nhật.
-                    </p>
-
-                    {% endif %}
-
+            <!-- Quick Info Card -->
+            <div class="card shadow-sm mb-4 sticky-top" style="top: 100px;">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Thông tin nhanh</h5>
                 </div>
+                <div class="card-body">
+                    <dl class="row mb-0 small">
+                        <dt class="col-5 text-muted">Cấp bậc</dt>
+                        <dd class="col-7 fw-medium">{{ job.level or 'Không xác định' }}</dd>
 
-            </div>
+                        <dt class="col-5 text-muted">Loại hình</dt>
+                        <dd class="col-7">{{ job.job_type }}</dd>
 
+                        <dt class="col-5 text-muted">Danh mục</dt>
+                        <dd class="col-7">{{ job.category or 'Không xác định' }}</dd>
 
-            <!-- JOB INFORMATION -->
+                        <dt class="col-5 text-muted">Địa điểm</dt>
+                        <dd class="col-7">{{ job.location }}</dd>
 
-            <div class="card border-0 shadow-sm mb-4">
+                        {% if job.salary_min or job.salary_max %}
+                        <dt class="col-5 text-muted">Mức lương</dt>
+                        <dd class="col-7 fw-medium text-primary">
+                            {% if job.salary_min and job.salary_max %}
+                                {{ "{:,.0f}".format(job.salary_min) }} - {{ "{:,.0f}".format(job.salary_max) }}
+                            {% elif job.salary_min %}
+                                Từ {{ "{:,.0f}".format(job.salary_min) }}
+                            {% else %}
+                                Đến {{ "{:,.0f}".format(job.salary_max) }}
+                            {% endif %}
+                            VNĐ
+                        </dd>
+                        {% endif %}
 
-                <div class="card-body p-4">
-
-                    <h4 class="fw-bold mb-3">
-                        Thông tin chung
-                    </h4>
-
-
-                    <p>
-                        <strong>Ngành:</strong><br>
-                        {{ job.category }}
-                    </p>
-
-
-                    <p>
-                        <strong>Công ty:</strong><br>
-                        {{ job.company }}
-                    </p>
-
-
-                    <p>
-                        <strong>Địa điểm:</strong><br>
-                        {{ job.location }}
-                    </p>
-
-
-                    <p>
-                        <strong>Hình thức:</strong><br>
-                        {{ job.job_type }}
-                    </p>
-
-
-                    <p>
-                        <strong>Kinh nghiệm:</strong><br>
-                        {{ job.experience or "Chưa cập nhật" }}
-                    </p>
-
-
-                    <p>
-                        <strong>Cấp bậc:</strong><br>
-                        {{ job.level or "Chưa cập nhật" }}
-                    </p>
-
+                        <dt class="col-5 text-muted">Trạng thái</dt>
+                        <dd class="col-7">
+                            <span class="badge bg-{% if job.status == 'active' %}success{% else %}secondary{% endif %}">
+                                {% if job.status == 'active' %}Đang tuyển{% else %}Đã đóng{% endif %}
+                            </span>
+                        </dd>
+                    </dl>
                 </div>
-
             </div>
 
-
-            <!-- SOURCE -->
-
-            {% if job.source %}
-
-            <div class="card border-0 shadow-sm">
-
-                <div class="card-body p-4">
-
-                    <h5 class="fw-bold">
-                        Nguồn việc làm
-                    </h5>
-
-                    <p class="text-muted mb-2">
-                        {{ job.source }}
-                    </p>
-
-
-                    {% if job.source_url %}
-
-                    <a
-                        href="{{ job.source_url }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="btn btn-outline-primary btn-sm"
-                    >
-                        Xem nguồn tuyển dụng
-                    </a>
-
-                    {% endif %}
-
+            <!-- Similar Jobs (placeholder) -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Việc làm tương tự</h5>
                 </div>
-
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item text-center py-4">
+                            <i class="bi bi-search text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2 mb-0">Tính năng đang phát triển</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            {% endif %}
-
-
-            <!-- ADMIN -->
-
-            {% if session.get("role") == "admin" %}
-
-            <div class="mt-3">
-
-                <a
-                    href="{{ url_for(
-                        'edit_job',
-                        job_id=job.job_id
-                    ) }}"
-                    class="btn btn-warning w-100"
-                >
-                    Sửa công việc
-                </a>
-
-            </div>
-
-            {% endif %}
-
         </div>
-
     </div>
-
 </div>
 
+<script>
+// Apply button
+document.querySelector('.btn-apply')?.addEventListener('click', function() {
+    const jobId = this.dataset.jobId;
+    if (this.disabled) return;
+
+    // Show modal to select CV
+    const modalHtml = `
+        <div class="modal fade" id="applyModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ứng tuyển vị trí này</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="applyForm">
+                            <input type="hidden" name="job_id" value="${jobId}">
+                            {% if cvs %}
+                            <div class="mb-3">
+                                <label class="form-label">Chọn CV</label>
+                                <select class="form-select" name="cv_id" required>
+                                    <option value="" selected disabled>-- Chọn CV --</option>
+                                    {% for cv in cvs %}
+                                    <option value="{{ cv.cv_id }}">{{ cv.filename }} ({{ cv.extracted_skills|length }} skills)</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                Bạn cần tải CV lên trước khi ứng tuyển.
+                                <a href="{{ url_for('cv.upload_cv') }}">Tải CV</a>
+                            </div>
+                            {% endif %}
+                            <div class="mb-3">
+                                <label class="form-label">Thư xin việc (tùy chọn)</label>
+                                <textarea class="form-control" name="cover_letter" rows="4"
+                                          placeholder="Tại sao bạn phù hợp với vị trí này?"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                        {% if cvs %}
+                        <button type="button" class="btn btn-primary" onclick="submitApplication()">Gửi ứng tuyển</button>
+                        {% else %}
+                        <a href="{{ url_for('cv.upload_cv') }}" class="btn btn-primary">Tải CV lên</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('applyModal'));
+    modal.show();
+
+    document.getElementById('applyModal').addEventListener('hidden.bs.modal', () => {
+        document.getElementById('applyModal').remove();
+    });
+});
+
+function submitApplication() {
+    const form = document.getElementById('applyForm');
+    const formData = new FormData(form);
+
+    fetch('{{ url_for("jobs.apply_job", job_id=0) }}'.replace('0', formData.get('job_id')), {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            bootstrap.Modal.getInstance(document.getElementById('applyModal')).hide();
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+// Favourite button
+document.querySelector('.btn-favourite')?.addEventListener('click', function() {
+    const jobId = this.dataset.jobId;
+    const isFav = this.dataset.favourited === 'true';
+
+    fetch(`{{ url_for('jobs.toggle_favourite', job_id=0) }}`.replace('0', jobId), {
+        method: 'POST'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const icon = this.querySelector('i');
+            const span = this.querySelector('span');
+            if (data.favourited) {
+                icon.classList.remove('bi-heart');
+                icon.classList.add('bi-heart-fill', 'text-danger');
+                this.dataset.favourited = 'true';
+                if (span) span.textContent = 'Đã lưu';
+            } else {
+                icon.classList.remove('bi-heart-fill', 'text-danger');
+                icon.classList.add('bi-heart');
+                this.dataset.favourited = 'false';
+                if (span) span.textContent = 'Lưu';
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Việc làm đã lưu - IT Career Match{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="h3 fw-bold mb-4"><i class="bi bi-heart me-2"></i>Việc làm đã lưu</h1>
+
+    {% if favourites %}
+    <div class="row g-4">
+        {% for fav in favourites %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card job-card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-{% if fav.job_type == 'Remote' %}success{% elif fav.job_type == 'Internship' %}info{% else %}primary{% endif %}">
+                            {{ fav.job_type }}
+                        </span>
+                        {% if fav.level %}
+                        <span class="badge bg-secondary">{{ fav.level }}</span>
+                        {% endif %}
+                    </div>
+
+                    <h5 class="card-title fw-bold mb-1">{{ fav.title }}</h5>
+                    <p class="card-text text-muted small mb-2">
+                        <i class="bi bi-building me-1"></i>{{ fav.company }}
+                    </p>
+                    <p class="card-text text-muted small mb-2">
+                        <i class="bi bi-geo-alt me-1"></i>{{ fav.location }}
+                        {% if fav.category %}
+                            <span class="ms-2"><i class="bi bi-tag me-1"></i>{{ fav.category }}</span>
+                        {% endif %}
+                    </p>
+
+                    {% if fav.salary_min or fav.salary_max %}
+                    <p class="card-text fw-semibold text-primary mb-2">
+                        <i class="bi bi-currency-dollar me-1"></i>
+                        {% if fav.salary_min and fav.salary_max %}
+                            {{ "{:,.0f}".format(fav.salary_min) }} - {{ "{:,.0f}".format(fav.salary_max) }} VNĐ
+                        {% elif fav.salary_min %}
+                            Từ {{ "{:,.0f}".format(fav.salary_min) }} VNĐ
+                        {% else %}
+                            Đến {{ "{:,.0f}".format(fav.salary_max) }} VNĐ
+                        {% endif %}
+                    </p>
+                    {% endif %}
+
+                    <div class="mt-auto pt-3 border-top">
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('jobs.job_detail', job_id=fav.job_id) }}" class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-eye me-1"></i>Chi tiết
+                            </a>
+                            <button class="btn btn-outline-danger btn-favourite"
+                                    data-job-id="{{ fav.job_id }}"
+                                    data-favourited="true"
+                                    title="Bỏ lưu">
+                                <i class="bi bi-heart-fill text-danger"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-heart text-muted" style="font-size: 5rem;"></i>
+        <h4 class="text-muted mt-3">Chưa lưu việc làm nào</h4>
+        <p class="text-muted">Nhấn tim trên các tin tuyển dụng để lưu lại</p>
+        <a href="{{ url_for('jobs.list_jobs') }}" class="btn btn-primary mt-3">
+            <i class="bi bi-search me-1"></i>Tìm việc làm
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Favourite button handling (remove from favourites)
+document.querySelectorAll('.btn-favourite').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const jobId = this.dataset.jobId;
+
+        fetch(`{{ url_for('jobs.toggle_favourite', job_id=0) }}`.replace('0', jobId), {
+            method: 'POST'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && !data.favourited) {
+                // Remove card with animation
+                const card = this.closest('.card');
+                card.style.transition = 'opacity 0.3s, transform 0.3s';
+                card.style.opacity = '0';
+                card.style.transform = 'translateX(20px)';
+                setTimeout(() => card.remove(), 300);
+
+                // Check if empty
+                setTimeout(() => {
+                    if (document.querySelectorAll('.job-card').length === 0) {
+                        location.reload();
+                    }
+                }, 400);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,872 +1,220 @@
 {% extends "base.html" %}
 
-{% block title %}
-Việc làm - IT Career Match
-{% endblock %}
-
+{% block title %}Việc làm IT - IT Career Match{% endblock %}
 
 {% block content %}
-
-<div class="container py-5">
-
-    <!-- ================================================= -->
-    <!-- HEADER -->
-    <!-- ================================================= -->
-
-    <div
-        class="d-flex flex-column flex-lg-row
-               justify-content-between
-               align-items-lg-center
-               gap-3 mb-4"
-    >
-
-        <div>
-
-            <h1 class="fw-bold mb-1">
-                Cơ hội việc làm IT
-            </h1>
-
-            <p class="text-muted mb-0">
-                Tìm kiếm công việc phù hợp với kỹ năng
-                và định hướng nghề nghiệp của bạn.
-            </p>
-
+<div class="container py-4">
+    <!-- Header & Filters -->
+    <div class="row mb-4">
+        <div class="col-12 col-md-8">
+            <h1 class="h3 fw-bold">Việc làm IT</h1>
+            <p class="text-muted">{{ pagination.total }} vị trí đang tuyển dụng</p>
         </div>
-
-
-        {% if session.get("role") == "admin" %}
-
-        <a
-            href="{{ url_for('add_job') }}"
-            class="btn btn-primary"
-        >
-            + Thêm việc làm
-        </a>
-
-        {% endif %}
-
+        <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
+            {% if session.get('user_role') == 'admin' %}
+                <a href="{{ url_for('jobs.admin_create_job') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i>Đăng tin mới
+                </a>
+            {% endif %}
+        </div>
     </div>
 
-
-    <!-- ================================================= -->
-    <!-- SEARCH -->
-    <!-- ================================================= -->
-
-    <div class="card border-0 shadow-sm mb-4">
-
-        <div class="card-body p-4">
-
-            <form
-                method="GET"
-                action="{{ url_for('jobs') }}"
-            >
-
-                <!-- SEARCH BAR -->
-
-                <div class="row g-3 mb-3">
-
-                    <div class="col-lg-8">
-
-                        <label class="form-label fw-semibold">
-                            Tìm kiếm
-                        </label>
-
-                        <input
-                            type="text"
-                            class="form-control form-control-lg"
-                            name="q"
-                            value="{{ keyword }}"
-                            placeholder="Tên việc, công ty, kỹ năng..."
-                        >
-
-                    </div>
-
-
-                    <div class="col-lg-4">
-
-                        <label class="form-label fw-semibold">
-                            Sắp xếp
-                        </label>
-
-                        <select
-                            class="form-select form-select-lg"
-                            name="sort"
-                        >
-
-                            <option
-                                value="newest"
-                                {% if selected_sort == "newest" %}
-                                selected
-                                {% endif %}
-                            >
-                                Mới nhất
-                            </option>
-
-                            <option
-                                value="salary_high"
-                                {% if selected_sort == "salary_high" %}
-                                selected
-                                {% endif %}
-                            >
-                                Lương cao nhất
-                            </option>
-
-                            <option
-                                value="salary_low"
-                                {% if selected_sort == "salary_low" %}
-                                selected
-                                {% endif %}
-                            >
-                                Lương thấp nhất
-                            </option>
-
-                            <option
-                                value="title"
-                                {% if selected_sort == "title" %}
-                                selected
-                                {% endif %}
-                            >
-                                Tên A → Z
-                            </option>
-
-                        </select>
-
-                    </div>
-
+    <!-- Filter Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" id="filterForm" class="row g-3">
+                <div class="col-md-3">
+                    <label for="keyword" class="form-label visually-hidden">Từ khóa</label>
+                    <input type="text" class="form-control" id="keyword" name="keyword"
+                           placeholder="Tìm kiếm vị trí, công ty..." value="{{ filters.keyword or '' }}">
                 </div>
-
-
-                <!-- FILTER ROW 1 -->
-
-                <div class="row g-3">
-
-                    <!-- CATEGORY -->
-
-                    <div class="col-md-6 col-lg-3">
-
-                        <label class="form-label">
-                            Nhóm nghề
-                        </label>
-
-                        <select
-                            class="form-select"
-                            name="category"
-                        >
-
-                            <option value="">
-                                Tất cả nhóm nghề
-                            </option>
-
-                            {% for item in categories %}
-
-                            <option
-                                value="{{ item.category }}"
-                                {% if selected_category == item.category %}
-                                selected
-                                {% endif %}
-                            >
-                                {{ item.category }}
-                            </option>
-
-                            {% endfor %}
-
-                        </select>
-
-                    </div>
-
-
-                    <!-- LOCATION -->
-
-                    <div class="col-md-6 col-lg-3">
-
-                        <label class="form-label">
-                            Địa điểm
-                        </label>
-
-                        <select
-                            class="form-select"
-                            name="location"
-                        >
-
-                            <option value="">
-                                Tất cả địa điểm
-                            </option>
-
-                            {% for item in locations %}
-
-                            <option
-                                value="{{ item.location }}"
-                                {% if selected_location == item.location %}
-                                selected
-                                {% endif %}
-                            >
-                                {{ item.location }}
-                            </option>
-
-                            {% endfor %}
-
-                        </select>
-
-                    </div>
-
-
-                    <!-- JOB TYPE -->
-
-                    <div class="col-md-6 col-lg-3">
-
-                        <label class="form-label">
-                            Hình thức
-                        </label>
-
-                        <select
-                            class="form-select"
-                            name="job_type"
-                        >
-
-                            <option value="">
-                                Tất cả hình thức
-                            </option>
-
-                            {% for item in job_types %}
-
-                            <option
-                                value="{{ item.job_type }}"
-                                {% if selected_job_type == item.job_type %}
-                                selected
-                                {% endif %}
-                            >
-                                {{ item.job_type }}
-                            </option>
-
-                            {% endfor %}
-
-                        </select>
-
-                    </div>
-
-
-                    <!-- SALARY -->
-
-                    <div class="col-md-6 col-lg-3">
-
-                        <label class="form-label">
-                            Mức lương
-                        </label>
-
-                        <select
-                            class="form-select"
-                            name="salary"
-                        >
-
-                            <option value="">
-                                Tất cả mức lương
-                            </option>
-
-                            <option
-                                value="under_10"
-                                {% if selected_salary == "under_10" %}
-                                selected
-                                {% endif %}
-                            >
-                                Dưới 10 triệu
-                            </option>
-
-                            <option
-                                value="10_15"
-                                {% if selected_salary == "10_15" %}
-                                selected
-                                {% endif %}
-                            >
-                                10 - 15 triệu
-                            </option>
-
-                            <option
-                                value="15_20"
-                                {% if selected_salary == "15_20" %}
-                                selected
-                                {% endif %}
-                            >
-                                15 - 20 triệu
-                            </option>
-
-                            <option
-                                value="20_plus"
-                                {% if selected_salary == "20_plus" %}
-                                selected
-                                {% endif %}
-                            >
-                                Từ 20 triệu
-                            </option>
-
-                        </select>
-
-                    </div>
-
+                <div class="col-md-2">
+                    <label for="category" class="form-label visually-hidden">Danh mục</label>
+                    <select class="form-select" id="category" name="category">
+                        <option value="">Tất cả danh mục</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat }}" {% if filters.category == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-
-
-                <!-- FILTER ROW 2 -->
-
-                <div class="row g-3 mt-1">
-
-                    <!-- EXPERIENCE -->
-
-                    <div class="col-md-6 col-lg-3">
-
-                        <label class="form-label">
-                            Kinh nghiệm
-                        </label>
-
-                        <select
-                            class="form-select"
-                            name="experience"
-                        >
-
-                            <option value="">
-                                Tất cả kinh nghiệm
-                            </option>
-
-                            {% for item in experiences %}
-
-                            <option
-                                value="{{ item.experience }}"
-                                {% if selected_experience == item.experience %}
-                                selected
-                                {% endif %}
-                            >
-                                {{ item.experience }}
-                            </option>
-
-                            {% endfor %}
-
-                        </select>
-
-                    </div>
-
-
-                    <!-- LEVEL -->
-
-                    <div class="col-md-6 col-lg-3">
-
-                        <label class="form-label">
-                            Cấp bậc
-                        </label>
-
-                        <select
-                            class="form-select"
-                            name="level"
-                        >
-
-                            <option value="">
-                                Tất cả cấp bậc
-                            </option>
-
-                            {% for item in levels %}
-
-                            <option
-                                value="{{ item.level }}"
-                                {% if selected_level == item.level %}
-                                selected
-                                {% endif %}
-                            >
-                                {{ item.level }}
-                            </option>
-
-                            {% endfor %}
-
-                        </select>
-
-                    </div>
-
-
-                    <!-- BUTTONS -->
-
-                    <div
-                        class="col-md-12 col-lg-6
-                               d-flex align-items-end gap-2"
-                    >
-
-                        <button
-                            type="submit"
-                            class="btn btn-primary px-4"
-                        >
-                            🔍 Tìm kiếm
-                        </button>
-
-
-                        <a
-                            href="{{ url_for('jobs') }}"
-                            class="btn btn-outline-secondary"
-                        >
-                            Đặt lại
-                        </a>
-
-                    </div>
-
+                <div class="col-md-2">
+                    <label for="location" class="form-label visually-hidden">Địa điểm</label>
+                    <select class="form-select" id="location" name="location">
+                        <option value="">Tất cả địa điểm</option>
+                        {% for loc in locations %}
+                            <option value="{{ loc }}" {% if filters.location == loc %}selected{% endif %}>{{ loc }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-
+                <div class="col-md-2">
+                    <label for="job_type" class="form-label visually-hidden">Loại hình</label>
+                    <select class="form-select" id="job_type" name="job_type">
+                        <option value="">Tất cả loại hình</option>
+                        {% for jt in job_types %}
+                            <option value="{{ jt }}" {% if filters.job_type == jt %}selected{% endif %}>{{ jt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="level" class="form-label visually-hidden">Cấp bậc</label>
+                    <select class="form-select" id="level" name="level">
+                        <option value="">Tất cả cấp bậc</option>
+                        {% for lvl in levels %}
+                            <option value="{{ lvl }}" {% if filters.level == lvl %}selected{% endif %}>{{ lvl }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-funnel"></i>
+                    </button>
+                </div>
             </form>
 
-        </div>
-
-    </div>
-
-
-    <!-- ================================================= -->
-    <!-- RESULT INFORMATION -->
-    <!-- ================================================= -->
-
-    <div
-        class="d-flex justify-content-between
-               align-items-center mb-3"
-    >
-
-        <div>
-
-            <strong>
-                {{ total_jobs }}
-            </strong>
-
-            <span class="text-muted">
-                việc làm được tìm thấy
-            </span>
-
-        </div>
-
-
-        {% if keyword %}
-
-        <span class="text-muted">
-
-            Kết quả cho:
-            <strong>
-                "{{ keyword }}"
-            </strong>
-
-        </span>
-
-        {% endif %}
-
-    </div>
-
-
-    <!-- ================================================= -->
-    <!-- JOB LIST -->
-    <!-- ================================================= -->
-
-    <div class="row g-4">
-
-        {% for job in jobs %}
-
-        <div class="col-lg-4 col-md-6">
-
-            <div
-                class="card border-0 shadow-sm h-100 job-card"
-            >
-
-                <div
-                    class="card-body p-4
-                           d-flex flex-column"
-                >
-
-                    <!-- CATEGORY -->
-
-                    <div class="mb-3">
-
-                        <span class="badge bg-primary">
-                            {{ job.category }}
+            {% if filters %}
+            <div class="mt-3">
+                <small class="text-muted">Bộ lọc đang áp dụng: </small>
+                {% for key, value in filters.items() %}
+                    {% if key != 'status' %}
+                        <span class="badge bg-primary bg-opacity-10 text-primary ms-1">
+                            {{ key }}: {{ value }}
+                            <a href="{{ url_for('jobs.list_jobs', **(filters | remove_filter(key))) }}" class="text-decoration-none text-primary ms-1">
+                                <i class="bi bi-x"></i>
+                            </a>
                         </span>
-
-                        {% if session.get("role") == "admin" %}
-
-                            {% if job.status == "inactive" %}
-
-                            <span class="badge bg-danger">
-                                Inactive
-                            </span>
-
-                            {% else %}
-
-                            <span class="badge bg-success">
-                                Active
-                            </span>
-
-                            {% endif %}
-
-                        {% endif %}
-
-                    </div>
-
-
-                    <!-- TITLE -->
-
-                    <h4 class="fw-bold">
-                        {{ job.title }}
-                    </h4>
-
-
-                    <!-- COMPANY -->
-
-                    <p class="text-muted mb-3">
-                        🏢 {{ job.company }}
-                    </p>
-
-
-                    <!-- INFORMATION -->
-
-                    <div class="small mb-3">
-
-                        <p class="mb-2">
-
-                            📍
-
-                            {{ job.location or "Chưa cập nhật" }}
-
-                        </p>
-
-
-                        <p class="mb-2">
-
-                            💰
-
-                            {% if job.salary_text %}
-
-                                {{ job.salary_text }}
-
-                            {% elif job.salary_min and job.salary_max %}
-
-                                {{
-                                    job.salary_min
-                                    // 1000000
-                                }}
-                                -
-                                {{
-                                    job.salary_max
-                                    // 1000000
-                                }}
-                                triệu
-
-                            {% else %}
-
-                                Thỏa thuận
-
-                            {% endif %}
-
-                        </p>
-
-
-                        <p class="mb-2">
-
-                            💼
-
-                            {{
-                                job.job_type
-                                or "Chưa cập nhật"
-                            }}
-
-                        </p>
-
-
-                        <p class="mb-2">
-
-                            🎯
-
-                            {{
-                                job.level
-                                or "Chưa cập nhật"
-                            }}
-
-                        </p>
-
-
-                        <p class="mb-0">
-
-                            🕒
-
-                            {{
-                                job.experience
-                                or "Chưa cập nhật"
-                            }}
-
-                        </p>
-
-                    </div>
-
-
-                    <!-- SKILLS -->
-
-                    {% if job.skills %}
-
-                    <div class="mb-3">
-
-                        {% for skill in job.skills.split(",")[:4] %}
-
-                        <span
-                            class="badge
-                                   bg-light
-                                   text-dark
-                                   border
-                                   me-1
-                                   mb-1"
-                        >
-                            {{ skill.strip() }}
-                        </span>
-
-                        {% endfor %}
-
-                    </div>
-
                     {% endif %}
+                {% endfor %}
+                <a href="{{ url_for('jobs.list_jobs') }}" class="btn btn-link btn-sm p-0 ms-2">Xoá tất cả</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 
-
-                    <!-- DESCRIPTION -->
-
-                    <p class="text-muted small">
-
-                        {% if job.description %}
-
-                            {{ job.description[:130] }}
-
-                            {% if job.description|length > 130 %}
-                                ...
+    <!-- Jobs List -->
+    <div class="row">
+        {% if jobs %}
+            {% for job in jobs %}
+            <div class="col-12 col-md-6 col-lg-4 mb-4">
+                <div class="card job-card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-{% if job.job_type == 'Remote' %}success{% elif job.job_type == 'Internship' %}info{% else %}primary{% endif %}">
+                                {{ job.job_type }}
+                            </span>
+                            {% if job.level %}
+                            <span class="badge bg-secondary">{{ job.level }}</span>
                             {% endif %}
+                        </div>
 
-                        {% else %}
+                        <h5 class="card-title fw-bold mb-1">{{ job.title }}</h5>
+                        <p class="card-text text-muted small mb-2">
+                            <i class="bi bi-building me-1"></i>{{ job.company }}
+                        </p>
+                        <p class="card-text text-muted small mb-2">
+                            <i class="bi bi-geo-alt me-1"></i>{{ job.location }}
+                            {% if job.category %}
+                                <span class="ms-2"><i class="bi bi-tag me-1"></i>{{ job.category }}</span>
+                            {% endif %}
+                        </p>
 
-                            Chưa có mô tả công việc.
-
+                        {% if job.salary_min or job.salary_max %}
+                        <p class="card-text fw-semibold text-primary mb-2">
+                            <i class="bi bi-currency-dollar me-1"></i>
+                            {% if job.salary_min and job.salary_max %}
+                                {{ "{:,.0f}".format(job.salary_min) }} - {{ "{:,.0f}".format(job.salary_max) }} VNĐ
+                            {% elif job.salary_min %}
+                                Từ {{ "{:,.0f}".format(job.salary_min) }} VNĐ
+                            {% else %}
+                                Đến {{ "{:,.0f}".format(job.salary_max) }} VNĐ
+                            {% endif %}
+                        </p>
                         {% endif %}
 
-                    </p>
-
-
-                    <!-- ACTION -->
-
-                    <div class="mt-auto pt-3">
-
-                        <!--
-                        Job Detail sẽ được tạo ở bước tiếp theo.
-                        -->
-
-                       <a
-                            href="{{ url_for('job_detail', job_id=job.job_id) }}"
-                            class="btn btn-outline-primary btn-sm"
-                        >
-                            Xem chi tiết
-                        </a>
-
-
-                        {% if session.get("role") == "admin" %}
-
-                        <a
-                            href="{{ url_for(
-                                'edit_job',
-                                job_id=job.job_id
-                            ) }}"
-                            class="btn btn-warning btn-sm"
-                        >
-                            Sửa
-                        </a>
-
-
-                        <form
-                            action="{{ url_for(
-                                'delete_job',
-                                job_id=job.job_id
-                            ) }}"
-                            method="POST"
-                            class="d-inline"
-                            onsubmit="
-                                return confirm(
-                                    'Bạn có chắc muốn xóa công việc này?'
-                                );
-                            "
-                        >
-
-                            <button
-                                type="submit"
-                                class="btn btn-danger btn-sm"
-                            >
-                                Xóa
-                            </button>
-
-                        </form>
-
-                        {% endif %}
-
+                        <div class="mt-auto pt-3 border-top">
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('jobs.job_detail', job_id=job.job_id) }}" class="btn btn-outline-primary flex-grow-1">
+                                    Chi tiết
+                                </a>
+                                {% if session.get('user_id') %}
+                                <button class="btn btn-outline-secondary btn-favourite"
+                                        data-job-id="{{ job.job_id }}"
+                                        data-favourited="{{ 'true' if is_favourite else 'false' }}">
+                                    <i class="bi bi-{% if is_favourite %}heart-fill text-danger{% else %}heart{% endif %}"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-
                 </div>
-
             </div>
-
-        </div>
-
-
-        {% else %}
-
-        <div class="col-12">
-
-            <div
-                class="alert alert-info
-                       text-center py-5"
-            >
-
-                <h5>
-                    Không tìm thấy công việc phù hợp
-                </h5>
-
-                <p class="mb-3">
-                    Hãy thử thay đổi từ khóa hoặc bộ lọc.
-                </p>
-
-                <a
-                    href="{{ url_for('jobs') }}"
-                    class="btn btn-primary"
-                >
-                    Xóa bộ lọc
-                </a>
-
-            </div>
-
-        </div>
-
-        {% endfor %}
-
-    </div>
-
-
-    <!-- ================================================= -->
-    <!-- PAGINATION -->
-    <!-- ================================================= -->
-
-    {% if total_pages > 1 %}
-
-    <nav class="mt-5">
-
-        <ul class="pagination justify-content-center">
-
-            <!-- PREVIOUS -->
-
-            <li
-                class="page-item
-                {% if page <= 1 %}
-                    disabled
-                {% endif %}"
-            >
-
-                <a
-                    class="page-link"
-                    href="{{
-                        url_for(
-                            'jobs',
-                            page=page-1,
-                            q=keyword,
-                            category=selected_category,
-                            location=selected_location,
-                            job_type=selected_job_type,
-                            experience=selected_experience,
-                            level=selected_level,
-                            salary=selected_salary,
-                            sort=selected_sort
-                        )
-                    }}"
-                >
-                    ←
-                </a>
-
-            </li>
-
-
-            <!-- PAGE NUMBERS -->
-
-            {% for number in page_numbers %}
-
-            <li
-                class="page-item
-                {% if number == page %}
-                    active
-                {% endif %}"
-            >
-
-                <a
-                    class="page-link"
-                    href="{{
-                        url_for(
-                            'jobs',
-                            page=number,
-                            q=keyword,
-                            category=selected_category,
-                            location=selected_location,
-                            job_type=selected_job_type,
-                            experience=selected_experience,
-                            level=selected_level,
-                            salary=selected_salary,
-                            sort=selected_sort
-                        )
-                    }}"
-                >
-                    {{ number }}
-                </a>
-
-            </li>
-
             {% endfor %}
-
-
-            <!-- NEXT -->
-
-            <li
-                class="page-item
-                {% if page >= total_pages %}
-                    disabled
-                {% endif %}"
-            >
-
-                <a
-                    class="page-link"
-                    href="{{
-                        url_for(
-                            'jobs',
-                            page=page+1,
-                            q=keyword,
-                            category=selected_category,
-                            location=selected_location,
-                            job_type=selected_job_type,
-                            experience=selected_experience,
-                            level=selected_level,
-                            salary=selected_salary,
-                            sort=selected_sort
-                        )
-                    }}"
-                >
-                    →
-                </a>
-
-            </li>
-
-        </ul>
-
-    </nav>
-
-    {% endif %}
-
-
-    <!-- ================================================= -->
-    <!-- BOTTOM ACTION -->
-    <!-- ================================================= -->
-
-    <div class="mt-4 text-center">
-
-        <a
-            href="{{ url_for('recommendations') }}"
-            class="btn btn-primary"
-        >
-            🤖 Xem việc làm AI đề xuất
-        </a>
-
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+                <h4 class="text-muted mt-3">Không tìm thấy việc làm phù hợp</h4>
+                <p class="text-muted">Thử xoá bộ lọc hoặc tìm kiếm từ khóa khác</p>
+                <a href="{{ url_for('jobs.list_jobs') }}" class="btn btn-outline-primary">Xoá bộ lọc</a>
+            </div>
+        {% endif %}
     </div>
 
+    <!-- Pagination -->
+    {% if pagination.pages > 1 %}
+    <nav aria-label="Pagination">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('jobs.list_jobs', **(filters | remove_filter('page') | merge({'page': pagination.page - 1}))) }}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            {% for p in range(max(1, pagination.page - 2), min(pagination.pages + 1, pagination.page + 3)) %}
+                <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('jobs.list_jobs', **(filters | remove_filter('page') | merge({'page': p}))) }}">{{ p }}</a>
+                </li>
+            {% endfor %}
+            <li class="page-item {% if pagination.page == pagination.pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('jobs.list_jobs', **(filters | remove_filter('page') | merge({'page': pagination.page + 1}))) }}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <p class="text-center text-muted small">Trang {{ pagination.page }} / {{ pagination.pages }} ({{ pagination.total }} kết quả)</p>
+    {% endif %}
 </div>
 
+<script>
+// Favourite button handling
+document.querySelectorAll('.btn-favourite').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const jobId = this.dataset.jobId;
+        const isFav = this.dataset.favourited === 'true';
+
+        fetch(`{{ url_for('jobs.toggle_favourite', job_id=0) }}`.replace('0', jobId), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const icon = this.querySelector('i');
+                if (data.favourited) {
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill', 'text-danger');
+                    this.dataset.favourited = 'true';
+                } else {
+                    icon.classList.remove('bi-heart-fill', 'text-danger');
+                    icon.classList.add('bi-heart');
+                    this.dataset.favourited = 'false';
+                }
+            }
+        });
+    });
+});
+
+// Auto-submit filter form on change
+document.querySelectorAll('#filterForm select').forEach(select => {
+    select.addEventListener('change', () => document.getElementById('filterForm').submit());
+});
+</script>
 {% endblock %}

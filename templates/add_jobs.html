@@ -166,6 +166,64 @@
 
                         </div>
                     </div>
+                    <div class="icm-panel mb-4">
+
+                        <div class="icm-panel-heading">
+                            <span class="icm-step">02</span>
+
+                            <div>
+                                <h5 class="fw-bold mb-1">
+                                    Kỹ năng yêu cầu
+                                </h5>
+
+                                <p class="text-muted mb-0">
+                                    Thêm các kỹ năng cần thiết cho vị trí tuyển dụng
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="skillInput" class="form-label">
+                                Nhập kỹ năng
+                            </label>
+
+                            <div class="input-group">
+                                <input type="text"
+                                       id="skillInput"
+                                       class="form-control"
+                                       placeholder="VD: Python, SQL, Docker...">
+
+                                <button type="button"
+                                        id="addSkillButton"
+                                        class="btn btn-outline-primary">
+                                    <i class="bi bi-plus-circle me-1"></i>
+                                    Thêm
+                                </button>
+                            </div>
+
+                            <small class="text-muted">
+                                Nhấn Enter hoặc nút Thêm để thêm kỹ năng.
+                            </small>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">
+                                Danh sách kỹ năng đã chọn
+                            </label>
+
+                            <div id="selectedSkills"
+                                 class="d-flex flex-wrap gap-2">
+                                <span class="text-muted small"
+                                      id="emptySkillsMessage">
+                                    Chưa có kỹ năng nào được thêm.
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Các kỹ năng sẽ được gửi về Flask qua các input này -->
+                        <div id="skillHiddenInputs"></div>
+
+                    </div>
 
                     <!-- SECTION 02 -->
                     <div class="icm-panel mb-4">
@@ -286,4 +344,101 @@
 
     </div>
 </main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const skillInput = document.getElementById("skillInput");
+    const addSkillButton = document.getElementById("addSkillButton");
+    const selectedSkills = document.getElementById("selectedSkills");
+    const skillHiddenInputs = document.getElementById("skillHiddenInputs");
+    const emptySkillsMessage = document.getElementById("emptySkillsMessage");
+    const addJobForm = document.getElementById("addJobForm");
+
+    const skills = [];
+
+    function renderSkills() {
+        selectedSkills.innerHTML = "";
+        skillHiddenInputs.innerHTML = "";
+
+        if (skills.length === 0) {
+            selectedSkills.appendChild(emptySkillsMessage);
+            return;
+        }
+
+        skills.forEach(function (skill, index) {
+            const tag = document.createElement("span");
+
+            tag.className = "badge bg-primary-subtle text-primary border p-2";
+
+            const skillText = document.createElement("span");
+            skillText.textContent = skill + " ";
+
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.className = "btn-close ms-1";
+            removeButton.style.fontSize = "9px";
+            removeButton.setAttribute("aria-label", "Xóa " + skill);
+
+            removeButton.addEventListener("click", function () {
+                skills.splice(index, 1);
+                renderSkills();
+            });
+
+            tag.appendChild(skillText);
+            tag.appendChild(removeButton);
+            selectedSkills.appendChild(tag);
+
+            const hiddenInput = document.createElement("input");
+            hiddenInput.type = "hidden";
+            hiddenInput.name = "required_skills";
+            hiddenInput.value = skill;
+
+            skillHiddenInputs.appendChild(hiddenInput);
+        });
+    }
+
+    function addSkill() {
+        const skill = skillInput.value.trim();
+
+        if (!skill) {
+            return;
+        }
+
+        const exists = skills.some(function (item) {
+            return item.toLowerCase() === skill.toLowerCase();
+        });
+
+        if (exists) {
+            alert("Kỹ năng này đã được thêm.");
+            skillInput.value = "";
+            return;
+        }
+
+        if (skill.length > 100) {
+            alert("Tên kỹ năng không được vượt quá 100 ký tự.");
+            return;
+        }
+
+        skills.push(skill);
+        skillInput.value = "";
+        skillInput.focus();
+
+        renderSkills();
+    }
+
+    addSkillButton.addEventListener("click", addSkill);
+
+    skillInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            addSkill();
+        }
+    });
+
+    addJobForm.addEventListener("submit", function () {
+        renderSkills();
+    });
+
+    renderSkills();
+});
+</script>
 {% endblock %}

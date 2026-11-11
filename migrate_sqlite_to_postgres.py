@@ -160,8 +160,11 @@ SCHEMA = [
         job_id INTEGER NOT NULL
             REFERENCES jobs(job_id) ON DELETE CASCADE,
         match_score REAL,
+        skill_match REAL,
+        career_match BOOLEAN,
         reason TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (user_id, job_id)
     )
     """,
 

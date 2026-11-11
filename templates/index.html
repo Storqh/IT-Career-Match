@@ -42,14 +42,14 @@ IT Career Match - AI Job Recommendation
 
                 {% if session.get("user_id") %}
 
-                    <a href="{{ url_for('dashboard') }}"
+                    <a href="{{ url_for('profile.dashboard') }}"
                        class="btn btn-primary btn-lg me-2">
 
                         Đi đến Dashboard
 
                     </a>
 
-                    <a href="{{ url_for('recommendations') }}"
+                    <a href="{{ url_for('cv.recommendations') }}"
                        class="btn btn-outline-primary btn-lg">
 
                         Xem AI Recommendation
@@ -58,14 +58,14 @@ IT Career Match - AI Job Recommendation
 
                 {% else %}
 
-                    <a href="{{ url_for('register') }}"
+                    <a href="{{ url_for('auth.register') }}"
                        class="btn btn-primary btn-lg me-2">
 
                         Bắt đầu miễn phí
 
                     </a>
 
-                    <a href="{{ url_for('login') }}"
+                    <a href="{{ url_for('auth.login') }}"
                        class="btn btn-outline-primary btn-lg">
 
                         Đăng nhập
@@ -485,7 +485,7 @@ IT Career Match - AI Job Recommendation
 
         {% if session.get("user_id") %}
 
-        <a href="{{ url_for('upload_cv') }}"
+        <a href="{{ url_for('cv.upload_cv') }}"
            class="btn btn-light btn-lg">
 
             Phân tích CV ngay
@@ -494,7 +494,7 @@ IT Career Match - AI Job Recommendation
 
         {% else %}
 
-        <a href="{{ url_for('register') }}"
+        <a href="{{ url_for('auth.register') }}"
            class="btn btn-light btn-lg">
 
             Tạo tài khoản

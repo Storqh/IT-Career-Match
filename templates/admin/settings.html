@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Cài đặt hệ thống - Admin - IT Career Match{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold mb-0"><i class="bi bi-gear me-2"></i>Cài đặt hệ thống</h1>
+        <span class="badge bg-danger fs-6">Admin</span>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Cài đặt chung</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="settingsForm">
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3">Email & Thông báo</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Brevo API Key</label>
+                                    <input type="password" class="form-control" name="BREVO_API_KEY"
+                                           value="{{ settings.BREVO_API_KEY or '' }}" placeholder="xkeysib-...">
+                                    <div class="form-text">API key từ Brevo (Sendinblue)</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email người gửi</label>
+                                    <input type="email" class="form-control" name="BREVO_SENDER_EMAIL"
+                                           value="{{ settings.BREVO_SENDER_EMAIL or 'noreply@example.com' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Tên người gửi</label>
+                                    <input type="text" class="form-control" name="BREVO_SENDER_NAME"
+                                           value="{{ settings.BREVO_SENDER_NAME or 'IT Career Match' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3">Hệ thống</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tên trang web</label>
+                                    <input type="text" class="form-control" name="SITE_NAME"
+                                           value="{{ settings.SITE_NAME or 'IT Career Match' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Mô tả ngắn</label>
+                                    <input type="text" class="form-control" name="SITE_DESCRIPTION"
+                                           value="{{ settings.SITE_DESCRIPTION or 'Personalized Job Recommendation System' }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Số việc làm/trang</label>
+                                    <input type="number" class="form-control" name="JOBS_PER_PAGE"
+                                           value="{{ settings.JOBS_PER_PAGE or 9 }}" min="5" max="50">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Số gợi ý tối đa</label>
+                                    <input type="number" class="form-control" name="RECOMMENDATIONS_TOP_K"
+                                           value="{{ settings.RECOMMENDATIONS_TOP_K or 5 }}" min="1" max="20">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Kích thước file tối đa (MB)</label>
+                                    <input type="number" class="form-control" name="MAX_FILE_SIZE_MB"
+                                           value="{{ settings.MAX_FILE_SIZE_MB or 5 }}" min="1" max="20">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3">Phân tích & AI</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="ENABLE_RECOMMENDATIONS"
+                                               id="enableRec" {% if settings.ENABLE_RECOMMENDATIONS == 'true' %}checked{% endif %}>
+                                        <label class="form-check-label" for="enableRec">Bật gợi ý AI</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="ENABLE_CHATBOT"
+                                               id="enableChat" {% if settings.ENABLE_CHATBOT == 'true' %}checked{% endif %}>
+                                        <label class="form-check-label" for="enableChat">Bật Chatbot</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="ENABLE_SKILL_GAP"
+                                               id="enableGap" {% if settings.ENABLE_SKILL_GAP == 'true' %}checked{% endif %}>
+                                        <label class="form-check-label" for="enableGap">Bật Gap Analysis</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>Lưu cài đặt
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="location.reload()">
+                                <i class="bi bi-x-lg me-1"></i>Huỷ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="card border-danger mt-4">
+                <div class="card-header bg-danger bg-opacity-10">
+                    <h5 class="mb-0 text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Vùng nguy hiểm</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Các hành động dưới đây không thể hoàn tác. Chỉ thực hiện khi chắc chắn.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-outline-danger" onclick="confirmClearChatHistory()">
+                            <i class="bi bi-trash me-1"></i>Xoá lịch sử chatbot
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="confirmClearRecommendations()">
+                            <i class="bi bi-trash me-1"></i>Xoá tất cả gợi ý AI
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="confirmResetDatabase()">
+                            <i class="bi bi-database-x me-1"></i>Reset database (DEV ONLY)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Thông tin hệ thống</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row small mb-0">
+                        <dt class="col-5 text-muted">Phiên bản</dt>
+                        <dd class="col-7 fw-medium">2.0.0 (Refactored)</dd>
+
+                        <dt class="col-5 text-muted">Framework</dt>
+                        <dd class="col-7">Flask 3.x</dd>
+
+                        <dt class="col-5 text-muted">Database</dt>
+                        <dd class="col-7">PostgreSQL (psycopg3 + pool)</dd>
+
+                        <dt class="col-5 text-muted">ML Models</dt>
+                        <dd class="col-7">TF-IDF + LogisticRegression</dd>
+
+                        <dt class="col-5 text-muted">Chatbot</dt>
+                        <dd class="col-7">Rule-based (JSON KB)</dd>
+
+                        <dt class="col-5 text-muted">Deploy</dt>
+                        <dd class="col-7">Docker + Gunicorn</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-link-45deg me-2"></i>Liên kết hữu ích</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.export_users') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-download me-1"></i>Xuất Users CSV
+                        </a>
+                        <a href="{{ url_for('admin.export_jobs') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-download me-1"></i>Xuất Jobs CSV
+                        </a>
+                        <a href="{{ url_for('admin.export_applications') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-download me-1"></i>Xuất Applications CSV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmClearChatHistory() {
+    if (confirm('Xoá TẤT CẢ lịch sử chatbot? Không thể hoàn tác!')) {
+        // TODO: Implement
+        alert('Chức năng đang phát triển');
+    }
+}
+function confirmClearRecommendations() {
+    if (confirm('Xoá TẤT CẢ gợi ý AI? Sẽ tính toán lại khi user truy cập.')) {
+        // TODO: Implement
+        alert('Chức năng đang phát triển');
+    }
+}
+function confirmResetDatabase() {
+    if (confirm('⚠️ CẢNH BÁO: Reset database sẽ XOÁ TẤT CẢ DỮ LIỆU!\nChỉ dùng cho môi trường DEV.\n\nBạn có CHẮC CHẮN?')) {
+        if (prompt('Nhập "CONFIRM RESET" để xác nhận:') === 'CONFIRM RESET') {
+            // TODO: Implement
+            alert('Chức năng đang phát triển');
+        }
+    }
+}
+</script>
+{% endblock %}

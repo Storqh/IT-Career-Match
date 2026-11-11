@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}{{ cv.filename }} - IT Career Match{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('cv.my_cvs') }}">CV của tôi</a></li>
+            <li class="breadcrumb-item active">{{ cv.filename }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- CV Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>{{ cv.filename }}</h5>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{{ url_for('cv.my_cvs') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Quay lại
+                        </a>
+                        <form method="POST" action="{{ url_for('cv.delete_cv_route', cv_id=cv.cv_id) }}" class="d-inline"
+                              onsubmit="return confirm('Xoá CV này? Hành động không thể hoàn tác.')">
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="bi bi-trash me-1"></i>Xoá
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-4">
+                        <dt class="col-sm-3 text-muted">Tải lên</dt>
+                        <dd class="col-sm-9">{{ cv.created_at.strftime('%d/%m/%Y %H:%M') }}</dd>
+
+                        <dt class="col-sm-3 text-muted">Số kỹ năng</dt>
+                        <dd class="col-sm-9 fw-bold text-primary">{{ cv.extracted_skills|length if cv.extracted_skills else 0 }}</dd>
+                    </dl>
+
+                    <!-- Extracted Skills -->
+                    {% if cv.extracted_skills %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-tags me-2"></i>Kỹ năng được trích xuất ({{ cv.extracted_skills|length }})</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for skill in cv.extracted_skills %}
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                                {{ skill }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Raw Text Preview -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-file-text me-2"></i>Nội dung CV (Preview)</h6>
+                        <div class="bg-light rounded p-3" style="max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap;">{{ cv.raw_text[:3000] }}{% if cv.raw_text|length > 3000 %}... (đã rút gọn){% endif %}</div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('cv.recommendations') }}" class="btn btn-primary">
+                            <i class="bi bi-magic me-1"></i>Xem gợi ý việc làm
+                        </a>
+                        <button class="btn btn-outline-success" onclick="copySkills()">
+                            <i class="bi bi-clipboard me-1"></i>Copy skills
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Stats -->
+            <div class="card shadow-sm mb-4 sticky-top" style="top: 100px;">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Phân tích nhanh</h5>
+                </div>
+                <div class="card-body">
+                    {% if cv.extracted_skills %}
+                    <div class="mb-3">
+                        <label class="form-label small">Lọc việc làm theo skills này</label>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for skill in cv.extracted_skills[:15] %}
+                            <a href="{{ url_for('jobs.list_jobs', keyword=skill) }}" class="btn btn-sm btn-outline-primary">
+                                {{ skill }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('cv.recommendations') }}" class="btn btn-success">
+                            <i class="bi bi-lightbulb me-1"></i>Gợi ý việc làm phù hợp
+                        </a>
+                        <a href="{{ url_for('jobs.list_jobs') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-search me-1"></i>Tìm việc làm khác
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills Distribution -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Phân loại kỹ năng</h5>
+                </div>
+                <div class="card-body">
+                    {% if cv.extracted_skills %}
+                    {% set categories = {
+                        'Programming': ['python', 'java', 'javascript', 'typescript', 'c++', 'c#', 'go', 'rust', 'php', 'ruby', 'swift', 'kotlin'],
+                        'Frontend': ['react', 'vue', 'angular', 'html', 'css', 'svelte', 'next.js', 'nuxt.js', 'tailwind', 'bootstrap'],
+                        'Backend': ['node.js', 'express', 'django', 'flask', 'fastapi', 'spring', 'spring boot', 'laravel', 'asp.net'],
+                        'Database': ['mysql', 'postgresql', 'mongodb', 'redis', 'sqlite', 'sql', 'elasticsearch'],
+                        'Cloud/DevOps': ['aws', 'azure', 'gcp', 'docker', 'kubernetes', 'terraform', 'ansible', 'jenkins', 'github actions'],
+                        'Data/AI': ['machine learning', 'deep learning', 'tensorflow', 'pytorch', 'pandas', 'numpy', 'scikit-learn'],
+                    } %}
+                    {% for cat, skills_list in categories.items() %}
+                        {% set matched = cv.extracted_skills | select('in', skills_list) | list %}
+                        {% if matched %}
+                        <div class="mb-3">
+                            <small class="text-muted fw-bold">{{ cat }} ({{ matched|length }})</small>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                {% for skill in matched %}
+                                <span class="badge bg-secondary px-2 py-1">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% set all_categorized = [] %}
+                    {% for cat, skills_list in categories.items() %}
+                        {% set _ = all_categorized.extend(skills_list) %}
+                    {% endfor %}
+                    {% set other_skills = cv.extracted_skills | reject('in', all_categorized) | list %}
+                    {% if other_skills %}
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold">Khác ({{ other_skills|length }})</small>
+                        <div class="d-flex flex-wrap gap-1 mt-1">
+                            {% for skill in other_skills[:10] %}
+                            <span class="badge bg-light text-dark border px-2 py-1">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted text-center py-3">Không có dữ liệu kỹ năng</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copySkills() {
+    const skills = {{ cv.extracted_skills | tojson }};
+    navigator.clipboard.writeText(skills.join(', '))
+        .then(() => {
+            const btn = event.target.closest('button');
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check me-1"></i>Đã copy!';
+            btn.classList.remove('btn-outline-success');
+            btn.classList.add('btn-success');
+            setTimeout(() => {
+                btn.innerHTML = original;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-success');
+            }, 2000);
+        });
+}
+</script>
+{% endblock %}

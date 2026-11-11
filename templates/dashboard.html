@@ -1,508 +1,330 @@
-
 {% extends "base.html" %}
 
+{% block title %}Dashboard - IT Career Match{% endblock %}
+
 {% block content %}
-
-<style>
-/* =========================================
-   IT CAREER MATCH - DASHBOARD
-========================================= */
-
-.icm-dashboard {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 36px 24px 70px;
-    font-family: inherit;
-}
-
-/* WELCOME */
-.icm-dashboard .dashboard-welcome {
-    margin-bottom: 34px;
-}
-
-.icm-dashboard .welcome-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
-    background: #eaf1ff;
-    color: #2563eb;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 700;
-    margin-bottom: 16px;
-}
-
-.icm-dashboard .dashboard-welcome h1 {
-    font-size: clamp(28px, 3vw, 38px);
-    font-weight: 800;
-    color: #14213d;
-    margin: 0 0 12px;
-    letter-spacing: -0.8px;
-}
-
-.icm-dashboard .dashboard-welcome p {
-    color: #64748b;
-    font-size: 16px;
-    line-height: 1.8;
-    margin: 0;
-}
-
-/* SECTION */
-.icm-dashboard .section-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 22px;
-}
-
-.icm-dashboard .section-heading h2 {
-    font-size: 22px;
-    font-weight: 800;
-    color: #14213d;
-    margin: 0;
-}
-
-.icm-dashboard .section-heading p {
-    color: #64748b;
-    font-size: 14px;
-    margin: 6px 0 0;
-}
-
-/* CARD GRID */
-.icm-dashboard .feature-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 22px;
-}
-
-.icm-dashboard .feature-card {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-height: 310px;
-    padding: 26px;
-
-    background: #fff;
-    border: 1px solid #e4eaf3;
-    border-radius: 22px;
-    box-shadow: 0 8px 28px rgba(25, 48, 90, .045);
-
-    text-decoration: none !important;
-    color: #17243c !important;
-
-    transition:
-        transform .25s ease,
-        box-shadow .25s ease,
-        border-color .25s ease;
-}
-
-.icm-dashboard .feature-card:hover {
-    transform: translateY(-6px);
-    border-color: #a7c2ff;
-    box-shadow: 0 20px 42px rgba(37, 99, 235, .12);
-}
-
-/* ICON */
-.icm-dashboard .feature-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    height: 60px;
-    border-radius: 18px;
-    font-size: 27px;
-    margin-bottom: 25px;
-}
-
-.icm-dashboard .icon-profile {
-    background: #f0eaff;
-    color: #7444c0;
-}
-
-.icm-dashboard .icon-cv {
-    background: #eaf1ff;
-    color: #2563eb;
-}
-
-.icm-dashboard .icon-jobs {
-    background: #e4f8ef;
-    color: #059669;
-}
-
-.icm-dashboard .icon-ai {
-    background: #fff2e0;
-    color: #e28a12;
-}
-
-/* CONTENT */
-.icm-dashboard .feature-card h3 {
-    font-size: 19px;
-    font-weight: 800;
-    color: #17243c !important;
-    margin: 0 0 12px;
-    line-height: 1.4;
-    text-decoration: none !important;
-}
-
-.icm-dashboard .feature-card p {
-    font-size: 14px;
-    color: #718096 !important;
-    line-height: 1.8;
-    margin: 0 0 25px;
-    text-decoration: none !important;
-}
-
-/* BUTTON */
-.icm-dashboard .feature-button {
-    margin-top: auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-
-    min-height: 47px;
-    padding: 12px 18px;
-
-    background: #2563eb;
-    border-radius: 12px;
-    color: #fff !important;
-
-    font-size: 14px;
-    font-weight: 700;
-    text-decoration: none !important;
-
-    transition:
-        background .25s ease,
-        transform .25s ease,
-        box-shadow .25s ease;
-}
-
-.icm-dashboard .feature-button i {
-    font-size: 15px;
-    color: #fff;
-    transition: transform .25s ease;
-}
-
-.icm-dashboard .feature-card:hover .feature-button {
-    background: #1d4ed8;
-    box-shadow: 0 8px 20px rgba(37, 99, 235, .22);
-}
-
-.icm-dashboard .feature-card:hover .feature-button i {
-    transform: translate(3px, -3px);
-}
-
-.icm-dashboard .feature-card:focus-visible {
-    outline: 3px solid #93c5fd;
-    outline-offset: 4px;
-}
-
-/* AI BUTTON */
-.icm-dashboard .feature-card.ai-card .feature-button {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-}
-
-.icm-dashboard .feature-card.ai-card:hover .feature-button {
-    box-shadow: 0 8px 22px rgba(99, 102, 241, .28);
-}
-
-/* QUICK TIP */
-.icm-dashboard .dashboard-tip {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 22px 24px;
-    margin-top: 32px;
-    background: linear-gradient(110deg, #edf4ff, #f8faff);
-    border: 1px solid #dce8ff;
-    border-radius: 18px;
-}
-
-.icm-dashboard .tip-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    flex-shrink: 0;
-    border-radius: 13px;
-    background: #dce9ff;
-    color: #2563eb;
-    font-size: 21px;
-}
-
-.icm-dashboard .dashboard-tip h4 {
-    font-size: 16px;
-    font-weight: 800;
-    color: #1e3a68;
-    margin: 0 0 6px;
-}
-
-.icm-dashboard .dashboard-tip p {
-    font-size: 14px;
-    line-height: 1.7;
-    color: #64748b;
-    margin: 0;
-}
-
-/* RESPONSIVE */
-@media (max-width: 1100px) {
-    .icm-dashboard .feature-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 600px) {
-    .icm-dashboard {
-        padding: 24px 16px 45px;
-    }
-
-    .icm-dashboard .feature-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-
-    .icm-dashboard .feature-card {
-        min-height: 255px;
-        padding: 23px;
-    }
-
-    .icm-dashboard .dashboard-welcome h1 {
-        font-size: 28px;
-    }
-
-    .icm-dashboard .dashboard-tip {
-        padding: 18px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .icm-dashboard .feature-card,
-    .icm-dashboard .feature-button,
-    .icm-dashboard .feature-button i {
-        transition: none;
-    }
-}
-
-/* =====================================
-   TĂNG KÍCH THƯỚC CHỮ DASHBOARD
-===================================== */
-
-/* Tiêu đề chào mừng */
-.icm-dashboard .dashboard-welcome h1 {
-    font-size: clamp(32px, 3.2vw, 42px);
-}
-
-/* Mô tả chào mừng */
-.icm-dashboard .dashboard-welcome p {
-    font-size: 18px;
-}
-
-/* Tiêu đề khu vực */
-.icm-dashboard .section-heading h2 {
-    font-size: 25px;
-}
-
-.icm-dashboard .section-heading p {
-    font-size: 16px;
-}
-
-/* Tiêu đề 4 thẻ */
-.icm-dashboard .feature-card h3 {
-    font-size: 22px;
-}
-
-/* Nội dung mô tả 4 thẻ */
-.icm-dashboard .feature-card p {
-    font-size: 16px;
-    line-height: 1.75;
-}
-
-/* Chữ trong button */
-.icm-dashboard .feature-button {
-    font-size: 16px;
-    min-height: 50px;
-    padding: 13px 20px;
-}
-
-/* Mẹo dành cho bạn */
-.icm-dashboard .dashboard-tip h4 {
-    font-size: 18px;
-}
-
-.icm-dashboard .dashboard-tip p {
-    font-size: 16px;
-}
-
-/* Tối ưu màn hình điện thoại */
-@media (max-width: 600px) {
-    .icm-dashboard .dashboard-welcome h1 {
-        font-size: 30px;
-    }
-
-    .icm-dashboard .feature-card h3 {
-        font-size: 20px;
-    }
-
-    .icm-dashboard .feature-card p {
-        font-size: 15px;
-    }
-
-    .icm-dashboard .feature-button {
-        font-size: 15px;
-    }
-}
-
-</style>
-
-<main class="icm-dashboard">
-
-    <!-- WELCOME -->
-    <section class="dashboard-welcome">
-
-        <div class="welcome-label">
-            <i class="bi bi-stars"></i>
-            YOUR CAREER WORKSPACE
+<div class="container py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 fw-bold">Chào, {{ current_user.email.split('@')[0] if current_user else 'User' }}! 👋</h1>
+            <p class="text-muted">Tổng quan hồ sơ và gợi ý việc làm</p>
         </div>
+    </div>
 
-        <h1>Chào mừng đến với IT Career Match 👋</h1>
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card stat-card h-100 border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-file-text text-primary" style="font-size: 1.5rem;"></i>
+                    <h3 class="fw-bold mt-2">{{ cvs|length }}</h3>
+                    <small class="text-muted">CV đã tải lên</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card h-100 border-success">
+                <div class="card-body text-center">
+                    <i class="bi bi-tags text-success" style="font-size: 1.5rem;"></i>
+                    <h3 class="fw-bold mt-2">{{ skills|length }}</h3>
+                    <small class="text-muted">Kỹ năng đã khai báo</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card h-100 border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-lightbulb text-warning" style="font-size: 1.5rem;"></i>
+                    <h3 class="fw-bold mt-2">{{ recommendations|length }}</h3>
+                    <small class="text-muted">Gợi ý việc làm</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card h-100 border-danger">
+                <div class="card-body text-center">
+                    <i class="bi bi-heart text-danger" style="font-size: 1.5rem;"></i>
+                    <h3 class="fw-bold mt-2">
+                        {% set fav_count = current_user.favourite_count if current_user.favourite_count is defined else 0 %}
+                        {{ fav_count }}
+                    </h3>
+                    <small class="text-muted">Việc làm đã lưu</small>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <p>
-            Khám phá tiềm năng của bạn, phân tích kỹ năng
-            và tìm kiếm những cơ hội nghề nghiệp IT phù hợp.
-        </p>
+    <div class="row">
+        <!-- Profile Summary -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-person me-2"></i>Hồ sơ</h5>
+                </div>
+                <div class="card-body">
+                    {% if profile %}
+                        <dl class="row mb-3">
+                            <dt class="col-sm-4 text-muted">Họ tên</dt>
+                            <dd class="col-sm-8 fw-medium">{{ profile.full_name or 'Chưa cập nhật' }}</dd>
 
-    </section>
+                            <dt class="col-sm-4 text-muted">Chuyên ngành</dt>
+                            <dd class="col-sm-8">{{ profile.major or 'Chưa cập nhật' }}</dd>
 
-    <!-- FEATURES -->
-    <section aria-labelledby="dashboardFeaturesTitle">
+                            <dt class="col-sm-4 text-muted">Trường ĐH</dt>
+                            <dd class="col-sm-8">{{ profile.university or 'Chưa cập nhật' }}</dd>
 
-        <div class="section-heading">
-            <div>
-                <h2 id="dashboardFeaturesTitle">
-                    Khám phá tính năng
-                </h2>
-                <p>
-                    Bắt đầu hành trình phát triển sự nghiệp của bạn.
-                </p>
+                            <dt class="col-sm-4 text-muted">Năm TN</dt>
+                            <dd class="col-sm-8">{{ profile.graduation_year or 'Chưa cập nhật' }}</dd>
+                        </dl>
+
+                        <a href="{{ url_for('profile.edit_profile') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-pencil me-1"></i>Chỉnh sửa hồ sơ
+                        </a>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-person-plus text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">Chưa có hồ sơ</p>
+                            <a href="{{ url_for('profile.edit_profile') }}" class="btn btn-primary">
+                                <i class="bi bi-plus me-1"></i>Tạo hồ sơ ngay
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
 
-        <div class="feature-grid">
-
-            <!-- PROFILE -->
-            <a href="{{ url_for('profile') }}"
-               class="feature-card">
-
-                <div class="feature-icon icon-profile">
-                    <i class="bi bi-person-vcard"></i>
+        <!-- Skills -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-tags me-2"></i>Kỹ năng</h5>
+                    <a href="{{ url_for('profile.edit_profile') }}" class="btn btn-sm btn-outline-primary">Sửa</a>
                 </div>
-
-                <h3>Hồ sơ cá nhân</h3>
-
-                <p>
-                    Quản lý thông tin cá nhân,
-                    cập nhật kỹ năng và định hướng nghề nghiệp.
-                </p>
-
-                <span class="feature-button">
-                    Xem hồ sơ
-                    <i class="bi bi-arrow-up-right"></i>
-                </span>
-
-            </a>
-
-            <!-- CV ANALYSIS -->
-            <a href="{{ url_for('upload_cv') }}"
-               class="feature-card">
-
-                <div class="feature-icon icon-cv">
-                    <i class="bi bi-file-earmark-person"></i>
+                <div class="card-body">
+                    {% if skills %}
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for skill in skills[:15] %}
+                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                                    {{ skill.skill_name }}
+                                </span>
+                            {% endfor %}
+                            {% if skills|length > 15 %}
+                                <span class="badge bg-secondary px-3 py-2">+{{ skills|length - 15 }} khác</span>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">Chưa có kỹ năng nào</p>
+                    {% endif %}
                 </div>
-
-                <h3>Phân tích CV</h3>
-
-                <p>
-                    Tải lên CV PDF hoặc DOCX để hệ thống
-                    phân tích và nhận diện kỹ năng IT.
-                </p>
-
-                <span class="feature-button">
-                    Phân tích CV
-                    <i class="bi bi-arrow-up-right"></i>
-                </span>
-
-            </a>
-
-            <!-- JOBS -->
-            <a href="{{ url_for('jobs') }}"
-               class="feature-card">
-
-                <div class="feature-icon icon-jobs">
-                    <i class="bi bi-briefcase"></i>
-                </div>
-
-                <h3>Khám phá việc làm</h3>
-
-                <p>
-                    Tìm kiếm các vị trí công việc IT
-                    phù hợp với chuyên ngành và mục tiêu của bạn.
-                </p>
-
-                <span class="feature-button">
-                    Xem việc làm
-                    <i class="bi bi-arrow-up-right"></i>
-                </span>
-
-            </a>
-
-            <!-- AI RECOMMENDATION -->
-            <a href="{{ url_for('recommendations') }}"
-               class="feature-card ai-card">
-
-                <div class="feature-icon icon-ai">
-                    <i class="bi bi-stars"></i>
-                </div>
-
-                <h3>AI Recommendation</h3>
-
-                <p>
-                    Nhận gợi ý việc làm cá nhân hóa
-                    dựa trên CV và kỹ năng của bạn.
-                </p>
-
-                <span class="feature-button">
-                    Xem gợi ý
-                    <i class="bi bi-arrow-up-right"></i>
-                </span>
-
-            </a>
-
+            </div>
         </div>
 
-    </section>
-
-    <!-- CAREER TIP -->
-    <aside class="dashboard-tip">
-
-        <div class="tip-icon">
-            <i class="bi bi-lightbulb"></i>
+        <!-- CVs -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>CV</h5>
+                    <a href="{{ url_for('cv.upload_cv') }}" class="btn btn-sm btn-primary">Tải lên</a>
+                </div>
+                <div class="card-body">
+                    {% if cvs %}
+                        <div class="list-group list-group-flush">
+                            {% for cv in cvs[:5] %}
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="bi bi-file-earmark-pdf text-danger me-2"></i>
+                                        <strong>{{ cv.filename }}</strong>
+                                        <br><small class="text-muted">{{ cv.created_at.strftime('%d/%m/%Y') }}</small>
+                                    </div>
+                                    <span class="badge bg-success">{{ cv.extracted_skills|length if cv.extracted_skills else 0 }} skills</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if cvs|length > 5 %}
+                            <a href="{{ url_for('cv.my_cvs') }}" class="btn btn-outline-secondary w-100 mt-2">
+                                Xem tất cả ({{ cvs|length }})
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-cloud-upload text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">Chưa có CV</p>
+                            <a href="{{ url_for('cv.upload_cv') }}" class="btn btn-primary">
+                                <i class="bi bi-upload me-1"></i>Tải lên CV đầu tiên
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div>
-            <h4>Mẹo dành cho bạn</h4>
-            <p>
-                Hãy cập nhật hồ sơ và tải lên CV mới nhất
-                trước khi sử dụng AI Recommendation
-                để hệ thống có đủ thông tin đưa ra
-                những gợi ý phù hợp hơn.
-            </p>
+    <!-- Recommendations (Top 5) -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>Gợi ý việc làm cho bạn (Top 5)</h5>
+                    <a href="{{ url_for('cv.recommendations') }}" class="btn btn-sm btn-outline-primary">Xem tất cả</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recommendations %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 40%;">Vị trí & Công ty</th>
+                                        <th class="d-none d-md-table-cell" style="width: 15%;">Địa điểm</th>
+                                        <th style="width: 15%;" class="text-center">Match</th>
+                                        <th style="width: 15%;" class="text-center">Skills</th>
+                                        <th style="width: 15%;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rec in recommendations[:5] %}
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <strong class="text-dark">{{ rec.title }}</strong>
+                                                {% if rec.career_match %}
+                                                    <span class="badge bg-success ms-1"><i class="bi bi-check-circle me-1"></i>Career match</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="text-muted small mt-1">
+                                                <i class="bi bi-building me-1"></i>{{ rec.company }}
+                                            </div>
+                                        </td>
+                                        <td class="d-none d-md-table-cell text-muted small">
+                                            <i class="bi bi-geo-alt me-1"></i>{{ rec.location }}
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                                <span class="fw-bold fs-5 text-{% if rec.match_score >= 80 %}success{% elif rec.match_score >= 60 %}warning{% else %}danger{% endif %}">
+                                                    {{ "%.0f"|format(rec.match_score) }}%
+                                                </span>
+                                                <div class="progress flex-grow-1" style="height: 8px; max-width: 100px;">
+                                                    <div class="progress-bar bg-{% if rec.match_score >= 80 %}success{% elif rec.match_score >= 60 %}warning{% else %}danger{% endif %}"
+                                                         style="width: {{ rec.match_score }}%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="fw-medium text-{% if rec.skill_match >= 0.7 %}success{% elif rec.skill_match >= 0.4 %}warning{% else %}danger{% endif %}">
+                                                {{ "%.0f"|format(rec.skill_match * 100) }}%
+                                            </span>
+                                            <br>
+                                            <small class="text-muted">{{ rec.matched_skills|length if rec.matched_skills else 0 }}/{{ (rec.matched_skills|length if rec.matched_skills else 0) + (rec.missing_skills|length if rec.missing_skills else 0) }} skills</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="{{ url_for('jobs.job_detail', job_id=rec.job_id) }}" class="btn btn-primary btn-sm">
+                                                <i class="bi bi-eye me-1"></i>Chi tiết
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Quick Summary Cards for Top 3 -->
+                        <div class="border-top pt-3">
+                            <h6 class="fw-bold mb-3">Tóm tắt nhanh Top 3</h6>
+                            <div class="row g-3">
+                                {% for rec in recommendations[:3] %}
+                                <div class="col-12 col-md-4">
+                                    <div class="card h-100 border-{% if rec.match_score >= 80 %}success{% elif rec.match_score >= 60 %}warning{% else %}danger{% endif %}">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <span class="badge bg-{% if rec.match_score >= 80 %}success{% elif rec.match_score >= 60 %}warning{% else %}danger{% endif %} fs-6 px-3 py-2">
+                                                    {{ "%.0f"|format(rec.match_score) }}%
+                                                </span>
+                                                {% if rec.career_match %}
+                                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Career</span>
+                                                {% endif %}
+                                            </div>
+                                            <h6 class="fw-bold mb-1 small">{{ rec.title }}</h6>
+                                            <p class="text-muted small mb-2"><i class="bi bi-building me-1"></i>{{ rec.company }}</p>
+
+                                            {% if rec.explanation and rec.explanation.summary %}
+                                            <p class="small text-muted mb-2">{{ rec.explanation.summary | safe }}</p>
+                                            {% endif %}
+
+                                            <div class="d-flex gap-1 flex-wrap">
+                                                {% if rec.matched_skills %}
+                                                {% for skill in rec.matched_skills[:3] %}
+                                                <span class="badge bg-success bg-opacity-10 text-success px-2 py-1 small">{{ skill }}</span>
+                                                {% endfor %}
+                                                {% if rec.matched_skills|length > 3 %}
+                                                <span class="badge bg-secondary px-2 py-1 small">+{{ rec.matched_skills|length - 3 }}</span>
+                                                {% endif %}
+                                                {% endif %}
+                                            </div>
+                                            {% if rec.missing_skills %}
+                                            <div class="d-flex gap-1 flex-wrap mt-2">
+                                                {% for skill in rec.missing_skills[:2] %}
+                                                <span class="badge bg-danger bg-opacity-10 text-danger px-2 py-1 small">{{ skill }}</span>
+                                                {% endfor %}
+                                                {% if rec.missing_skills|length > 2 %}
+                                                <span class="badge bg-secondary px-2 py-1 small">+{{ rec.missing_skills|length - 2 }}</span>
+                                                {% endif %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-magic text-muted" style="font-size: 3rem;"></i>
+                            <h4 class="text-muted mt-2">Chưa có gợi ý phù hợp</h4>
+                            <p class="text-muted mb-4">Hệ thống cần dữ liệu để gợi ý việc làm chính xác</p>
+                            <div class="d-flex gap-2 justify-content-center">
+                                <a href="{{ url_for('cv.upload_cv') }}" class="btn btn-primary">
+                                    <i class="bi bi-upload me-1"></i>Tải lên CV
+                                </a>
+                                <a href="{{ url_for('profile.edit_profile') }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil me-1"></i>Cập nhật kỹ năng
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
+    </div>
 
-    </aside>
-
-</main>
-
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-lightning me-2"></i>Thao tác nhanh</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('jobs.list_jobs') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-search me-1"></i>Tìm việc làm
+                        </a>
+                        <a href="{{ url_for('cv.upload_cv') }}" class="btn btn-outline-success">
+                            <i class="bi bi-upload me-1"></i>Tải CV mới
+                        </a>
+                        <a href="{{ url_for('profile.edit_profile') }}" class="btn btn-outline-info">
+                            <i class="bi bi-pencil me-1"></i>Cập nhật hồ sơ
+                        </a>
+                        <a href="{{ url_for('cv.recommendations') }}" class="btn btn-outline-warning">
+                            <i class="bi bi-magic me-1"></i>Xem gợi ý chi tiết
+                        </a>
+                        <a href="{{ url_for('jobs.my_applications') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-folder me-1"></i>Đơn ứng tuyển
+                        </a>
+                        <a href="{{ url_for('jobs.my_favourites') }}" class="btn btn-outline-danger">
+                            <i class="bi bi-heart me-1"></i>Việc đã lưu
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

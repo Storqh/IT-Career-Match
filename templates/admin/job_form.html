@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}{% if job %}Sửa{% else %}Tạo mới{% endif %} tin tuyển dụng - Admin - IT Career Match{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold mb-0">
+            <i class="bi bi-{% if job %}pencil{% else %}plus-lg{% endif %} me-2"></i>
+            {% if job %}Chỉnh sửa{% else %}Tạo mới{% endif %} tin tuyển dụng
+        </h1>
+        <a href="{{ url_for('jobs.admin_jobs') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <form method="POST" id="jobForm" novalidate>
+                <!-- Basic Info -->
+                <h6 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-info-circle me-2"></i>Thông tin cơ bản</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-8">
+                        <label for="title" class="form-label">Tiêu đề vị trí <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title"
+                               value="{{ job.title if job else '' }}" required
+                               placeholder="VD: Senior Backend Developer (Node.js/Go)">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="company" class="form-label">Công ty <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="company" name="company"
+                               value="{{ job.company if job else '' }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="location" class="form-label">Địa điểm <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="location" name="location"
+                               value="{{ job.location if job else '' }}" required
+                               placeholder="VD: Hà Nội, TP.HCM, Remote, Hybrid">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="category" class="form-label">Danh mục <span class="text-danger">*</span></label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">Chọn danh mục</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat }}" {% if job and job.category == cat %}selected{% endif %}>{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="job_type" class="form-label">Loại hình <span class="text-danger">*</span></label>
+                        <select class="form-select" id="job_type" name="job_type" required>
+                            <option value="">Chọn loại hình</option>
+                            {% for jt in job_types %}
+                            <option value="{{ jt }}" {% if job and job.job_type == jt %}selected{% endif %}>{{ jt }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Level & Salary -->
+                <h6 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-currency-dollar me-2"></i>Cấp bậc & Mức lương</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label for="level" class="form-label">Cấp bậc <span class="text-danger">*</span></label>
+                        <select class="form-select" id="level" name="level" required>
+                            <option value="">Chọn cấp bậc</option>
+                            {% for lvl in levels %}
+                            <option value="{{ lvl }}" {% if job and job.level == lvl %}selected{% endif %}>{{ lvl }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="salary_min" class="form-label">Lương tối thiểu (VNĐ)</label>
+                        <input type="number" class="form-control" id="salary_min" name="salary_min"
+                               value="{{ job.salary_min if job else '' }}" min="0" step="1000000"
+                               placeholder="VD: 15000000">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="salary_max" class="form-label">Lương tối đa (VNĐ)</label>
+                        <input type="number" class="form-control" id="salary_max" name="salary_max"
+                               value="{{ job.salary_max if job else '' }}" min="0" step="1000000"
+                               placeholder="VD: 25000000">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Trạng thái</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="active" {% if not job or job.status == 'active' %}selected{% endif %}>Đang tuyển (Active)</option>
+                            <option value="inactive" {% if job and job.status == 'inactive' %}selected{% endif %}>Đã đóng (Inactive)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <h6 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-file-text me-2"></i>Mô tả công việc</h6>
+                <div class="mb-3">
+                    <textarea class="form-control" id="description" name="description" rows="6"
+                              placeholder="Mô tả chi tiết công việc, trách nhiệm, môi trường làm việc...">{{ job.description if job else '' }}</textarea>
+                    <div class="form-text">Hỗ trợ HTML cơ bản: <p>, <ul>, <li>, <strong>, <br></div>
+                </div>
+
+                <!-- Requirements -->
+                <h6 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-checklist me-2"></i>Yêu cầu ứng viên</h6>
+                <div class="mb-3">
+                    <textarea class="form-control" id="requirements" name="requirements" rows="6"
+                              placeholder="Kỹ năng bắt buộc, kinh nghiệm, chứng chỉ, tiếng Anh...">{{ job.requirements if job else '' }}</textarea>
+                </div>
+
+                <!-- Benefits -->
+                <h6 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-gift me-2"></i>Quyền lợi & Phúc lợi</h6>
+                <div class="mb-4">
+                    <textarea class="form-control" id="benefits" name="benefits" rows="4"
+                              placeholder="Bảo hiểm, du lịch, training, equipment, flexible hours...">{{ job.benefits if job else '' }}</textarea>
+                </div>
+
+                <!-- Skills -->
+                <h6 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-tags me-2"></i>Kỹ năng yêu cầu</h6>
+                <p class="text-muted mb-3">Chọn các kỹ năng bắt buộc cho vị trí này (giữ Ctrl/Cmd để chọn nhiều)</p>
+
+                <div class="row g-2 mb-4" id="skillsContainer">
+                    {% for skill in skills %}
+                    <div class="col-md-4 col-sm-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="skills"
+                                   value="{{ skill.skill_id }}" id="skill_{{ skill.skill_id }}"
+                                   {% if skill.skill_id in job_skill_ids %}checked{% endif %}>
+                            <label class="form-check-label" for="skill_{{ skill.skill_id }}">
+                                {{ skill.skill_name }}
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>{% if job %}Cập nhật{% else %}Tạo tin{% endif %}
+                    </button>
+                    <a href="{{ url_for('jobs.admin_jobs') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg me-1"></i>Huỷ
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Search/filter skills
+const skillsContainer = document.getElementById('skillsContainer');
+if (skillsContainer) {
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.className = 'form-control form-control-sm mb-3';
+    searchInput.placeholder = '🔍 Tìm kỹ năng...';
+    searchInput.id = 'skillSearch';
+    skillsContainer.parentNode.insertBefore(searchInput, skillsContainer);
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const items = skillsContainer.querySelectorAll('.col-md-4');
+        items.forEach(item => {
+            const label = item.querySelector('label').textContent.toLowerCase();
+            item.style.display = label.includes(query) ? '' : 'none';
+        });
+    });
+}
+</script>
+{% endblock %}

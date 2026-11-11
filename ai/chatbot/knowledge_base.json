@@ -1,0 +1,114 @@
+[
+  {
+    "id": "cv_guide",
+    "keywords": ["viet cv", "lam cv", "cv it", "cv技术", "viết cv", "làm cv", "cv template", "cv mẫu"],
+    "reply": "Để viết CV IT ấn tượng, bạn nên:\n\n1. **Thông tin cá nhân**: Họ tên, email, phone, LinkedIn, GitHub, portfolio\n2. **Mục tiêu nghề nghiệp**: 2-3 câu tóm tắt vị trí mong muốn & điểm mạnh\n3. **Kỹ năng kỹ thuật**: Phân loại rõ ràng (Languages, Frameworks, Databases, Tools, Cloud...)\n4. **Dự án**: Tên dự án, công nghệ dùng, vai trò, kết quả đạt được (có số liệu)\n5. **Kinh nghiệm làm việc**: Công ty, vị trí, thời gian, trách nhiệm chính, achievements\n6. **Giáo dục**: Đại học, chuyên ngành, GPA (nếu > 3.0), chứng chỉ\n\n💡 Mẹo: Dùng động từ hành động (developed, built, optimized, led) và định lượng kết quả (giảm 30% latency, tăng 20% conversion).\n\nBạn muốn tôi gợi ý template CV cho vị trí cụ thể nào (Frontend, Backend, Fullstack, DevOps, Data...)?",
+    "category": "cv",
+    "follow_up": ["cv_template_frontend", "cv_template_backend", "cv_template_devops", "cv_common_mistakes"]
+  },
+  {
+    "id": "cv_template_frontend",
+    "keywords": ["cv frontend", "cv front end", "frontend cv", "react cv", "vue cv"],
+    "reply": "**Template CV Frontend Developer**\n\n**Kỹ năng bắt buộc**:\n- HTML5, CSS3, JavaScript (ES6+), TypeScript\n- React/Vue/Angular (chọn 1 mạnh)\n- State management: Redux/Vuex/Zustand/Pinia\n- Styling: Tailwind CSS, Styled Components, CSS Modules\n- Build tools: Vite, Webpack\n- Testing: Jest, Vitest, React Testing Library, Cypress\n\n**Dự án nổi bật**:\n- Web app có tính năng phức tạp (auth, real-time, payment...)\n- Performance optimization (lazy loading, code splitting, bundle analysis)\n- Accessibility (WCAG), SEO, Cross-browser compatibility\n\n**Plus points**: Next.js/SSR, Micro-frontends, Storybook, Design Systems, Web Vitals",
+    "category": "cv",
+    "follow_up": ["cv_portfolio_tips", "frontend_interview_prep"]
+  },
+  {
+    "id": "cv_template_backend",
+    "keywords": ["cv backend", "back end cv", "backend developer cv", "api cv", "nodejs cv", "python cv", "java cv", "go cv"],
+    "reply": "**Template CV Backend Developer**\n\n**Kỹ năng bắt buộc**:\n- Ngôn ngữ: Node.js/TypeScript, Python, Java, Go (chọn 1-2 mạnh)\n- Framework: Express/NestJS/Fastify, Django/FastAPI, Spring Boot, Gin/Echo\n- Database: PostgreSQL, MySQL, MongoDB, Redis\n- API Design: REST, GraphQL, gRPC\n- Auth: JWT, OAuth2, OpenID Connect\n- Message Queue: RabbitMQ, Kafka, NATS\n- Container: Docker, Kubernetes basics\n\n**Dự án nổi bật**:\n- Microservices architecture, System design\n- Performance tuning (query optimization, caching, indexing)\n- CI/CD pipelines, Observability (logging, metrics, tracing)\n- Security: Rate limiting, input validation, encryption",
+    "category": "cv",
+    "follow_up": ["system_design_basics", "backend_interview_prep"]
+  },
+  {
+    "id": "cv_template_devops",
+    "keywords": ["cv devops", "devops cv", "sre cv", "platform engineer cv", "cloud cv"],
+    "reply": "**Template CV DevOps / Platform Engineer**\n\n**Kỹ năng bắt buộc**:\n- Cloud: AWS/Azure/GCP (chọn 1 sâu)\n- IaC: Terraform, Pulumi, CloudFormation\n- Container: Docker, Kubernetes (EKS/GKE/AKS), Helm\n- CI/CD: GitHub Actions, GitLab CI, Jenkins, ArgoCD\n- Monitoring: Prometheus, Grafana, ELK, Datadog\n- Scripting: Bash, Python, Go\n- Linux: Networking, Security, Performance tuning\n\n**Dự án nổi bật**:\n- GitOps workflow, Multi-cluster management\n- Cost optimization, Auto-scaling policies\n- Disaster recovery, Backup strategies\n- Platform engineering: Internal developer platform",
+    "category": "cv",
+    "follow_up": ["cloud_certifications", "kubernetes_learning_path"]
+  },
+  {
+    "id": "cv_common_mistakes",
+    "keywords": ["sai lầm cv", "cv error", "cv mistake", "cv không tốt", "cv bị từ chối"],
+    "reply": "**Các lỗi thường gặp trong CV IT:**\n\n❌ **Quá chung chung**: \"Proficient in Java\" → ✅ \"Built REST APIs with Spring Boot handling 10k req/s\"\n❌ **Liệt kê công nghệ không biết sâu**: Để 20+ tech stack → Chỉ giữ 8-10 tech thực sự thành thạo\n❌ **Thiếu dự án thực tế**: Chỉ có bài tập lớp → Làm side project, contribute open source\n❌ **Format xấu**: Font không đồng bộ, căn lề lệch, file .docx bị vỡ layout → Dùng PDF, template clean\n❌ **Không định lượng**: \"Cải thiện performance\" → \"Giảm API response time từ 800ms xuống 120ms (85%)\"\n❌ **Lỗi chính tả/ngữ pháp**: Dùng Grammarly, nhờ người review\n❌ **CV quá dài**: >2 trang cho junior, >3 trang cho senior → Gọn gàng, tập trung vào 3-5 năm gần nhất",
+    "category": "cv",
+    "follow_up": ["cv_review_service", "portfolio_building"]
+  },
+  {
+    "id": "job_search_tips",
+    "keywords": ["tim viec", "tìm việc", "xin viec", "ứng tuyển", "job search", "tim viec it", "vieclam it"],
+    "reply": "**Mẹo tìm việc IT hiệu quả:**\n\n1. **Xác định mục tiêu**: Vị trí, tech stack, mức lương, loại hình (remote/hybrid/onsite)\n2. **Tối ưu LinkedIn**: Headline rõ ràng, About section kể story, Skills có endorsement\n3. **Nguồn tìm việc**:\n   - LinkedIn Jobs, VietnamWorks, TopCV, ITviec\n   - Company career pages (direct apply)\n   - Referral từ network (tỷ lệ pass cao nhất)\n   - Community: Facebook groups, Discord, Telegram IT jobs\n4. **Customize CV**: Tune skills/keywords cho từng JD\n5. **Cover letter**: Ngắn gọn, nêu tại sao phù hợp, call to action\n6. **Theo dõi**: Spreadsheet track (company, role, date, status, contact)\n7. **Follow up**: Email sau 1 tuần nếu chưa có phản hồi",
+    "category": "job_search",
+    "follow_up": ["linkedin_optimization", "referral_strategy", "salary_negotiation"]
+  },
+  {
+    "id": "interview_prep",
+    "keywords": ["phong van", "phỏng vấn", "interview", "technical interview", "behavioral interview", "chuẩn bị phỏng vấn"],
+    "reply": "**Chuẩn bị phỏng vấn IT:**\n\n**1. Technical:**\n- **DSA**: LeetCode Easy/Medium (Array, String, HashMap, Two Pointers, Sliding Window, Tree, Graph)\n- **System Design**: Scalability, Database sharding, Caching, Load balancing, Message queues\n- **Domain knowledge**: Đặc thù vị trí (Frontend: rendering, state, perf; Backend: concurrency, DB, API)\n\n**2. Behavioral (STAR method):**\n- Situation, Task, Action, Result\n- Chuẩn bị 5-7 stories: Challenge, Conflict, Failure, Leadership, Learning, Project success\n\n**3. Questions for interviewer:**\n- Team structure, tech stack, current challenges\n- On-call, deployment process, code review culture\n- Career growth, mentorship, learning budget\n\n**4. Mock interview**: Pramp, interviewing.io, hoặc nhờ bạn bè practice",
+    "category": "interview",
+    "follow_up": ["system_design_basics", "leetcode_patterns", "behavioral_questions", "salary_negotiation"]
+  },
+  {
+    "id": "system_design_basics",
+    "keywords": ["system design", "thiết kế hệ thống", "architecture", "scalability", "microservices"],
+    "reply": "**System Design Basics cho phỏng vấn:**\n\n**Core Concepts:**\n- **Scalability**: Vertical vs Horizontal scaling\n- **Load Balancing**: L4 vs L7, algorithms (Round Robin, Least Connections, Consistent Hashing)\n- **Caching**: Redis, Memcached - Write-through, Write-back, Cache-aside\n- **Database**: Replication, Sharding, Partitioning, CAP theorem\n- **Message Queue**: Kafka, RabbitMQ - Pub/Sub, Work queues, Dead letter queues\n- **API Gateway**: Rate limiting, Auth, Routing\n- **Observability**: Metrics, Logs, Traces (RED method, USE method)\n\n**Common Problems:**\n- URL Shortener, Pastebin, Instagram Feed, Chat App, Rate Limiter\n- Design TikTok/YouTube (video processing, CDN, transcoding)\n- Design Uber/DoorDash (real-time matching, geospatial)\n\n**Framework**: Clarify requirements → Estimate scale → API design → Data model → High-level design → Deep dive → Bottlenecks",
+    "category": "interview",
+    "follow_up": ["distributed_systems_concepts", "database_sharding", "cache_strategies"]
+  },
+  {
+    "id": "skill_roadmap_frontend",
+    "keywords": ["roadmap frontend", "học frontend", "frontend path", "trở thành frontend", "frontend beginner"],
+    "reply": "**Frontend Developer Roadmap 2024:**\n\n**Phase 1 - Foundation (2-3 tháng):**\n- HTML5, CSS3 (Flexbox, Grid, Animations, Responsive)\n- JavaScript ES6+ (Async/await, Modules, DOM, Events)\n- TypeScript (Types, Interfaces, Generics, Utility types)\n- Git/GitHub, VS Code, Chrome DevTools\n\n**Phase 2 - Framework (3-4 tháng):**\n- React (Hooks, Context, Redux Toolkit/Zustand, React Query/TanStack Query)\n- Next.js 14+ (App Router, Server Components, SSR/SSG/ISR)\n- Testing: Jest, React Testing Library, Cypress/Playwright\n\n**Phase 3 - Advanced (ongoing):**\n- Performance: Bundle analysis, Code splitting, Web Vitals\n- Architecture: Micro-frontends, Module Federation, Monorepo (Turborepo/Nx)\n- Design Systems: Storybook, Tailwind, Radix UI, shadcn/ui\n- Full-stack: tRPC, GraphQL, Next.js API Routes, Database (Prisma/Drizzle)\n\n**Projects để build:** Todo App → E-commerce → Dashboard → Real-time Chat → SaaS boilerplate",
+    "category": "career_path",
+    "follow_up": ["frontend_projects", "react_advanced_patterns", "nextjs_deep_dive"]
+  },
+  {
+    "id": "skill_roadmap_backend",
+    "keywords": ["roadmap backend", "học backend", "backend path", "trở thành backend", "backend beginner"],
+    "reply": "**Backend Developer Roadmap 2024:**\n\n**Phase 1 - Foundation (2-3 tháng):**\n- Ngôn ngữ: Go / Python / Node.js / Java (chọn 1)\n- CS Basics: OS, Networking (HTTP/TCP/IP), Database (SQL, Index, Transaction)\n- Linux CLI, Git, Docker basics\n\n**Phase 2 - Core Backend (3-4 tháng):**\n- Framework: Gin/Echo, FastAPI/Django, Spring Boot, NestJS\n- Database: PostgreSQL (Advanced), Redis, MongoDB\n- API: REST (OpenAPI/Swagger), GraphQL, gRPC\n- Auth: JWT, OAuth2, Session, RBAC\n- Testing: Unit, Integration, Contract testing\n\n**Phase 3 - Distributed Systems (ongoing):**\n- Message Queue: Kafka, RabbitMQ, NATS\n- Microservices: Service discovery, Config management, Circuit breaker\n- Observability: Prometheus, Grafana, Jaeger, ELK\n- CI/CD: GitHub Actions, GitLab CI, ArgoCD\n- Cloud: AWS/GCP/Azure (1 provider sâu)\n- Security: OWASP Top 10, Rate limiting, Encryption\n\n**Projects:** CRUD API → Auth Service → E-commerce Backend → Microservices Demo → System Design Case Study",
+    "category": "career_path",
+    "follow_up": ["golang_backend", "python_fastapi", "nodejs_nestjs", "java_springboot"]
+  },
+  {
+    "id": "skill_roadmap_devops",
+    "keywords": ["roadmap devops", "học devops", "devops path", "trở thành devops", "sre roadmap"],
+    "reply": "**DevOps / SRE Roadmap 2024:**\n\n**Phase 1 - Linux & Scripting (1-2 tháng):**\n- Linux: File system, Permissions, Process, Networking, Systemd, Shell scripting\n- Python/Go cho automation scripts\n- Git: Branching strategy, Conventional commits\n\n**Phase 2 - Container & Orchestration (2-3 tháng):**\n- Docker: Multi-stage builds, BuildKit, Security scanning (Trivy)\n- Kubernetes: Pods, Deployments, Services, Ingress, ConfigMap/Secret, HPA, Operators\n- Helm, Kustomize, ArgoCD (GitOps)\n\n**Phase 3 - Cloud & IaC (2-3 tháng):**\n- Cloud provider: AWS (EC2, VPC, RDS, EKS, S3, IAM, CloudWatch)\n- Terraform: Modules, State management, Workspaces\n- CI/CD: GitHub Actions/GitLab CI - Pipelines, Environments, Secrets\n\n**Phase 4 - Observability & Platform (ongoing):**\n- Monitoring: Prometheus, Grafana, Alertmanager\n- Logging: Loki, ELK/EFK\n- Tracing: Jaeger, Tempo\n- Platform Engineering: Backstage, Internal Developer Platform\n- Security: Policy as Code (OPA), Supply chain security (SLSA, Cosign)\n\n**Certifications**: CKAD → CKA → CKS → AWS Solutions Architect / GCP Cloud Engineer",
+    "category": "career_path",
+    "follow_up": ["kubernetes_deep_dive", "terraform_best_practices", "gitops_workflow"]
+  },
+  {
+    "id": "salary_negotiation",
+    "keywords": ["negotiation", "đàm phán lương", "salary", "mức lương", "lương it", "raise salary", "tăng lương"],
+    "reply": "**Đàm phán lương IT hiệu quả:**\n\n**Trước khi đàm phán:**\n- Research market rate: Glassdoor, Levels.fyi, NodeFlair, VietnamWorks Salary Guide\n- Biết giá trị của mình: Years of experience, Tech stack depth, Domain knowledge, Soft skills\n- Chuẩn bị số liệu: Current package, Expected range (min - target - stretch)\n\n**Khi nhận offer:**\n1. **Đừng nói yes ngay**: \"Cảm ơn, cho tôi 2-3 ngày xem xét\"\n2. **Counter offer**: Nêu số liệu market, value bạn mang lại\n3. **Negotiate package toàn diện**: Base + Bonus + Equity + Benefits (WFH, learning budget, insurance, leave)\n\n**Scripts:**\n- \"Dựa trên research market cho vị trí này tại [city] với [years] năm kinh nghiệm [tech stack], range là X-Y. Với background của em, em mong đợi Z.\"\n- \"Em rất hứng thú với role này. Base salary em mong đợi là Z. Có flexibility về signing bonus hoặc equity không?\"\n\n**Lưu ý**: Junior ít leverage hơn → focus learning/growth. Senior/Lead → focus impact/leadership.",
+    "category": "career_growth",
+    "follow_up": ["career_growth_strategy", "performance_review_prep", "job_hopping_vs_loyalty"]
+  },
+  {
+    "id": "career_growth_strategy",
+    "keywords": ["phát triển sự nghiệp", "career growth", "thăng tiến", "promotion", "senior developer", "tech lead", "engineering manager"],
+    "reply": "**Chiến lược phát triển sự nghiệp IT:**\n\n**Junior (0-2 năm) → Mid (2-4 năm):**\n- Depth: Master 1 tech stack, hiểu sâu internals\n- Breadth: Hiểu end-to-end flow (FE→BE→DB→Deploy)\n- Ownership: Làm feature độc lập, viết test, review code\n- Visibility: Demo, write docs, share knowledge\n\n**Mid (3-5 năm) → Senior (5+ năm):**\n- System Design: Design scalable, maintainable systems\n- Mentorship: Guide juniors, code review quality\n- Cross-team: Collab với PM, Design, QA, DevOps\n- Decision making: Trade-offs, tech debt, architecture choices\n\n**Senior → Staff/Principal / Engineering Manager:**\n- **IC Track**: Technical strategy, org-wide impact, standards, hiring bar\n- **Management Track**: People management, career growth, planning, culture\n\n**Core skills mọi level:**\n- Communication: Viết rõ ràng, trình bày thuyết phục\n- Problem solving: First principles, root cause analysis\n- Learning: Continuous, practical, teach others\n- Business awareness: Hiểu product, user, revenue",
+    "category": "career_growth",
+    "follow_up": ["ic_vs_management_track", "staff_engineer_skills", "tech_lead_responsibilities"]
+  },
+  {
+    "id": "learning_resources",
+    "keywords": ["học gì", "resource", "tài liệu", "course", "khóa học", "website học", "freetutorial"],
+    "reply": "**Tài nguyên học tập IT chất lượng (Free/Paid):**\n\n**System Design & Architecture:**\n- 📖 *Designing Data-Intensive Applications* (DDIA) - Martin Kleppmann\n- 🌐 System Design Primer (GitHub - donnemartin)\n- 🎥 ByteByteGo, System Design Interview (Alex Xu)\n- 🌐 HighScalability.com case studies\n\n**Backend & Distributed Systems:**\n- 📖 *Clean Architecture* - Robert Martin\n- 📖 *Building Microservices* - Sam Newman\n- 🌐 Martin Fowler blogs (martinfowler.com)\n- 🎥 ArjanCodes (YouTube - Python architecture)\n\n**Frontend:**\n- 🌐 React Official Docs (new beta docs)\n- 🌐 TypeScript Handbook\n- 🎥 Theo (t3.gg), Jack Herrington, Web Dev Simplified\n- 🌐 Frontend Masters (paid, high quality)\n\n**DevOps & Cloud:**\n- 🌐 Kubernetes the Hard Way (Kelsey Hightower)\n- 🎥 TechWorld with Nana (YouTube)\n- 🌐 AWS/GCP/Azure Well-Architected Frameworks\n- 📖 *Site Reliability Engineering* (Google SRE book - free online)\n\n**Algorithms & Interview:**\n- 🌐 NeetCode.io (roadmap + videos)\n- 🌐 LeetCode (Grind 75, Blind 75)\n- 📖 *Grokking the Coding Interview* (patterns)\n- 🌐 Hello Interview (system design + behavioral)\n\n**Vietnam Community:**\n- 🌐 Facebook: \"Lập trình viên Việt Nam\", \"IT Jobs Vietnam\"\n- 🌐 Discord: VN Dev Community, Go/Vietnam, React Vietnam\n- 📺 YouTube: F8 Fullstack, Code Dạo, Nguyen Duc Hoang",
+    "category": "learning",
+    "follow_up": ["free_certifications", "open_source_contribution", "portfolio_projects"]
+  },
+  {
+    "id": "portfolio_projects",
+    "keywords": ["project", "dự án", "portfolio", "side project", "pet project", "github project", "open source"],
+    "reply": "**Dự án Portfolio ấn tượng cho CV:**\n\n**Tier 1 - Cơ bản (Junior):**\n- Todo App (CRUD, Auth, State management)\n- Blog/CMS (Markdown, SEO, RSS)\n- Weather Dashboard (API integration, Charts)\n- E-commerce Mini (Cart, Checkout mock, Payment sandbox)\n\n**Tier 2 - Trung cấp (Mid):**\n- **Real-time Chat App**: WebSocket, Rooms, Typing indicator, File upload\n- **Task Management**: Kanban board, Drag-drop, Collaboration, Notifications\n- **URL Shortener**: Analytics, QR code, Custom domain, Rate limiting\n- **Dashboard Admin**: RBAC, Charts, Export, Bulk actions\n\n**Tier 3 - Nâng cao (Senior+):**\n- **Microservices E-commerce**: API Gateway, Services (User, Product, Order, Payment, Inventory), Event-driven, Saga pattern\n- **DevOps Platform**: CI/CD pipeline, Preview environments, Feature flags, Observability stack\n- **Open Source Contribution**: PR đến project phổ biến (React, Vue, Kubernetes, Terraform providers...)\n- **SaaS Boilerplate**: Auth, Billing (Stripe), Multi-tenancy, Admin panel, Email, Docs\n\n**Mẹo:** Deploy production (Vercel, Railway, Fly.io, AWS), CI/CD, Monitoring, Custom domain, README chuyên nghiệp với architecture diagram",
+    "category": "portfolio",
+    "follow_up": ["open_source_contribution", "saas_boilerplate", "deployment_strategies"]
+  },
+  {
+    "id": "tech_trends_2024",
+    "keywords": ["trend 2024", "công nghệ mới", "tech trend", "ai trend", "llm", "genai", "copilot", "cursor"],
+    "reply": "**Tech Trends 2024-2025 IT Developer nên biết:**\n\n**AI/GenAI trong Development:**\n- **AI Coding Assistants**: GitHub Copilot, Cursor, Codeium, Tabnine, Continue.dev\n- **Local LLMs**: Ollama, LM Studio, llama.cpp - chạy model local cho privacy\n- **RAG & Agents**: LangChain, LlamaIndex, CrewAI, AutoGen - build AI apps\n- **Vector DBs**: Pinecone, Weaviate, Qdrant, ChromaDB, pgvector\n\n**Frontend:**\n- **React 19**: Server Components, Actions, use() hook, Compiler\n- **Signals**: SolidJS, Preact, @preact/signals - fine-grained reactivity\n- **Web Components**: Lit, Enhance, native Custom Elements\n- **Islands Architecture**: Astro, Fresh, Qwik - partial hydration\n\n**Backend & Infrastructure:**\n- **Rust in backend**: Axum, Actix, Tokio - performance + safety\n- **Edge Computing**: Cloudflare Workers, Vercel Edge, Deno Deploy\n- **Database**: PostgreSQL 16/17 (JSONB, vector), SQLite (Turso, LibSQL), DuckDB (analytics)\n- **Observability**: OpenTelemetry standard, Grafana Cloud, Honeycomb\n\n**DevEx:**\n- **Monorepo**: Turborepo, Nx, Moonrepo\n- **Package managers**: pnpm, Bun (fast, built-in tooling)\n- **API**: tRPC (end-to-end type safety), GraphQL Federation\n\n**Học gì ưu tiên:** AI-assisted coding workflow + 1 modern stack depth + System design fundamentals",
+    "category": "tech_trends",
+    "follow_up": ["ai_coding_workflow", "rust_for_backend", "edge_computing", "local_llm_setup"]
+  }
+]

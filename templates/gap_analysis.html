@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block title %}Phân tích Gap - {{ job.title }} - IT Career Match{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('cv.recommendations') }}">Gợi ý việc làm</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('jobs.job_detail', job_id=job.job_id) }}">{{ job.title }}</a></li>
+            <li class="breadcrumb-item active">Phân tích kỹ năng</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Job Info -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm sticky-top" style="top: 100px;">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-briefcase me-2"></i>{{ job.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-2"><i class="bi bi-building me-1"></i>{{ job.company }}</p>
+                    <p class="text-muted mb-2"><i class="bi bi-geo-alt me-1"></i>{{ job.location }}</p>
+                    {% if job.salary_min or job.salary_max %}
+                    <p class="text-primary fw-bold mb-2">
+                        {% if job.salary_min and job.salary_max %}
+                            {{ "{:,.0f}".format(job.salary_min) }} - {{ "{:,.0f}".format(job.salary_max) }} VNĐ
+                        {% elif job.salary_min %}
+                            Từ {{ "{:,.0f}".format(job.salary_min) }} VNĐ
+                        {% else %}
+                            Đến {{ "{:,.0f}".format(job.salary_max) }} VNĐ
+                        {% endif %}
+                    </p>
+                    {% endif %}
+                    {% if gap.skill_source %}
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-file-text me-1"></i>
+                        Nguồn kỹ năng:
+                        {% if gap.skill_source == "cv" %}CV mới nhất
+                        {% elif gap.skill_source == "profile" %}Hồ sơ cá nhân
+                        {% else %}Dữ liệu cung cấp{% endif %}
+                    </p>
+                    {% endif %}
+                    <a href="{{ url_for('jobs.job_detail', job_id=job.job_id) }}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-arrow-left me-1"></i>Quay lại chi tiết
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gap Analysis -->
+        <div class="col-lg-8">
+            {% if gap %}
+            <!-- Summary Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card h-100 border-success">
+                        <div class="card-body text-center">
+                            <i class="bi bi-check-circle text-success" style="font-size: 1.5rem;"></i>
+                            <h3 class="fw-bold mt-2">{{ gap.matched_skills|length }}</h3>
+                            <small class="text-muted">Đã có</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card h-100 border-danger">
+                        <div class="card-body text-center">
+                            <i class="bi bi-x-circle text-danger" style="font-size: 1.5rem;"></i>
+                            <h3 class="fw-bold mt-2">{{ gap.missing_skills|length }}</h3>
+                            <small class="text-muted">Thiếu</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card h-100 border-info">
+                        <div class="card-body text-center">
+                            <i class="bi bi-plus-circle text-info" style="font-size: 1.5rem;"></i>
+                            <h3 class="fw-bold mt-2">{{ gap.extra_skills|length }}</h3>
+                            <small class="text-muted">Thêm (Bonus)</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="card stat-card h-100 border-warning">
+                        <div class="card-body text-center">
+                            <i class="bi bi-percent text-warning" style="font-size: 1.5rem;"></i>
+                            <h3 class="fw-bold mt-2">{{ "%.0f"|format(gap.match_percentage) }}%</h3>
+                            <small class="text-muted">Độ khớp</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Required Skills (with match status) -->
+            {% if gap.required_skills %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-danger bg-opacity-10">
+                    <h5 class="mb-0 text-danger"><i class="bi bi-star-fill me-2"></i>Kỹ năng BẮT BUỘC ({{ gap.required_skills|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Các kỹ năng việc làm yêu cầu bắt buộc. Hãy ưu tiên học những skill còn thiếu.</p>
+
+                    {% for detail in gap.required_skills %}
+                    <div class="skill-detail mb-3 p-3 border rounded {% if detail.status.value == 'has' %}bg-success bg-opacity-10{% elif detail.status.value == 'partial' %}bg-warning bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 d-inline">
+                                    {{ detail.skill_name }}
+                                    {% if detail.is_required %}<span class="badge bg-danger ms-2">Bắt buộc</span>{% endif %}
+                                </h6>
+                                <div class="d-flex align-items-center gap-2 mt-1">
+                                    {% if detail.status.value == 'has' %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Đã có</span>
+                                    {% elif detail.status.value == 'partial' %}
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-circle-half me-1"></i>Khớp một phần</span>
+                                    {% else %}
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Thiếu</span>
+                                    {% endif %}
+                                    <small class="text-muted">{{ detail.reason }}</small>
+                                </div>
+                            </div>
+                            <div class="text-end ms-3">
+                                {% if detail.market_demand > 0 %}
+                                <div class="small text-muted">
+                                    <i class="bi bi-graph-up me-1"></i>{{ detail.market_demand }} việc làm
+                                </div>
+                                {% endif %}
+                                {% if detail.priority_score > 0 %}
+                                <div class="small">
+                                    <span class="badge {% if detail.priority_score > 2 %}bg-danger{% elif detail.priority_score > 1 %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                                        Ưu tiên: {{ "%.1f"|format(detail.priority_score) }}
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if detail.cv_evidence %}
+                        <div class="mt-2 p-2 bg-light rounded small">
+                            <strong>Bằng chứng trong CV:</strong> <span class="text-muted">{{ detail.cv_evidence }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if detail.proficiency %}
+                        <div class="mt-2">
+                            <span class="badge bg-secondary"><i class="bi bi-award me-1"></i>Trình độ: {{ detail.proficiency }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if detail.related_cv_skills %}
+                        <div class="mt-2">
+                            <small class="text-muted">Kỹ năng liên quan trong CV: </small>
+                            <span class="text-primary">{{ detail.related_cv_skills|join(', ') }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Preferred Skills (with match status) -->
+            {% if gap.preferred_skills %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning bg-opacity-10">
+                    <h5 class="mb-0 text-warning"><i class="bi bi-star me-2"></i>Kỹ năng ƯU TIÊN ({{ gap.preferred_skills|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Các kỹ năng ưu tiên (không bắt buộc). Có thêm sẽ là lợi thế lớn.</p>
+
+                    {% for detail in gap.preferred_skills %}
+                    <div class="skill-detail mb-3 p-3 border rounded {% if detail.status.value == 'has' %}bg-success bg-opacity-10{% elif detail.status.value == 'partial' %}bg-warning bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 d-inline">
+                                    {{ detail.skill_name }}
+                                    <span class="badge bg-warning text-dark ms-2">Ưu tiên</span>
+                                </h6>
+                                <div class="d-flex align-items-center gap-2 mt-1">
+                                    {% if detail.status.value == 'has' %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Đã có</span>
+                                    {% elif detail.status.value == 'partial' %}
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-circle-half me-1"></i>Khớp một phần</span>
+                                    {% else %}
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Thiếu</span>
+                                    {% endif %}
+                                    <small class="text-muted">{{ detail.reason }}</small>
+                                </div>
+                            </div>
+                            <div class="text-end ms-3">
+                                {% if detail.market_demand > 0 %}
+                                <div class="small text-muted">
+                                    <i class="bi bi-graph-up me-1"></i>{{ detail.market_demand }} việc làm
+                                </div>
+                                {% endif %}
+                                {% if detail.priority_score > 0 %}
+                                <div class="small">
+                                    <span class="badge {% if detail.priority_score > 2 %}bg-danger{% elif detail.priority_score > 1 %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                                        Ưu tiên: {{ "%.1f"|format(detail.priority_score) }}
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if detail.cv_evidence %}
+                        <div class="mt-2 p-2 bg-light rounded small">
+                            <strong>Bằng chứng trong CV:</strong> <span class="text-muted">{{ detail.cv_evidence }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if detail.proficiency %}
+                        <div class="mt-2">
+                            <span class="badge bg-secondary"><i class="bi bi-award me-1"></i>Trình độ: {{ detail.proficiency }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Missing Skills Summary (Priority Order) -->
+            {% if gap.missing_skills_by_priority %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-danger bg-opacity-10">
+                    <h5 class="mb-0 text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Kỹ năng THIẾU - Theo thứ tự ưu tiên ({{ gap.missing_skills_by_priority|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Dưới đây là các kỹ năng bạn còn thiếu, sắp xếp theo độ quan trọng (yêu cầu JD + nhu cầu thị trường).</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for skill in gap.missing_skills_by_priority %}
+                        {% set detail = gap.skill_details|selectattr('skill_name', 'equalto', skill)|first %}
+                        <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 d-flex align-items-center gap-1"
+                              title="{{ detail.reason if detail else '' }} {% if detail and detail.market_demand %}| {{ detail.market_demand }} jobs {% endif %} {% if detail and detail.priority_score %}| Priority: {{ '%.1f'|format(detail.priority_score) }}{% endif %}">
+                            {{ skill }}
+                            {% if detail and detail.is_required %}<i class="bi bi-star-fill" style="font-size: 0.7rem;"></i>{% endif %}
+                        </span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Learning Resources from Backend -->
+                    {% if gap.resources %}
+                    <div class="mt-4">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-book me-2"></i>Tài nguyên học tập gợi ý</h6>
+                        <div class="accordion" id="resourcesAccordion">
+                            {% for skill, resources in gap.resources.items() %}
+                            {% if resources %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading_{{ skill|replace(' ', '_')|replace('.', '_')|replace('+', '_')|replace('#', '_') }}">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapse_{{ skill|replace(' ', '_')|replace('.', '_')|replace('+', '_')|replace('#', '_') }}"
+                                            aria-expanded="false" aria-controls="collapse_{{ skill|replace(' ', '_')|replace('.', '_')|replace('+', '_')|replace('#', '_') }}">
+                                        <i class="bi bi-journal-text me-2"></i>{{ skill }}
+                                    </button>
+                                </h2>
+                                <div id="collapse_{{ skill|replace(' ', '_')|replace('.', '_')|replace('+', '_')|replace('#', '_') }}"
+                                     class="accordion-collapse collapse"
+                                     aria-labelledby="heading_{{ skill|replace(' ', '_')|replace('.', '_')|replace('+', '_')|replace('#', '_') }}"
+                                     data-bs-parent="#resourcesAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row g-2">
+                                            {% for res in resources %}
+                                            <div class="col-md-6">
+                                                <a href="{{ res.url }}" target="_blank" class="text-decoration-none resource-card d-block p-3 border rounded h-100">
+                                                    <div class="d-flex align-items-start">
+                                                        <i class="bi {% if res.type == 'course' %}bi-mortarboard{% elif res.type == 'video' %}bi-play-circle{% elif res.type == 'documentation' %}bi-file-earmark-text{% elif res.type == 'project' %}bi-github{% else %}bi-link{% endif %} me-2 text-primary" style="font-size: 1.2rem;"></i>
+                                                        <div>
+                                                            <strong class="text-dark">{{ res.title }}</strong><br>
+                                                            <small class="text-muted">{{ res.platform }} • {{ res.type }}
+                                                            {% if res.duration %} • {{ res.duration }}{% endif %}
+                                                            {% if res.level %} • {{ res.level|capitalize }}{% endif %}
+                                                            {% if res.language == 'vi' %} • <span class="badge bg-success">Tiếng Việt</span>{% endif %}
+                                                            {% if res.is_free %} • <span class="badge bg-info">Miễn phí</span>{% endif %}
+                                                            {% if res.rating %} • ⭐ {{ res.rating }}{% endif %}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Extra Skills (Bonus) -->
+            {% if gap.extra_skills %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info bg-opacity-10">
+                    <h5 class="mb-0 text-info"><i class="bi bi-gem me-2"></i>Kỹ năng THÊM - Điểm cộng ({{ gap.extra_skills|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Bạn có thêm các skill này mà việc làm không yêu cầu bắt buộc - lợi thế cạnh tranh.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for skill in gap.extra_skills %}
+                        <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Learning Path -->
+            {% if gap.learning_path and gap.learning_path.phases %}
+            <div class="card border-success mb-4">
+                <div class="card-header bg-success bg-opacity-10">
+                    <h5 class="mb-0 text-success"><i class="bi bi-route me-2"></i>Lộ trình học tập gợi ý ({{ gap.learning_path.estimated_weeks }} tuần)</h5>
+                </div>
+                <div class="card-body">
+                    {% for phase in gap.learning_path.phases %}
+                    <div class="mb-4 {% if not loop.last %}pb-4 border-bottom{% endif %}">
+                        <h6 class="text-success mb-3"><i class="bi bi-flag-fill me-1"></i>Giai đoạn {{ phase.phase }}: {{ phase.name }} ({{ phase.duration_weeks }} tuần)</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for skill in phase.skills %}
+                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                        {% for skill in phase.skills %}
+                        {% set resources = phase[skill + '_resources'] %}
+                        {% if resources %}
+                        <div class="mt-2 ms-4 small">
+                            <strong>{{ skill }}:</strong>
+                            {% for res in resources[:2] %}
+                            <a href="{{ res.url }}" target="_blank" class="text-decoration-none ms-2">
+                                <span class="badge bg-light text-dark border">{{ res.platform }}: {{ res.title }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Plan -->
+            <div class="card border-warning">
+                <div class="card-header bg-warning bg-opacity-10">
+                    <h5 class="mb-0 text-warning"><i class="bi bi-lightbulb me-2"></i>Kế hoạch hành động</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        {% if gap.missing_skills_by_priority %}
+                        <li class="mb-2"><strong>Tuần 1-2:</strong> Tập trung học {{ gap.missing_skills_by_priority[:3] | join(', ') }}{% if gap.missing_skills_by_priority|length > 3 %} và {{ gap.missing_skills_by_priority|length - 3 }} skill khác{% endif %} (Ưu tiên cao nhất)</li>
+                        <li class="mb-2"><strong>Tuần 3-4:</strong> Làm mini-project áp dụng các skill mới, cập nhật CV và LinkedIn</li>
+                        {% endif %}
+                        <li class="mb-2"><strong>Luôn luôn:</strong> Duy trì và sâu sắc hơn các skill đã có: {{ gap.matched_skills[:3] | join(', ') if gap.matched_skills else 'N/A' }}</li>
+                        <li><strong>Trước phỏng vấn:</strong> Ôn lại {{ gap.missing_skills_by_priority[:2] | join(', ') if gap.missing_skills_by_priority else 'các skill chính' }}, chuẩn bị ví dụ dự án thực tế</li>
+                    </ol>
+                </div>
+            </div>
+
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>Không có dữ liệu phân tích. Vui lòng tải lên CV hoặc cập nhật kỹ năng.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

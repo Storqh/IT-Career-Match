@@ -1,404 +1,183 @@
-
 {% extends "base.html" %}
 
+{% block title %}Admin Dashboard - IT Career Match{% endblock %}
+
 {% block content %}
-
-<div class="container-fluid admin-dashboard py-4 px-3 px-lg-4">
-
-    <!-- HEADER -->
-    <div class="admin-hero mb-4">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <div>
-                <div class="admin-eyebrow mb-2">
-                    <i class="bi bi-grid-1x2-fill"></i>
-                    ADMIN CONTROL CENTER
-                </div>
-
-                <h1 class="admin-heading mb-2">
-                    Admin Dashboard<span class="text-primary">.</span>
-                </h1>
-
-                <p class="admin-description mb-0">
-                    Chào mừng trở lại! Quản lý và theo dõi hoạt động của
-                    IT Career Match tại một nơi.
-                </p>
-            </div>
-
-            <div class="admin-badge">
-                <i class="bi bi-shield-check"></i>
-                Administrator
-            </div>
-        </div>
-
-        <div class="admin-toolbar mt-4">
-            <a href="{{ url_for('admin_jobs') }}"
-               class="admin-action admin-action-primary">
-                <i class="bi bi-briefcase-fill"></i>
-                Quản lý công việc
-                <i class="bi bi-arrow-up-right"></i>
-            </a>
-
-            <a href="{{ url_for('admin_users') }}"
-               class="admin-action admin-action-light">
-                <i class="bi bi-people-fill"></i>
-                Quản lý người dùng
-            </a>
-
-            <a href="/admin/export/excel"
-               class="admin-action admin-action-light">
-                <i class="bi bi-file-earmark-excel-fill text-success"></i>
-                Xuất dữ liệu Excel
-            </a>
-        </div>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold mb-0"><i class="bi bi-shield-lock me-2"></i>Admin Dashboard</h1>
+        <span class="badge bg-danger fs-6">Admin Panel</span>
     </div>
 
-    <!-- SECTION TITLE -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h4 class="admin-section-title mb-1">Tổng quan hệ thống</h4>
-            <p class="admin-section-subtitle mb-0">
-                Các chỉ số hoạt động của nền tảng
-            </p>
-        </div>
-        <span class="admin-live-indicator">
-            <span class="admin-live-dot"></span>
-            System Overview
-        </span>
-    </div>
-
-    <!-- STATISTICS -->
+    <!-- Stats Cards -->
     <div class="row g-3 mb-4">
-
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="admin-stat-card">
-                <div class="admin-stat-top">
-                    <div class="admin-stat-icon icon-blue">
-                        <i class="bi bi-people-fill"></i>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card h-100 border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
+                    <h2 class="fw-bold mt-2">{{ user_stats.total_users or 0 }}</h2>
+                    <small class="text-muted">Tổng users</small>
+                    <div class="mt-1">
+                        <span class="badge bg-success">{{ user_stats.students or 0 }} Students</span>
+                        <span class="badge bg-danger ms-1">{{ user_stats.admins or 0 }} Admins</span>
                     </div>
-                    <span class="admin-stat-tag">Users</span>
-                </div>
-                <div class="admin-stat-label">Tổng người dùng</div>
-                <div class="admin-stat-value">
-                    {{ total_users | default(0) }}
-                </div>
-                <div class="admin-stat-footer">
-                    <i class="bi bi-person-check"></i>
-                    Tài khoản trong hệ thống
                 </div>
             </div>
         </div>
-
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="admin-stat-card">
-                <div class="admin-stat-top">
-                    <div class="admin-stat-icon icon-purple">
-                        <i class="bi bi-mortarboard-fill"></i>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card h-100 border-success">
+                <div class="card-body text-center">
+                    <i class="bi bi-briefcase text-success" style="font-size: 2rem;"></i>
+                    <h2 class="fw-bold mt-2">{{ job_stats.total or 0 }}</h2>
+                    <small class="text-muted">Tổng việc làm</small>
+                    <div class="mt-1">
+                        <span class="badge bg-success">{{ job_stats.active or 0 }} Active</span>
+                        <span class="badge bg-secondary ms-1">{{ job_stats.inactive or 0 }} Inactive</span>
                     </div>
-                    <span class="admin-stat-tag">Students</span>
-                </div>
-                <div class="admin-stat-label">Sinh viên</div>
-                <div class="admin-stat-value">
-                    {{ total_students | default(0) }}
-                </div>
-                <div class="admin-stat-footer">
-                    <i class="bi bi-person-badge"></i>
-                    Tài khoản Student
                 </div>
             </div>
         </div>
-
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="admin-stat-card">
-                <div class="admin-stat-top">
-                    <div class="admin-stat-icon icon-orange">
-                        <i class="bi bi-briefcase-fill"></i>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card h-100 border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-send text-warning" style="font-size: 2rem;"></i>
+                    <h2 class="fw-bold mt-2">{{ app_stats.total or 0 }}</h2>
+                    <small class="text-muted">Tổng đơn ứng tuyển</small>
+                    <div class="mt-1">
+                        <span class="badge bg-warning">{{ app_stats.pending or 0 }} Pending</span>
+                        <span class="badge bg-success ms-1">{{ app_stats.accepted or 0 }} Accepted</span>
                     </div>
-                    <span class="admin-stat-tag">Jobs</span>
-                </div>
-                <div class="admin-stat-label">Việc làm</div>
-                <div class="admin-stat-value">
-                    {{ total_jobs | default(0) }}
-                </div>
-                <div class="admin-stat-footer">
-                    <i class="bi bi-collection"></i>
-                    Cơ hội nghề nghiệp
                 </div>
             </div>
         </div>
-
-        <div class="col-12 col-sm-6 col-xl-3">
-            <div class="admin-stat-card">
-                <div class="admin-stat-top">
-                    <div class="admin-stat-icon icon-green">
-                        <i class="bi bi-file-earmark-person-fill"></i>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card h-100 border-info">
+                <div class="card-body text-center">
+                    <i class="bi bi-graph-up text-info" style="font-size: 2rem;"></i>
+                    <h2 class="fw-bold mt-2">{{ user_stats.new_this_week or 0 }}</h2>
+                    <small class="text-muted">User mới (7 ngày)</small>
+                    <div class="mt-1">
+                        <small class="text-muted">Tháng này: {{ user_stats.new_this_month or 0 }}</small>
                     </div>
-                    <span class="admin-stat-tag">CVs</span>
-                </div>
-                <div class="admin-stat-label">CV đã tải lên</div>
-                <div class="admin-stat-value">
-                    {{ total_cvs | default(0) }}
-                </div>
-                <div class="admin-stat-footer">
-                    <i class="bi bi-file-earmark-check"></i>
-                    Hồ sơ được lưu trữ
                 </div>
             </div>
         </div>
-
     </div>
 
-    <!-- SECONDARY STATS -->
+    <!-- Quick Actions -->
     <div class="row g-3 mb-4">
-
-        <div class="col-md-6">
-            <div class="admin-mini-card">
-                <div class="admin-mini-icon icon-indigo">
-                    <i class="bi bi-shield-lock-fill"></i>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Thao tác nhanh</h5>
                 </div>
-                <div class="flex-grow-1">
-                    <div class="admin-mini-label">Tài khoản quản trị</div>
-                    <div class="admin-mini-value">
-                        {{ total_admins | default(0) }}
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('jobs.admin_create_job') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg me-1"></i>Đăng tin tuyển dụng
+                        </a>
+                        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-people me-1"></i>Quản lý users
+                        </a>
+                        <a href="{{ url_for('admin.applications') }}" class="btn btn-outline-success">
+                            <i class="bi bi-inbox me-1"></i>Duyệt đơn ứng tuyển
+                        </a>
+                        <a href="{{ url_for('admin.analytics') }}" class="btn btn-outline-info">
+                            <i class="bi bi-bar-chart me-1"></i>Xem báo cáo
+                        </a>
+                        <a href="{{ url_for('admin.export_users') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-download me-1"></i>Xuất users CSV
+                        </a>
+                        <a href="{{ url_for('admin.export_jobs') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-download me-1"></i>Xuất jobs CSV
+                        </a>
                     </div>
                 </div>
-                <span class="admin-mini-chip">Admins</span>
             </div>
         </div>
-
-        <div class="col-md-6">
-            <div class="admin-mini-card">
-                <div class="admin-mini-icon icon-cyan">
-                    <i class="bi bi-send-check-fill"></i>
-                </div>
-                <div class="flex-grow-1">
-                    <div class="admin-mini-label">Đơn ứng tuyển</div>
-                    <div class="admin-mini-value">
-                        {{ total_applications | default(0) }}
-                    </div>
-                </div>
-                <span class="admin-mini-chip">Applications</span>
-            </div>
-        </div>
-
     </div>
 
-    <!-- MANAGEMENT -->
-    <div class="row g-4 mb-4">
-
-        <div class="col-lg-7">
-            <div class="admin-panel h-100">
-                <div class="admin-panel-heading">
-                    <div>
-                        <h5 class="fw-bold mb-1">Quản lý hệ thống</h5>
-                        <p class="text-muted small mb-0">
-                            Truy cập nhanh các chức năng quản trị
-                        </p>
-                    </div>
-                    <div class="admin-panel-icon">
-                        <i class="bi bi-sliders"></i>
-                    </div>
+    <!-- Recent Activity -->
+    <div class="row">
+        <!-- Recent Users -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>Users mới nhất</h5>
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-link p-0">Xem tất cả</a>
                 </div>
-
-                <div class="admin-management-grid">
-
-                    <a href="{{ url_for('admin_users') }}"
-                       class="admin-management-item">
-                        <div class="admin-management-icon icon-blue">
-                            <i class="bi bi-people"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="fw-semibold">Người dùng</div>
-                            <div class="text-muted small">
-                                Xem, tìm kiếm và phân quyền
-                            </div>
-                        </div>
-                        <i class="bi bi-chevron-right text-muted"></i>
-                    </a>
-
-                    <a href="{{ url_for('admin_jobs') }}"
-                       class="admin-management-item">
-                        <div class="admin-management-icon icon-orange">
-                            <i class="bi bi-briefcase"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="fw-semibold">Công việc</div>
-                            <div class="text-muted small">
-                                Thêm, sửa và quản lý trạng thái
-                            </div>
-                        </div>
-                        <i class="bi bi-chevron-right text-muted"></i>
-                    </a>
-
-                    <a href="{{ url_for('admin_add_user') }}"
-                       class="admin-management-item">
-                        <div class="admin-management-icon icon-purple">
-                            <i class="bi bi-person-plus"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="fw-semibold">Tạo tài khoản</div>
-                            <div class="text-muted small">
-                                Thêm Student hoặc Admin mới
-                            </div>
-                        </div>
-                        <i class="bi bi-chevron-right text-muted"></i>
-                    </a>
-
-                    <a href="{{ url_for('add_job') }}"
-                       class="admin-management-item">
-                        <div class="admin-management-icon icon-green">
-                            <i class="bi bi-plus-circle"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <div class="fw-semibold">Đăng công việc</div>
-                            <div class="text-muted small">
-                                Tạo cơ hội việc làm mới
-                            </div>
-                        </div>
-                        <i class="bi bi-chevron-right text-muted"></i>
-                    </a>
-
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-5">
-            <div class="admin-panel h-100">
-                <div class="admin-panel-heading">
-                    <div>
-                        <h5 class="fw-bold mb-1">Hoạt động quản trị</h5>
-                        <p class="text-muted small mb-0">
-                            Các công cụ dành cho Administrator
-                        </p>
-                    </div>
-                    <div class="admin-panel-icon">
-                        <i class="bi bi-lightning-charge"></i>
-                    </div>
-                </div>
-
-                <div class="admin-info-box">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="admin-info-icon">
-                            <i class="bi bi-shield-check"></i>
-                        </div>
-                        <div>
-                            <div class="fw-bold">Admin Access</div>
-                            <div class="small text-muted">
-                                Quyền quản lý hệ thống
-                            </div>
-                        </div>
-                    </div>
-
-                    <p class="small text-muted mb-0">
-                        Bạn có thể quản lý tài khoản, cập nhật dữ liệu
-                        công việc và xuất báo cáo từ Dashboard.
-                    </p>
-                </div>
-
-                <a href="/admin/export/excel"
-                   class="admin-export-card">
-                    <div class="admin-export-icon">
-                        <i class="bi bi-file-earmark-spreadsheet"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="fw-semibold">Xuất báo cáo Excel</div>
-                        <div class="small text-muted">
-                            Users, Jobs, Applications, Recommendations
-                        </div>
-                    </div>
-                    <i class="bi bi-download"></i>
-                </a>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- RECENT USERS -->
-    <div class="admin-panel mb-4">
-        <div class="admin-panel-heading">
-            <div>
-                <h5 class="fw-bold mb-1">Người dùng mới nhất</h5>
-                <p class="text-muted small mb-0">
-                    Danh sách tài khoản đăng ký gần đây
-                </p>
-            </div>
-
-            <a href="{{ url_for('admin_users') }}"
-               class="admin-view-all">
-                Xem tất cả
-                <i class="bi bi-arrow-right"></i>
-            </a>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table admin-table align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Người dùng</th>
-                        <th>Role</th>
-                        <th>Ngày tạo</th>
-                        <th class="text-end">Chi tiết</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for user in recent_users | default([]) %}
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="admin-user-avatar">
-                                    {{ (user.full_name or user.email or 'U')[0] | upper }}
-                                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for user in recent_users %}
+                        <div class="list-group-item px-3 py-2">
+                            <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <div class="fw-semibold">
-                                        {{ user.full_name or 'Chưa cập nhật' }}
-                                    </div>
-                                    <div class="small text-muted">
-                                        {{ user.email }}
-                                    </div>
+                                    <strong>{{ user.email }}</strong>
+                                    <br><small class="text-muted">{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
                                 </div>
+                                <span class="badge bg-{% if user.role == 'admin' %}danger{% else %}primary{% endif %}">
+                                    {{ user.role }}
+                                </span>
                             </div>
-                        </td>
+                        </div>
+                        {% else %}
+                        <div class="list-group-item text-center text-muted py-4">Chưa có user</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <td>
-                            {% if user.role == 'admin' %}
-                                <span class="admin-role-pill role-admin">
-                                    Admin
-                                </span>
-                            {% else %}
-                                <span class="admin-role-pill role-student">
-                                    Student
-                                </span>
-                            {% endif %}
-                        </td>
+        <!-- Recent Jobs -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-briefcase me-2"></i>Tin tuyển dụng mới</h5>
+                    <a href="{{ url_for('jobs.admin_jobs') }}" class="btn btn-sm btn-link p-0">Xem tất cả</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for job in recent_jobs %}
+                        <div class="list-group-item px-3 py-2">
+                            <div>
+                                <strong class="text-truncate d-block">{{ job.title }}</strong>
+                                <small class="text-muted">{{ job.company }} · {{ job.created_at.strftime('%d/%m/%Y') }}</small>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="list-group-item text-center text-muted py-4">Chưa có tin tuyển dụng</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <td class="text-muted small">
-                            {{ user.created_at or '—' }}
-                        </td>
-
-                        <td class="text-end">
-                            <a href="{{ url_for('admin_user_detail', user_id=user.user_id) }}"
-                               class="admin-table-action">
-                                <i class="bi bi-arrow-up-right"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4" class="text-center py-5 text-muted">
-                            <i class="bi bi-people fs-2 d-block mb-2"></i>
-                            Chưa có dữ liệu người dùng gần đây.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <!-- Recent Applications -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-send me-2"></i>Đơn ứng tuyển mới</h5>
+                    <a href="{{ url_for('admin.applications') }}" class="btn btn-sm btn-link p-0">Xem tất cả</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for app in recent_applications %}
+                        <div class="list-group-item px-3 py-2">
+                            <div>
+                                <strong>{{ app.job_title }}</strong>
+                                <br><small class="text-muted">{{ app.email }} · {{ app.applied_at.strftime('%d/%m/%Y') }}</small>
+                            </div>
+                            <span class="badge bg-{% if app.status == 'pending' %}warning{% elif app.status == 'accepted' %}success{% elif app.status == 'rejected' %}danger{% else %}secondary{% endif %} mt-1">
+                                {{ app.status }}
+                            </span>
+                        </div>
+                        {% else %}
+                        <div class="list-group-item text-center text-muted py-4">Chưa có đơn ứng tuyển</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="admin-footer text-center">
-        IT Career Match · Administration Panel
-    </div>
-
 </div>
-
 {% endblock %}

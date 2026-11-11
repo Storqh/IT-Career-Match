@@ -27,86 +27,67 @@
 
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark site-navbar">
     <div class="container">
-
-        <a class="navbar-brand fw-bold"
-           href="{{ url_for('dashboard') }}">
-            IT Career Match
+        <a class="navbar-brand fw-bold" href="{{ url_for('jobs.list_jobs') }}">
+            <i class="bi bi-briefcase-fill me-2" aria-hidden="true"></i>IT Career Match
         </a>
-
-        {% if session.get("user_id") %}
 
         <button class="navbar-toggler"
                 type="button"
                 data-bs-toggle="collapse"
-                data-bs-target="#navbar">
-
-            <span class="navbar-toggler-icon"></span>
+                data-bs-target="#navbar"
+                aria-controls="navbar"
+                aria-expanded="false"
+                aria-label="Mở hoặc đóng menu điều hướng">
+            <span class="navbar-toggler-icon" aria-hidden="true"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbar">
-
-            <ul class="navbar-nav ms-auto">
-
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+                {% if session.get("user_id") %}
                 <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('dashboard') }}">
-                        Dashboard
-                    </a>
+                    <a class="nav-link" href="{{ url_for('profile.dashboard') }}">Dashboard</a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('profile') }}">
-                        Hồ sơ
-                    </a>
+                    <a class="nav-link" href="{{ url_for('profile.edit_profile') }}">Hồ sơ</a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('upload_cv') }}">
-                        CV
-                    </a>
+                    <a class="nav-link" href="{{ url_for('cv.upload_cv') }}">CV</a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('jobs') }}">
-                        Việc làm
-                    </a>
+                    <a class="nav-link" href="{{ url_for('jobs.list_jobs') }}">Việc làm</a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('recommendations') }}">
-                        AI Gợi ý
-                    </a>
+                    <a class="nav-link" href="{{ url_for('cv.recommendations') }}">AI Gợi ý</a>
                 </li>
-
-                <li class="nav-item ms-lg-3">
-                    <a class="btn btn-outline-light"
-                       href="{{ url_for('logout') }}">
-                        Đăng xuất
-                    </a>
-                </li>
-                
-                {% if session.get('user_id') and session.get('role') == 'admin' %}
+                {% if session.get('user_role') == 'admin' %}
                 <li class="nav-item">
-                    <a class="nav-link admin-nav-link"
-                    href="{{ url_for('admin_dashboard') }}">
-                        <i class="bi bi-shield-lock-fill me-2"></i>
-                        Admin Panel
+                    <a class="nav-link admin-nav-link" href="{{ url_for('admin.dashboard') }}">
+                        <i class="bi bi-shield-lock-fill me-2" aria-hidden="true"></i>Admin Panel
                     </a>
                 </li>
                 {% endif %}
-
+                <li class="nav-item ms-lg-2">
+                    <a class="btn btn-outline-light nav-auth-button" href="{{ url_for('auth.logout') }}">
+                        Đăng xuất
+                    </a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('jobs.list_jobs') }}">Việc làm</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('auth.login') }}">Đăng nhập</a>
+                </li>
+                <li class="nav-item ms-lg-2">
+                    <a class="btn btn-primary nav-auth-button" href="{{ url_for('auth.register') }}">
+                        Tạo tài khoản
+                    </a>
+                </li>
+                {% endif %}
             </ul>
-
         </div>
-
-        {% endif %}
-
     </div>
 </nav>
 
@@ -133,6 +114,7 @@
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 <script src="{{ url_for('static', filename='js/pro-ui.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
 
 {% include "components/chatbot.html" %}
 

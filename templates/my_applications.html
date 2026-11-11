@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Đơn ứng tuyển của tôi - IT Career Match{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="h3 fw-bold mb-4"><i class="bi bi-folder me-2"></i>Đơn ứng tuyển của tôi</h1>
+
+    {% if applications %}
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Vị trí</th>
+                            <th>Công ty</th>
+                            <th>Địa điểm</th>
+                            <th>CV đã dùng</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày ứng tuyển</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td>
+                                <strong>{{ app.title }}</strong>
+                            </td>
+                            <td>{{ app.company }}</td>
+                            <td>{{ app.location }}</td>
+                            <td>
+                                {% if app.cv_id %}
+                                    <span class="badge bg-info">CV #{{ app.cv_id }}</span>
+                                {% else %}
+                                    <span class="text-muted">Không có CV</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if app.status == 'pending' %}warning{% elif app.status == 'accepted' %}success{% elif app.status == 'rejected' %}danger{% else %}secondary{% endif %}">
+                                    {% if app.status == 'pending' %}Chờ duyệt
+                                    {% elif app.status == 'accepted' %}Đã duyệt
+                                    {% elif app.status == 'rejected' %}Từ chối
+                                    {% else %}Rút đơn{% endif %}
+                                </span>
+                            </td>
+                            <td>{{ app.applied_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                <a href="{{ url_for('jobs.job_detail', job_id=app.job_id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-folder text-muted" style="font-size: 5rem;"></i>
+        <h4 class="text-muted mt-3">Chưa có đơn ứng tuyển nào</h4>
+        <p class="text-muted">Bắt đầu tìm việc và ứng tuyển ngay hôm nay!</p>
+        <a href="{{ url_for('jobs.list_jobs') }}" class="btn btn-primary mt-3">
+            <i class="bi bi-search me-1"></i>Tìm việc làm
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

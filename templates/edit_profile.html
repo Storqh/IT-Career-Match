@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Chỉnh sửa hồ sơ - IT Career Match{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-pencil me-2"></i>Chỉnh sửa hồ sơ</h5>
+                    <a href="{{ url_for('profile.dashboard') }}" class="btn btn-sm btn-outline-secondary">Quay lại</a>
+                </div>
+                <div class="card-body p-4">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" id="profileForm" novalidate>
+                        <!-- Personal Info -->
+                        <h6 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-person me-2"></i>Thông tin cá nhân</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="full_name" class="form-label">Họ và tên <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="full_name" name="full_name"
+                                       value="{{ profile.full_name if profile else '' }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Số điện thoại</label>
+                                <input type="tel" class="form-control" id="phone" name="phone"
+                                       value="{{ profile.phone if profile else '' }}">
+                            </div>
+                            <div class="col-12">
+                                <label for="address" class="form-label">Địa chỉ</label>
+                                <input type="text" class="form-control" id="address" name="address"
+                                       value="{{ profile.address if profile else '' }}">
+                            </div>
+                        </div>
+
+                        <!-- Education -->
+                        <h6 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-mortarboard me-2"></i>Giáo dục</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="university" class="form-label">Trường Đại học / Cao đẳng</label>
+                                <input type="text" class="form-control" id="university" name="university"
+                                       value="{{ profile.university if profile else '' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="major" class="form-label">Chuyên ngành</label>
+                                <input type="text" class="form-control" id="major" name="major"
+                                       value="{{ profile.major if profile else '' }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="graduation_year" class="form-label">Năm tốt nghiệp</label>
+                                <input type="number" class="form-control" id="graduation_year" name="graduation_year"
+                                       value="{{ profile.graduation_year if profile else '' }}" min="1990" max="2030">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="gpa" class="form-label">GPA (thang 4.0)</label>
+                                <input type="number" class="form-control" id="gpa" name="gpa"
+                                       value="{{ profile.gpa if profile else '' }}" step="0.01" min="0" max="4">
+                            </div>
+                        </div>
+
+                        <!-- Links -->
+                        <h6 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-link-45deg me-2"></i>Liên kết chuyên nghiệp</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label for="linkedin" class="form-label">LinkedIn</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-linkedin"></i></span>
+                                    <input type="url" class="form-control" id="linkedin" name="linkedin"
+                                           value="{{ profile.linkedin if profile else '' }}" placeholder="https://linkedin.com/in/...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="github" class="form-label">GitHub</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-github"></i></span>
+                                    <input type="url" class="form-control" id="github" name="github"
+                                           value="{{ profile.github if profile else '' }}" placeholder="https://github.com/...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="portfolio" class="form-label">Portfolio / Website</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-globe"></i></span>
+                                    <input type="url" class="form-control" id="portfolio" name="portfolio"
+                                           value="{{ profile.portfolio if profile else '' }}" placeholder="https://your-portfolio.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bio -->
+                        <h6 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-card-text me-2"></i>Giới thiệu bản thân</h6>
+                        <div class="mb-4">
+                            <textarea class="form-control" id="bio" name="bio" rows="4"
+                                      placeholder="Viết vài câu về bản thân, đam mê, mục tiêu nghề nghiệp...">{{ profile.bio if profile else '' }}</textarea>
+                            <div class="form-text">Tối đa 500 ký tự</div>
+                        </div>
+
+                        <!-- Skills -->
+                        <h6 class="fw-bold mb-3 pb-2 border-bottom"><i class="bi bi-tags me-2"></i>Kỹ năng</h6>
+                        <p class="text-muted mb-3">Chọn các kỹ năng bạn thành thạo (giữ Ctrl/Cmd để chọn nhiều)</p>
+
+                        <div class="row g-2 mb-4" id="skillsContainer">
+                            {% for skill in all_skills %}
+                            <div class="col-md-4 col-sm-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="skills"
+                                           value="{{ skill.skill_id }}" id="skill_{{ skill.skill_id }}"
+                                           {% if skill.skill_id in student_skill_ids %}checked{% endif %}>
+                                    <label class="form-check-label" for="skill_{{ skill.skill_id }}">
+                                        {{ skill.skill_name }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>Lưu thay đổi
+                            </button>
+                            <a href="{{ url_for('profile.dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg me-1"></i>Huỷ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

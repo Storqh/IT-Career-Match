@@ -842,5 +842,127 @@ textarea.form-control {
     z-index: 1000;
 }
 
+/* SHARED NAVIGATION AND AUTHENTICATION */
+
+.site-navbar {
+    box-shadow: 0 4px 18px rgba(15, 23, 42, .12);
+}
+
+.site-navbar .navbar-brand {
+    display: inline-flex;
+    align-items: center;
+}
+
+.site-navbar .nav-link {
+    border-radius: 9px;
+    transition: background-color .2s ease, color .2s ease;
+}
+
+.site-navbar .nav-link:hover,
+.site-navbar .nav-link:focus-visible {
+    background: rgba(255, 255, 255, .1);
+    color: #ffffff;
+}
+
+.site-navbar .nav-auth-button {
+    min-width: 116px;
+    text-align: center;
+}
+
+.auth-page {
+    display: grid;
+    align-items: center;
+    min-height: min(78vh, 760px);
+}
+
+.auth-card {
+    overflow: hidden;
+    border: 1px solid #e5eaf2;
+    border-radius: 22px;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, .08) !important;
+}
+
+.auth-card .card-body {
+    padding: clamp(24px, 5vw, 48px) !important;
+}
+
+.auth-icon {
+    display: grid;
+    place-items: center;
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 20px;
+    border-radius: 20px;
+    background: var(--icm-primary-soft);
+    color: var(--icm-primary);
+    font-size: 30px;
+}
+
+.auth-card h1,
+.auth-card h2 {
+    font-size: clamp(26px, 4vw, 33px);
+    margin-bottom: 10px;
+}
+
+.auth-card .text-muted {
+    line-height: 1.65;
+}
+
+.auth-card .form-control {
+    min-height: 52px;
+}
+
+.auth-email {
+    overflow-wrap: anywhere;
+}
+
+.otp-input {
+    max-width: 360px;
+    margin: 0 auto;
+    min-height: 64px !important;
+    padding-left: 1.25rem !important;
+    font-size: 1.6rem !important;
+    font-weight: 750;
+    letter-spacing: .55rem;
+}
+
+.otp-input::placeholder {
+    letter-spacing: .3rem;
+}
+
+@media (max-width: 991px) {
+    .site-navbar .navbar-collapse {
+        padding-top: 12px;
+    }
+
+    .site-navbar .nav-link {
+        padding: 10px 12px;
+    }
+
+    .site-navbar .nav-auth-button {
+        display: block;
+        margin: 8px 0 4px;
+    }
+
+    .auth-page {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 575px) {
+    .auth-page {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+
+    .auth-card .card-body {
+        padding: 25px 20px !important;
+    }
+
+    .otp-input {
+        max-width: 100%;
+        letter-spacing: .4rem;
+    }
+}
 
 
