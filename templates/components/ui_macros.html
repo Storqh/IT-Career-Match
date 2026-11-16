@@ -1,0 +1,530 @@
+{# ===========================================
+   IT CAREER MATCH - UI COMPONENT MACROS
+   Reusable Jinja2 macros for consistent UI
+=========================================== #}
+
+{# Stat Card - for dashboard metrics #}
+{% macro stat_card(icon, value, label, trend=None, trend_up=true, icon_bg="icon-blue", icon_color=None, link=None) %}
+{% set bg_class = icon_color or icon_bg %}
+<div class="admin-stat-card {% if link %}card-hover{% endif %}" {% if link %}onclick="window.location='{{ link }}'" style="cursor: pointer;"{% endif %}>
+    <div class="admin-stat-top">
+        <div class="admin-stat-icon {{ bg_class }}">
+            <i class="{{ icon }}" aria-hidden="true"></i>
+        </div>
+        {% if trend is not none %}
+        <span class="admin-stat-tag {% if trend_up %}text-success{% else %}text-danger{% endif %}">
+            <i class="bi {% if trend_up %}bi-arrow-up{% else %}bi-arrow-down{% endif %} me-1" aria-hidden="true"></i>
+            {{ trend }}
+        </span>
+        {% endif %}
+    </div>
+    <div class="admin-stat-label">{{ label }}</div>
+    <div class="admin-stat-value">{{ value }}</div>
+</div>
+{% endmacro %}
+
+{# Content Card - flexible content container #}
+{% macro content_card(title=None, body=None, footer=None, header_actions=None, actions=None, class="", header_class="") %}
+{% set actions = actions or header_actions %}
+<div class="card {{ class }}">
+    {% if title or actions %}
+    <div class="card-header d-flex justify-content-between align-items-center {{ header_class }}">
+        {% if title %}
+        <h5 class="card-title mb-0">{{ title }}</h5>
+        {% endif %}
+        {% if actions %}
+        <div class="d-flex gap-2">
+            {{ actions | safe }}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    <div class="card-body">
+        {{ body }}
+    </div>
+    {% if footer %}
+    <div class="card-footer">
+        {{ footer }}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Primary Button #}
+{% macro primary_button(label, href=None, icon=None, type="button", disabled=false, class="", onclick=None, aria_label=None, variant="primary", id=null) %}
+{% set btn_class = "btn btn-" ~ variant ~ " " ~ class %}
+{% if href %}
+<a class="{{ btn_class }}" {% if disabled %}aria-disabled="true" tabindex="-1"{% else %}href="{{ href }}"{% endif %} {% if aria_label %}aria-label="{{ aria_label }}"{% endif %} {% if onclick and not disabled %}onclick="{{ onclick }}"{% endif %} {% if id %}id="{{ id }}"{% endif %}>{% if icon %}<i class="{{ icon }}" aria-hidden="true"></i>{% endif %}{{ label }}</a>
+{% else %}
+<button class="{{ btn_class }}" type="{{ type }}" {% if disabled %}disabled{% endif %} {% if aria_label %}aria-label="{{ aria_label }}"{% endif %} {% if onclick and not disabled %}onclick="{{ onclick }}"{% endif %} {% if id %}id="{{ id }}"{% endif %}>{% if icon %}<i class="{{ icon }}" aria-hidden="true"></i>{% endif %}{{ label }}</button>
+{% endif %}
+{% endmacro %}
+
+{# Secondary Button #}
+{% macro secondary_button(label, href=None, icon=None, type="button", disabled=false, class="", onclick=None, aria_label=None) %}
+{% if href %}
+<a class="btn btn-secondary {{ class }}" {% if disabled %}aria-disabled="true" tabindex="-1"{% else %}href="{{ href }}"{% endif %} {% if aria_label %}aria-label="{{ aria_label }}"{% endif %} {% if onclick and not disabled %}onclick="{{ onclick }}"{% endif %}>{% if icon %}<i class="{{ icon }}" aria-hidden="true"></i>{% endif %}{{ label }}</a>
+{% else %}
+<button class="btn btn-secondary {{ class }}" type="{{ type }}" {% if disabled %}disabled{% endif %} {% if aria_label %}aria-label="{{ aria_label }}"{% endif %} {% if onclick and not disabled %}onclick="{{ onclick }}"{% endif %}>{% if icon %}<i class="{{ icon }}" aria-hidden="true"></i>{% endif %}{{ label }}</button>
+{% endif %}
+{% endmacro %}
+
+{# Outline Button #}
+{% macro outline_button(label, href=None, icon=None, variant="primary", type="button", disabled=false, class="", onclick=None) %}
+{% set btn_class = "btn btn-outline-" ~ variant ~ " " ~ class %}
+{% if href %}
+<a class="{{ btn_class }}" {% if disabled %}aria-disabled="true" tabindex="-1"{% else %}href="{{ href }}"{% endif %} {% if onclick and not disabled %}onclick="{{ onclick }}"{% endif %}>{% if icon %}<i class="{{ icon }}" aria-hidden="true"></i>{% endif %}{{ label }}</a>
+{% else %}
+<button class="{{ btn_class }}" type="{{ type }}" {% if disabled %}disabled{% endif %} {% if onclick and not disabled %}onclick="{{ onclick }}"{% endif %}>{% if icon %}<i class="{{ icon }}" aria-hidden="true"></i>{% endif %}{{ label }}</button>
+{% endif %}
+{% endmacro %}
+
+{# Ghost Button #}
+{% macro ghost_button(label, href=None, icon=None, type="button", disabled=false, class="", onclick=None) %}
+{% if href %}
+<a class="btn btn-ghost {{ class }}" {% if disabled %}aria-disabled="true" tabindex="-1"{% else %}href="{{ href }}"{% endif %} {% if onclick and not disabled %}onclick="{{ onclick }}"{% endif %}>{% if icon %}<i class="{{ icon }}" aria-hidden="true"></i>{% endif %}{{ label }}</a>
+{% else %}
+<button class="btn btn-ghost {{ class }}" type="{{ type }}" {% if disabled %}disabled{% endif %} {% if onclick and not disabled %}onclick="{{ onclick }}"{% endif %}>{% if icon %}<i class="{{ icon }}" aria-hidden="true"></i>{% endif %}{{ label }}</button>
+{% endif %}
+{% endmacro %}
+
+{# Status Badge #}
+{% macro status_badge(text, variant="neutral", dot=false, class="") %}
+{% set variants = {
+    "primary": "badge-primary",
+    "secondary": "badge-secondary",
+    "success": "badge-success",
+    "warning": "badge-warning",
+    "danger": "badge-danger",
+    "info": "badge-info",
+    "light": "badge-light",
+    "dark": "badge-dark",
+    "neutral": "badge-light"
+} %}
+<span class="badge {{ variants[variant] ~ ' ' ~ class }}">{% if dot %}<span class="badge-dot" aria-hidden="true"></span>{% endif %}{{ text }}</span>
+{% endmacro %}
+
+{# Data Table #}
+{% macro data_table(columns, rows, actions=None, sortable=true, pagination=null, empty_message="Không có dữ liệu", row_click=null, id="dataTable") %}
+<div class="table-responsive">
+    <table class="table table-hover admin-table" id="{{ id }}">
+        <thead>
+            <tr>
+                {% for col in columns %}
+                <th scope="col" {% if col.width %}style="width: {{ col.width }};"{% endif %}>
+                    {{ col.label }}
+                </th>
+                {% endfor %}
+                {% if actions %}
+                <th scope="col" style="width: 120px;">Thao tác</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% if rows|length == 0 %}
+            <tr>
+                <td colspan="{{ columns|length + (1 if actions else 0) }}" class="text-center py-5">
+                    <div class="text-muted">
+                        <i class="bi bi-inbox display-4 d-block mb-2" aria-hidden="true"></i>
+                        {{ empty_message }}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            {% for row in rows %}
+            <tr {% if row_click %}onclick="{{ row_click(row) }}" style="cursor: pointer;"{% endif %}>
+                {% for col in columns %}
+                <td>
+                    {% if col.render %}
+                    {{ col.render(row) }}
+                    {% else %}
+                    {{ row.get(col.key, '') }}
+                    {% endif %}
+                </td>
+                {% endfor %}
+                {% if actions %}
+                <td>
+                    <div class="d-flex gap-1 justify-content-center">
+                        {% for action in actions %}
+                        {{ action(row) }}
+                        {% endfor %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% if pagination %}
+{% macro pagination(pagination, url) %}
+<nav aria-label="Phân trang" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if pagination.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url }}?page={{ pagination.page - 1 }}&{{ request.query_string.decode()|replace('page=' ~ pagination.page, '') }}" aria-label="Trước">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i></span></li>
+        {% endif %}
+
+        {% for p in pagination.pages %}
+        {% if p == '...' %}
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+        {% elif p == pagination.page %}
+        <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+        {% else %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url }}?page={{ p }}&{{ request.query_string.decode()|replace('page=' ~ pagination.page, '') }}">{{ p }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url }}?page={{ pagination.page + 1 }}&{{ request.query_string.decode()|replace('page=' ~ pagination.page, '') }}" aria-label="Sau">
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-right"></i></span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endmacro %}
+{{ pagination(pagination, url) }}
+{% endif %}
+{% endmacro %}
+
+{# Search Input #}
+{% macro search_input(placeholder="Tìm kiếm...", name="q", value="", class="", id=null) %}
+<div class="search-input-wrapper {{ class }}">
+    <i class="bi bi-search search-icon" aria-hidden="true"></i>
+    <input type="search"
+           name="{{ name }}"
+           id="{{ id or name }}"
+           class="form-control search-input"
+           placeholder="{{ placeholder }}"
+           value="{{ value }}"
+           aria-label="{{ placeholder }}">
+</div>
+{% endmacro %}
+
+{# Filter Bar #}
+{% macro filter_bar(filters, url, method="GET") %}
+<form class="filter-bar row g-3 align-items-end" action="{{ url }}" method="{{ method }}">
+    {% for filter in filters %}
+    <div class="col-md-{{ filter.width or 3 }}">
+        <label for="{{ filter.name }}" class="form-label visually-hidden">{{ filter.label }}</label>
+        {% if filter.type == "select" %}
+        <select name="{{ filter.name }}" id="{{ filter.name }}" class="form-select">
+            <option value="">{{ filter.placeholder or 'Tất cả' }}</option>
+            {% for opt in filter.options %}
+            <option value="{{ opt.value }}" {% if request.args.get(filter.name) == opt.value|string %}selected{% endif %}>{{ opt.label }}</option>
+            {% endfor %}
+        </select>
+        {% elif filter.type == "text" %}
+        <input type="text" name="{{ filter.name }}" id="{{ filter.name }}" class="form-control" placeholder="{{ filter.placeholder }}" value="{{ request.args.get(filter.name, '') }}">
+        {% elif filter.type == "date" %}
+        <input type="date" name="{{ filter.name }}" id="{{ filter.name }}" class="form-control" value="{{ request.args.get(filter.name, '') }}">
+        {% endif %}
+    </div>
+    {% endfor %}
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-funnel me-1" aria-hidden="true"></i>Lọc
+        </button>
+        <a href="{{ url }}" class="btn btn-ghost" title="Xoá bộ lọc">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </a>
+    </div>
+</form>
+{% endmacro %}
+
+{# Pagination #}
+{% macro pagination_macro(pagination, url, extra_params={}) %}
+<nav aria-label="Phân trang" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if pagination.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url }}?page={{ pagination.page - 1 }}{% for k, v in extra_params.items() %}&{{ k }}={{ v }}{% endfor %}" aria-label="Trước">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-left"></i></span></li>
+        {% endif %}
+
+        {% for p in pagination.pages %}
+        {% if p == '...' %}
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+        {% elif p == pagination.page %}
+        <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+        {% else %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url }}?page={{ p }}{% for k, v in extra_params.items() %}&{{ k }}={{ v }}{% endfor %}">{{ p }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url }}?page={{ pagination.page + 1 }}{% for k, v in extra_params.items() %}&{{ k }}={{ v }}{% endfor %}" aria-label="Sau">
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link"><i class="bi bi-chevron-right"></i></span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endmacro %}
+
+{# Form Field #}
+{% macro form_field(label, field_name, type="text", value="", required=false, error=null, help_text=null, placeholder="", class="", id=null, rows=null, options=null, multiple=false, autocomplete=null, maxlength=null, minlength=null, min=null, max=null, step=null) %}
+<div class="mb-3 {{ class }}">
+    <label for="{{ id or field_name }}" class="form-label">{{ label }}{% if required %}<span class="text-danger ms-1" aria-hidden="true">*</span>{% endif %}</label>
+    {% if type == "textarea" %}
+    <textarea name="{{ field_name }}" id="{{ id or field_name }}" class="form-control {% if error %}is-invalid{% endif %}" rows="{{ rows or 4 }}" placeholder="{{ placeholder }}" aria-invalid="{% if error %}true{% else %}false{% endif %}" {% if required %}required{% endif %}{% if autocomplete %} autocomplete="{{ autocomplete }}"{% endif %}{% if maxlength %} maxlength="{{ maxlength }}"{% endif %}{% if minlength %} minlength="{{ minlength }}"{% endif %}>{{ value }}</textarea>
+    {% elif type == "select" %}
+    <select name="{{ field_name }}" id="{{ id or field_name }}" class="form-select {% if error %}is-invalid{% endif %}" {% if required %}required{% endif %} {% if multiple %}multiple{% endif %}>
+        <option value="">{{ placeholder }}</option>
+        {% for opt in options %}
+        <option value="{{ opt.value }}" {% if value == opt.value|string %}selected{% endif %}>{{ opt.label }}</option>
+        {% endfor %}
+    </select>
+    {% elif type == "checkbox" %}
+    <div class="form-check">
+        <input type="checkbox" name="{{ field_name }}" id="{{ id or field_name }}" class="form-check-input" value="1" {% if value %}checked{% endif %} {% if required %}required{% endif %}>
+        <label class="form-check-label" for="{{ id or field_name }}">{{ label }}</label>
+    </div>
+    {% else %}
+    <input type="{{ type }}" name="{{ field_name }}" id="{{ id or field_name }}" class="form-control {% if error %}is-invalid{% endif %}" value="{{ value }}" placeholder="{{ placeholder }}" aria-invalid="{% if error %}true{% else %}false{% endif %}" {% if required %}required{% endif %}{% if autocomplete %} autocomplete="{{ autocomplete }}"{% endif %}{% if maxlength %} maxlength="{{ maxlength }}"{% endif %}{% if minlength %} minlength="{{ minlength }}"{% endif %}{% if min is not none %} min="{{ min }}"{% endif %}{% if max is not none %} max="{{ max }}"{% endif %}{% if step is not none %} step="{{ step }}"{% endif %}>
+    {% endif %}
+    {% if error %}
+    <div class="invalid-feedback">{{ error }}</div>
+    {% endif %}
+    {% if help_text %}
+    <div class="form-text">{{ help_text }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Empty State #}
+{% macro empty_state(icon, title, description, action=null, class="") %}
+<div class="text-center py-5 {{ class }}">
+    <i class="{{ icon }} display-1 text-muted mb-3" aria-hidden="true"></i>
+    <h4 class="text-muted">{{ title }}</h4>
+    <p class="text-muted mb-4" style="max-width: 400px; margin: 0 auto;">{{ description }}</p>
+    {% if action %}
+    {{ action }}
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Loading State #}
+{% macro loading_state(text="Đang tải...", size="md", class="") %}
+<div class="d-flex flex-column align-items-center justify-content-center py-5 {{ class }}">
+    <div class="icm-spinner icm-spinner-{{ size }} mb-3" role="status" aria-label="{{ text }}"></div>
+    <span class="text-muted">{{ text }}</span>
+</div>
+{% endmacro %}
+
+{# Error State #}
+{% macro error_state(message, action=null, class="") %}
+<div class="text-center py-5 {{ class }}">
+    <i class="bi bi-exclamation-triangle display-1 text-danger mb-3" aria-hidden="true"></i>
+    <h4 class="text-danger">Đã có lỗi xảy ra</h4>
+    <p class="text-muted mb-4" style="max-width: 400px; margin: 0 auto;">{{ message }}</p>
+    {% if action %}
+    {{ action }}
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Confirm Dialog (requires Bootstrap Modal JS) #}
+{% macro confirm_dialog(id, title, message, confirm_text="Xác nhận", cancel_text="Huỷ", confirm_class="btn-danger", confirm_icon="bi-check", cancel_icon="bi-x") %}
+<div class="modal fade" id="{{ id }}" tabindex="-1" aria-labelledby="{{ id }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ id }}Label">{{ title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <p>{{ message }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="{{ cancel_icon }} me-1" aria-hidden="true"></i>{{ cancel_text }}</button>
+                <button type="button" class="btn {{ confirm_class }}" id="{{ id }}Confirm"><i class="{{ confirm_icon }} me-1" aria-hidden="true"></i>{{ confirm_text }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{# Toast Container #}
+{% macro toast_container() %}
+<div class="icm-toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+{% endmacro %}
+
+{# Avatar #}
+{% macro avatar(name, size="md", src=null, class="") %}
+{% set sizes = {"sm": "icm-avatar-sm", "md": "icm-avatar", "lg": "icm-avatar-lg", "xl": "icm-avatar-xl"} %}
+{% if src %}
+<div class="icm-avatar {{ sizes[size] }} {{ class }}">
+    <img src="{{ src }}" alt="{{ name }}" loading="lazy">
+</div>
+{% else %}
+<div class="icm-avatar {{ sizes[size] }} {{ class }}">{{ name[0].upper() }}</div>
+{% endif %}
+{% endmacro %}
+
+{# Skill Badge / Chip #}
+{% macro skill_chip(name, variant="primary", removable=false, on_remove=null, class="") %}
+<span class="badge badge-soft-{{ variant }} d-inline-flex align-items-center gap-1 {{ class }}">
+    {{ name }}
+    {% if removable %}
+    <button type="button" class="btn-close btn-close-white ms-1" aria-label="Xoá {{ name }}" {% if on_remove %}onclick="{{ on_remove }}"{% endif %}></button>
+    {% endif %}
+</span>
+{% endmacro %}
+
+{# Job Card - for job listings #}
+{% macro job_card(job, show_actions=true, user_cvs=null, is_favourite=false, has_applied=false) %}
+<div class="card card-hover h-100 job-card">
+    <div class="card-body d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+                <h5 class="card-title mb-1">{{ job.title }}</h5>
+                <p class="card-text small mb-0">
+                    <i class="bi bi-building me-1" aria-hidden="true"></i>{{ job.company }}
+                </p>
+            </div>
+            {% if show_actions %}
+            <div class="dropdown">
+                <button class="btn btn-ghost btn-sm" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots" aria-hidden="true"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{{ url_for('jobs.job_detail', job_id=job.job_id) }}"><i class="bi bi-eye me-2" aria-hidden="true"></i>Xem chi tiết</a></li>
+                    {% if not has_applied and user_cvs %}
+                    <li><a class="dropdown-item apply-job-btn" data-job-id="{{ job.job_id }}" href="#"><i class="bi bi-send me-2" aria-hidden="true"></i>Ứng tuyển</a></li>
+                    {% endif %}
+                    <li>
+                        <button class="dropdown-item favourite-btn {% if is_favourite %}text-danger{% endif %}" data-job-id="{{ job.job_id }}">
+                            <i class="bi {% if is_favourite %}bi-heart-fill{% else %}bi-heart{% endif %} me-2" aria-hidden="true"></i>
+                            {% if is_favourite %}Bỏ yêu thích{% else %}Yêu thích{% endif %}
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="badge badge-light"><i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ job.location }}</span>
+            <span class="badge badge-light"><i class="bi bi-briefcase me-1" aria-hidden="true"></i>{{ job.job_type }}</span>
+            <span class="badge badge-light"><i class="bi bi-person-badge me-1" aria-hidden="true"></i>{{ job.level }}</span>
+            {% if job.salary_min or job.salary_max %}
+            <span class="badge badge-success">
+                <i class="bi bi-currency-dollar me-1" aria-hidden="true"></i>
+                {% if job.salary_min and job.salary_max %}
+                {{ job.salary_min }} - {{ job.salary_max }} triệu
+                {% elif job.salary_min %}
+                Từ {{ job.salary_min }} triệu
+                {% else %}
+                Đến {{ job.salary_max }} triệu
+                {% endif %}
+            </span>
+            {% endif %}
+        </div>
+
+        <div class="mt-auto pt-3 border-top">
+            <div class="d-flex flex-wrap gap-1 mb-2">
+                {% for skill in job.skills[:5] %}
+                <span class="badge badge-primary badge-sm">{{ skill.skill_name }}</span>
+                {% endfor %}
+                {% if job.skills|length > 5 %}
+                <span class="badge badge-light">+{{ job.skills|length - 5 }} khác</span>
+                {% endif %}
+            </div>
+
+            {% if show_actions %}
+            <div class="d-flex gap-2">
+                {% if not has_applied and user_cvs %}
+                <button class="btn btn-primary flex-grow-1 apply-job-btn" data-job-id="{{ job.job_id }}">
+                    <i class="bi bi-send me-1" aria-hidden="true"></i>Ứng tuyển
+                </button>
+                {% elif has_applied %}
+                <button class="btn btn-success flex-grow-1" disabled>
+                    <i class="bi bi-check me-1" aria-hidden="true"></i>Đã ứng tuyển
+                </button>
+                {% endif %}
+                <a href="{{ url_for('jobs.job_detail', job_id=job.job_id) }}" class="btn btn-outline-primary">
+                    <i class="bi bi-eye me-1" aria-hidden="true"></i>Chi tiết
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{# Recommendation Card #}
+{% macro recommendation_card(rec, user_cvs=null) %}
+<div class="card card-hover h-100">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+                <h5 class="card-title mb-1">{{ rec.job.title }}</h5>
+                <p class="card-text small mb-0">{{ rec.job.company }} • {{ rec.job.location }}</p>
+            </div>
+            <div class="text-end">
+                <div class="badge badge-success">{{ "%.0f"|format(rec.match_score * 100) }}% Match</div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-1 mb-3">
+            <span class="badge badge-light">{{ rec.job.job_type }}</span>
+            <span class="badge badge-light">{{ rec.job.level }}</span>
+            {% if rec.job.salary_min or rec.job.salary_max %}
+            <span class="badge badge-info">{{ rec.job.salary_min or 0 }} - {{ rec.job.salary_max or 0 }}M</span>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <small class="text-muted d-block mb-1">Kỹ năng khớp: {{ rec.skill_match|length }}/{{ rec.job_skills|length }}</small>
+            <div class="progress progress-sm">
+                <div class="progress-bar" style="width: {{ (rec.skill_match|length / rec.job_skills|length * 100) if rec.job_skills|length > 0 else 0 }}%"></div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-1 mb-3">
+            {% for skill in rec.skill_match[:4] %}
+            <span class="badge badge-success badge-sm">{{ skill }}</span>
+            {% endfor %}
+            {% for skill in rec.missing_skills[:3] %}
+            <span class="badge badge-warning badge-sm">{{ skill }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="d-flex gap-2">
+            {% if user_cvs %}
+            <button class="btn btn-primary flex-grow-1 apply-job-btn" data-job-id="{{ rec.job.job_id }}">
+                <i class="bi bi-send me-1" aria-hidden="true"></i>Ứng tuyển
+            </button>
+            {% endif %}
+            <a href="{{ url_for('jobs.job_detail', job_id=rec.job.job_id) }}" class="btn btn-outline-primary">
+                <i class="bi bi-eye me-1" aria-hidden="true"></i>Chi tiết
+            </a>
+            <a href="{{ url_for('cv.gap_analysis', job_id=rec.job.job_id) }}" class="btn btn-ghost">
+                <i class="bi bi-graph-up me-1" aria-hidden="true"></i>Phân tích
+            </a>
+        </div>
+    </div>
+</div>
+{% endmacro %}

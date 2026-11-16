@@ -9,14 +9,14 @@ from typing import List, Dict, Any, Optional
 import joblib
 from sklearn.metrics.pairwise import cosine_similarity
 
-from ai.skill_gap import analyze_skill_gap
+from ai.skill_gap import analyze_skill_gap, calculate_priority_score, MatchStatus, get_skill_market_demand
 from ai.explanation import generate_explanation
 from ai.text_preprocessing import preprocess_text
 from ai.career_classifier import get_classifier
 from ai.skill_matcher import get_skill_matcher
 from ai.ranking import get_ranking_engine
 from database.connection_pool import get_cursor
-from database.database import create_recommendation
+from database.database import create_recommendation, clear_user_recommendations
 
 logger = logging.getLogger(__name__)
 
@@ -256,6 +256,9 @@ def get_user_salary_preferences(user_id: int) -> tuple:
 
 def save_recommendations(user_id: int, recommendations: List[Dict]):
     """Save recommendations to database."""
+    # Clear old recommendations first to avoid stale data when user uploads new CV
+    clear_user_recommendations(user_id)
+
     for rec in recommendations:
         # Extract summary string from explanation dict for DB storage
         explanation = rec.get("explanation")
@@ -320,21 +323,67 @@ def recommend_jobs_for_user(user_id: int, top_k: int = 10) -> List[Dict]:
     recommendations = []
     skill_matcher = get_skill_matcher()
 
+    # Batch fetch all job skills and market demand for efficiency
+    job_ids = [job["job_id"] for job in ranked_jobs[:top_k]]
+    job_skills_map = {}
+    if job_ids:
+        with get_cursor() as cur:
+            placeholders = ", ".join(["%s"] * len(job_ids))
+            cur.execute(f"""
+                SELECT js.job_id, s.skill_name, js.importance_level
+                FROM job_skills js
+                JOIN skills s ON js.skill_id = s.skill_id
+                WHERE js.job_id IN ({placeholders})
+            """, job_ids)
+            for row in cur.fetchall():
+                job_skills_map.setdefault(row["job_id"], []).append({
+                    "skill_name": row["skill_name"],
+                    "importance_level": row.get("importance_level", "required")
+                })
+
+    # Batch fetch market demand for all relevant skills
+    all_job_skills = []
+    for job_id in job_ids:
+        all_job_skills.extend([s["skill_name"] for s in job_skills_map.get(job_id, [])])
+    all_relevant_skills = list(set(all_job_skills + cv_skills))
+    market_demand_map = get_skill_market_demand(all_relevant_skills)
+
     for job in ranked_jobs[:top_k]:
-        # Skill gap analysis using hybrid matcher
-        job_skills = [s["skill_name"] if isinstance(s, dict) else s for s in job.get("skills", [])]
+        job_id = job["job_id"]
+        job_skills = job_skills_map.get(job_id, [])
+        job_skill_names = [s["skill_name"] for s in job_skills]
+
+        # Skill gap analysis using hybrid matcher with pre-fetched data
         skill_gap = analyze_skill_gap(
             cv_text=cv_text,
-            job_text=job_skills,
+            job_text=job_skill_names,
             job_category=job.get("category", ""),
-            job_id=job["job_id"],
+            job_id=job_id,
+            user_id=user_id,
+            cv_raw_text=cv_text,
             include_resources=True,
-            include_learning_path=True,
-            cv_raw_text=cv_text
+            include_learning_path=True
         )
 
+        # Override market_demand with pre-fetched batch data
+        if market_demand_map:
+            for skill_name in skill_gap.get("market_demand", {}):
+                if skill_name in market_demand_map:
+                    skill_gap["market_demand"][skill_name] = market_demand_map[skill_name]
+            for detail in skill_gap.get("skill_details", []):
+                if detail.skill_name in market_demand_map:
+                    detail.market_demand = market_demand_map[detail.skill_name]
+                    # Recalculate priority with updated demand
+                    detail.priority_score = calculate_priority_score(
+                        detail.skill_name,
+                        detail.market_demand,
+                        detail.status != MatchStatus.MISSING,
+                        job.get("category", ""),
+                        1.0
+                    )
+
         # Also get hybrid match details
-        hybrid_match = skill_matcher.match_skills(cv_skills, job_skills)
+        hybrid_match = skill_matcher.match_skills(cv_skills, job_skill_names)
 
         career_match = predicted_career and job["category"] and predicted_career == job["category"]
 

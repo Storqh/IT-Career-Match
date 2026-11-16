@@ -1,126 +1,63 @@
 <!DOCTYPE html>
-<html lang="vi">
+{% from "components/ui_macros.html" import stat_card, content_card, primary_button, secondary_button, outline_button, ghost_button, status_badge, data_table, search_input, filter_bar, pagination_macro, form_field, empty_state, loading_state, error_state, confirm_dialog, toast_container, avatar, skill_chip, job_card, recommendation_card %}
+<html lang="vi" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="IT Career Match - Hệ thống gợi ý việc làm IT thông minh, phân tích kỹ năng, career matching">
 
     <title>{% block title %}IT Career Match{% endblock %}</title>
 
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+    <!-- Roboto Font - Modern, professional, highly readable -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;900&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet">
-
-    <link
         rel="stylesheet"
-        href="{{ url_for('static', filename='css/style.css') }}">
-    
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
 
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+"
+        crossorigin="anonymous">
+
+    <!-- Custom Styles -->
     <link rel="stylesheet"
         href="{{ url_for('static', filename='css/pro-ui.css') }}">
     <link rel="stylesheet"
-      href="{{ url_for('static', filename='css/chatbot.css') }}">
+        href="{{ url_for('static', filename='css/chatbot.css') }}">
 
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#2563eb">
 
+    {% block extra_head %}{% endblock %}
 </head>
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
+    {% block body_content %}{% endblock %}
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark site-navbar">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="{{ url_for('jobs.list_jobs') }}">
-            <i class="bi bi-briefcase-fill me-2" aria-hidden="true"></i>IT Career Match
-        </a>
+    <!-- Scripts -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
 
-        <button class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbar"
-                aria-controls="navbar"
-                aria-expanded="false"
-                aria-label="Mở hoặc đóng menu điều hướng">
-            <span class="navbar-toggler-icon" aria-hidden="true"></span>
-        </button>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pro-ui.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
 
-        <div class="collapse navbar-collapse" id="navbar">
-            <ul class="navbar-nav ms-auto align-items-lg-center">
-                {% if session.get("user_id") %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('profile.dashboard') }}">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('profile.edit_profile') }}">Hồ sơ</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('cv.upload_cv') }}">CV</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('jobs.list_jobs') }}">Việc làm</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('cv.recommendations') }}">AI Gợi ý</a>
-                </li>
-                {% if session.get('user_role') == 'admin' %}
-                <li class="nav-item">
-                    <a class="nav-link admin-nav-link" href="{{ url_for('admin.dashboard') }}">
-                        <i class="bi bi-shield-lock-fill me-2" aria-hidden="true"></i>Admin Panel
-                    </a>
-                </li>
-                {% endif %}
-                <li class="nav-item ms-lg-2">
-                    <a class="btn btn-outline-light nav-auth-button" href="{{ url_for('auth.logout') }}">
-                        Đăng xuất
-                    </a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('jobs.list_jobs') }}">Việc làm</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.login') }}">Đăng nhập</a>
-                </li>
-                <li class="nav-item ms-lg-2">
-                    <a class="btn btn-primary nav-auth-button" href="{{ url_for('auth.register') }}">
-                        Tạo tài khoản
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-</nav>
+    {% include "components/chatbot.html" %}
 
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"
+            defer></script>
 
-<main>
-    {% block content %}
-    {% endblock %}
-</main>
-
-
-<footer class="site-footer">
-    <div class="container text-center">
-        <p class="mb-0">
-            IT Career Match — Personalized Job Recommendation System
-        </p>
-    </div>
-</footer>
-
-
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-</script>
-
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
-
-<script src="{{ url_for('static', filename='js/pro-ui.js') }}" defer></script>
-<script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
-
-{% include "components/chatbot.html" %}
-
-<script src="{{ url_for('static', filename='js/chatbot.js') }}"
-        defer></script>
-
-
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

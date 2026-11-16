@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block body_class %}dashboard-layout{% endblock %}
+
+{% block body_content %}
+<!-- Anti-flicker: Apply sidebar state immediately before render -->
+<script>
+(function() {
+    try {
+        var isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        var sidebar = document.getElementById('appSidebar');
+        if (sidebar && isCollapsed && window.innerWidth >= 992) {
+            sidebar.classList.add('collapsed');
+        }
+    } catch (e) {}
+})();
+</script>
+
+<!-- App Sidebar -->
+<aside class="app-sidebar" id="appSidebar" role="navigation" aria-label="Main navigation">
+    {% include "components/app_sidebar.html" %}
+</aside>
+
+<!-- Sidebar backdrop for mobile -->
+<div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+
+<!-- Main wrapper -->
+<div class="app-main-wrapper">
+    <!-- App Header / Topbar -->
+    <header class="app-header" role="banner">
+        {% block app_header %}
+        {% include "components/app_header.html" %}
+        {% endblock %}
+    </header>
+
+    <!-- Main Content -->
+    <main class="app-main" role="main" id="mainContent">
+        {% block page_header %}
+        <div class="page-header">
+            <div class="container-fluid px-4">
+                {% block breadcrumb %}{% endblock %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <h1 class="page-title mb-1">{% block page_title %}{% endblock %}</h1>
+                        {% block page_subtitle %}
+                        <p class="page-subtitle mb-0">{% block page_subtitle_content %}{% endblock %}</p>
+                        {% endblock %}
+                    </div>
+                    {% block page_actions %}{% endblock %}
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+        <div class="app-content container-fluid px-4">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('appSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const collapseBtn = document.getElementById('sidebarCollapse');
+
+    const setMobileSidebarOpen = (isOpen) => {
+        sidebar.classList.toggle('open', isOpen);
+        backdrop.classList.toggle('show', isOpen);
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+        toggleBtn?.setAttribute('aria-expanded', String(isOpen));
+        toggleBtn?.setAttribute('aria-label', isOpen ? 'Đóng menu' : 'Mở menu');
+    };
+
+    // Mobile sidebar toggle
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            setMobileSidebarOpen(!sidebar.classList.contains('open'));
+        });
+    }
+
+    // Close sidebar on backdrop click
+    if (backdrop) {
+        backdrop.addEventListener('click', function() {
+            setMobileSidebarOpen(false);
+        });
+    }
+
+    // Close sidebar on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+            setMobileSidebarOpen(false);
+        }
+    });
+
+    // Sidebar collapse/expand on desktop - ONLY on toggle button click
+    const setSidebarCollapsed = (isCollapsed) => {
+        sidebar.classList.toggle('collapsed', isCollapsed);
+        localStorage.setItem('sidebarCollapsed', String(isCollapsed));
+        collapseBtn?.setAttribute('aria-label', isCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar');
+        collapseBtn?.setAttribute('title', isCollapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar');
+
+        const icon = collapseBtn?.querySelector('i');
+        icon?.classList.toggle('bi-chevron-left', !isCollapsed);
+        icon?.classList.toggle('bi-chevron-right', isCollapsed);
+    };
+
+    // Click handler ONLY on the collapse button - NOT on sidebar or nav links
+    if (collapseBtn) {
+        collapseBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            setSidebarCollapsed(!sidebar.classList.contains('collapsed'));
+        });
+    }
+
+    // Restore sidebar state from localStorage (default: EXPANDED = no collapsed class)
+    // Only apply collapsed if explicitly saved as 'true'
+    if (localStorage.getItem('sidebarCollapsed') === 'true' && window.innerWidth >= 992) {
+        sidebar.classList.add('collapsed');
+        const icon = collapseBtn?.querySelector('i');
+        icon?.classList.remove('bi-chevron-left');
+        icon?.classList.add('bi-chevron-right');
+        collapseBtn?.setAttribute('aria-label', 'Mở rộng sidebar');
+        collapseBtn?.setAttribute('title', 'Mở rộng sidebar');
+    }
+
+    // Handle window resize
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            if (window.innerWidth >= 992) {
+                setMobileSidebarOpen(false);
+            }
+        }, 250);
+    });
+});
+</script>
+{% endblock %}

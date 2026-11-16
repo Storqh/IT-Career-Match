@@ -1,6 +1,9 @@
 import joblib
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from text_preprocessing import preprocess_text
+from ai.text_preprocessing import preprocess_text
 
 
 # ==============================

@@ -612,6 +612,13 @@ def create_recommendation(user_id: int, job_id: int, match_score: float,
         return cur.fetchone()["id"]
 
 
+def clear_user_recommendations(user_id: int) -> int:
+    """Delete all recommendations for a user."""
+    with get_cursor(commit=True) as cur:
+        cur.execute("DELETE FROM recommendations WHERE user_id = %s", (user_id,))
+        return cur.rowcount
+
+
 def get_user_recommendations(user_id: int, limit: int = 10) -> List[Dict]:
     """Get user's recommendations with job details."""
     with get_cursor() as cur:

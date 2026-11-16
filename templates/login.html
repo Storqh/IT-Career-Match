@@ -1,65 +1,46 @@
-{% extends "base.html" %}
+{% extends "layouts/auth.html" %}
 
 {% block title %}Đăng nhập - IT Career Match{% endblock %}
 
-{% block content %}
-<div class="container py-5 auth-page">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow-sm auth-card">
-                <div class="card-body p-4 p-md-5">
-                    <div class="text-center mb-4">
-                        <div class="auth-icon"><i class="bi bi-person-lock" aria-hidden="true"></i></div>
-                        <h2 class="fw-bold">Đăng nhập</h2>
-                        <p class="text-muted">Chào mừng trở lại!</p>
-                    </div>
+{% block auth_title %}Đăng nhập{% endblock %}
 
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
+{% block auth_subtitle %}Chào mừng trở lại! Nhập thông tin để tiếp tục.{% endblock %}
 
-                    <form method="POST" data-loading-form>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email"
-                                   value="{{ request.form.email }}" required autocomplete="email">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Mật khẩu</label>
-                            <input type="password" class="form-control" id="password" name="password"
-                                   required autocomplete="current-password">
-                        </div>
-
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                            <label class="form-check-label" for="remember">Ghi nhớ đăng nhập</label>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
-                            <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
-                        </button>
-                    </form>
-
-                    <div class="text-center mt-3">
-                        <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none">
-                            Quên mật khẩu?
-                        </a>
-                    </div>
-
-                    <div class="text-center mt-4">
-                        <p class="mb-0">Chưa có tài khoản? <a href="{{ url_for('auth.register') }}">Đăng ký ngay</a></p>
-                    </div>
-                </div>
-            </div>
+{% block auth_content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show mb-3 d-flex align-items-center justify-content-between" role="alert" style="display: flex; align-items: center; justify-content: space-between;">
+            <span>{{ message }}</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng" style="width: 20px; height: 20px; min-width: 20px; padding: 0; margin-left: 12px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; cursor: pointer; opacity: 0.6; flex-shrink: 0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; display: block;">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
         </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<form method="POST" data-loading-form novalidate>
+    {{ form_field('Email', 'email', type='email', value=request.form.get('email', ''), required=true, placeholder='you@example.com', autocomplete='email') }}
+
+    {{ form_field('Mật khẩu', 'password', type='password', required=true, placeholder='••••••••', autocomplete='current-password') }}
+
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+        <label class="form-check-label" for="remember">Ghi nhớ đăng nhập</label>
     </div>
+
+    {{ primary_button('Đăng nhập', icon='bi-box-arrow-in-right', type='submit', class='w-100 py-2 fw-semibold') }}
+</form>
+
+<div class="text-center mt-3">
+    <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none small">Quên mật khẩu?</a>
 </div>
+{% endblock %}
+
+{% block auth_footer %}
+Chưa có tài khoản? <a href="{{ url_for('auth.register') }}" class="auth-footer-link">Đăng ký ngay</a>
 {% endblock %}

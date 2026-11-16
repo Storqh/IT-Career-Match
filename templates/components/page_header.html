@@ -1,0 +1,57 @@
+{% macro page_header(title, subtitle=None, actions=None, breadcrumb_items=None) %}
+<div class="page-header">
+    <div class="container-fluid px-4">
+        {% if breadcrumb_items %}
+        <nav aria-label="Breadcrumb" class="mb-3">
+            <ol class="breadcrumb mb-0">
+                {% for item in breadcrumb_items %}
+                <li class="breadcrumb-item {% if not loop.last %}{% else %}active{% endif %}"
+                    {% if loop.last %}aria-current="page"{% endif %}>
+                    {% if not loop.last %}
+                    <a href="{{ item.url }}">{{ item.label }}</a>
+                    {% else %}
+                    {{ item.label }}
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ol>
+        </nav>
+        {% endif %}
+
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <h1 class="page-title mb-1">{{ title }}</h1>
+                {% if subtitle %}
+                <p class="page-subtitle mb-0">{{ subtitle }}</p>
+                {% endif %}
+            </div>
+
+            {% if actions %}
+            <div class="header-actions d-flex flex-wrap gap-2">
+                {% for action in actions %}
+                {{ action }}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro section_header(title, subtitle=None, actions=None) %}
+<div class="section-header">
+    <div>
+        <h2 class="section-title">{{ title }}</h2>
+        {% if subtitle %}
+        <p class="section-subtitle">{{ subtitle }}</p>
+        {% endif %}
+    </div>
+    {% if actions %}
+    <div class="d-flex flex-wrap gap-2">
+        {% for action in actions %}
+        {{ action }}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}

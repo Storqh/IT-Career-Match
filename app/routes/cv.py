@@ -106,6 +106,42 @@ def upload_cv():
     return redirect(url_for("cv.my_cvs"))
 
 
+@cv_bp.route("/parse-text", methods=["GET", "POST"])
+@login_required
+def parse_text_manual():
+    """Parse skills from manually entered text (fallback when file upload fails)."""
+    user_id = session["user_id"]
+
+    if request.method == "GET":
+        return render_template("parse_text.html")
+
+    text = request.form.get("cv_text", "").strip()
+
+    if not text:
+        flash("Vui lòng nhập nội dung CV.", "error")
+        return redirect(url_for("cv.parse_text_manual"))
+
+    if len(text) < 50:
+        flash("Nội dung quá ngắn. Vui lòng nhập đầy đủ thông tin CV.", "error")
+        return redirect(url_for("cv.parse_text_manual"))
+
+    # Extract skills
+    skills = extract_skills(text)
+
+    # Save as CV record (no file path)
+    cv_id = create_cv(user_id, "manual_input.txt", "", text, skills)
+
+    # Add extracted skills to profile
+    from database.database import get_skill_id_by_name, add_student_skill
+    for skill_name in skills:
+        skill_id = get_skill_id_by_name(skill_name)
+        if skill_id:
+            add_student_skill(user_id, skill_id)
+
+    flash(f"Phân tích thành công! Đã trích xuất {len(skills)} kỹ năng từ văn bản.", "success")
+    return redirect(url_for("cv.my_cvs"))
+
+
 @cv_bp.route("/my-cvs")
 @login_required
 def my_cvs():

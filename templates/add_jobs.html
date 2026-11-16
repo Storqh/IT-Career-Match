@@ -1,349 +1,238 @@
+{% extends "layouts/dashboard.html" %}
 
-{% extends "base.html" %}
+{% block title %}Đăng công việc mới - IT Career Match{% endblock %}
 
-{% block title %}Đăng công việc | IT Career Match{% endblock %}
+{% block page_title %}Đăng công việc mới{% endblock %}
+{% block page_subtitle %}Tạo thông tin tuyển dụng để sinh viên khám phá cơ hội phù hợp{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('jobs.admin_jobs') }}">Quản lý công việc</a></li>
+        <li class="breadcrumb-item active">Thêm mới</li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
-<main class="icm-page">
-    <div class="container py-4 py-lg-5">
+<div class="row g-4">
+    <!-- Main Form -->
+    <div class="col-12 col-lg-8">
+        <form method="POST" action="{{ url_for('jobs.admin_create_job') }}" id="addJobForm" class="needs-validation" novalidate>
 
-        <!-- BREADCRUMB -->
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="{{ url_for('admin_jobs') }}">
-                        Quản lý công việc
-                    </a>
-                </li>
-                <li class="breadcrumb-item active">
-                    Thêm công việc
-                </li>
-            </ol>
-        </nav>
-
-        <!-- PAGE HEADER -->
-        <div class="icm-page-heading mb-4">
-            <div class="icm-heading-icon">
-                <i class="bi bi-briefcase-fill"></i>
-            </div>
-
-            <div>
-                <div class="icm-eyebrow">
-                    JOB MANAGEMENT
+            <!-- SECTION 01: Basic Info -->
+            <div class="card card-bordered-primary mb-4">
+                <div class="card-header bg-surface">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-primary">01</span>
+                        <div>
+                            <h5 class="fw-bold mb-1">Thông tin cơ bản</h5>
+                            <p class="text-muted mb-0 small">Các thông tin chính của công việc</p>
+                        </div>
+                    </div>
                 </div>
-
-                <h1 class="fw-bold mb-1">
-                    Đăng công việc mới
-                </h1>
-
-                <p class="text-muted mb-0">
-                    Tạo thông tin tuyển dụng để sinh viên khám phá
-                    cơ hội nghề nghiệp phù hợp.
-                </p>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            {{ form_field('Vị trí tuyển dụng', 'title', type='text', required=true, placeholder='VD: Python Backend Developer', maxlength=150) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Công ty', 'company', type='text', required=true, placeholder='VD: ABC Technology', maxlength=120) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Địa điểm', 'location', type='text', required=true, placeholder='VD: Hồ Chí Minh / Remote', maxlength=120) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Nhóm nghề', 'category', type='select', required=true, options=[
+                                ('', 'Chọn nhóm nghề'),
+                                ('AI/ML', 'AI / Machine Learning'),
+                                ('Backend', 'Backend'),
+                                ('Cybersecurity', 'Cybersecurity'),
+                                ('Data', 'Data'),
+                                ('DevOps/Cloud', 'DevOps / Cloud'),
+                                ('Network/System', 'Network / System'),
+                                ('Other IT', 'Other IT')
+                            ]) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Loại công việc', 'job_type', type='select', required=true, options=[
+                                ('', 'Chọn loại công việc'),
+                                ('Full-time', 'Full-time'),
+                                ('Part-time', 'Part-time'),
+                                ('Internship', 'Internship'),
+                                ('Remote', 'Remote'),
+                                ('Contract', 'Contract')
+                            ]) }}
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- MAIN GRID -->
-        <div class="row g-4 align-items-start">
-
-            <!-- LEFT COLUMN -->
-            <div class="col-12 col-lg-8">
-
-                <form method="POST"
-                      action="{{ url_for('add_job') }}"
-                      id="addJobForm"
-                      class="icm-form"
-                      data-loading-form>
-
-                    <!-- SECTION 01 -->
-                    <div class="icm-panel mb-4">
-
-                        <div class="icm-panel-heading">
-                            <span class="icm-step">01</span>
-
-                            <div>
-                                <h5 class="fw-bold mb-1">
-                                    Thông tin cơ bản
-                                </h5>
-                                <p class="text-muted mb-0">
-                                    Các thông tin chính của công việc
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="row g-3">
-
-                            <div class="col-12">
-                                <label for="title" class="form-label">
-                                    Vị trí tuyển dụng
-                                    <span class="text-danger">*</span>
-                                </label>
-
-                                <input type="text"
-                                       id="title"
-                                       name="title"
-                                       class="form-control"
-                                       placeholder="VD: Python Backend Developer"
-                                       maxlength="150"
-                                       required>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="company" class="form-label">
-                                    Công ty
-                                    <span class="text-danger">*</span>
-                                </label>
-
-                                <input type="text"
-                                       id="company"
-                                       name="company"
-                                       class="form-control"
-                                       placeholder="VD: ABC Technology"
-                                       maxlength="120"
-                                       required>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="location" class="form-label">
-                                    Địa điểm
-                                    <span class="text-danger">*</span>
-                                </label>
-
-                                <input type="text"
-                                       id="location"
-                                       name="location"
-                                       class="form-control"
-                                       placeholder="VD: Hồ Chí Minh / Remote"
-                                       maxlength="120"
-                                       required>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="category" class="form-label">
-                                    Nhóm nghề
-                                    <span class="text-danger">*</span>
-                                </label>
-
-                                <select id="category"
-                                        name="category"
-                                        class="form-select"
-                                        required>
-
-                                    <option value="">
-                                        Chọn nhóm nghề
-                                    </option>
-                                    <option value="AI/ML">AI / Machine Learning</option>
-                                    <option value="Backend">Backend</option>
-                                    <option value="Cybersecurity">Cybersecurity</option>
-                                    <option value="Data">Data</option>
-                                    <option value="DevOps/Cloud">DevOps / Cloud</option>
-                                    <option value="Network/System">Network / System</option>
-                                    <option value="Other IT">Other IT</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="job_type" class="form-label">
-                                    Loại công việc
-                                    <span class="text-danger">*</span>
-                                </label>
-
-                                <select id="job_type"
-                                        name="job_type"
-                                        class="form-select"
-                                        required>
-
-                                    <option value="">
-                                        Chọn loại công việc
-                                    </option>
-                                    <option value="Full-time">Full-time</option>
-                                    <option value="Part-time">Part-time</option>
-                                    <option value="Internship">Internship</option>
-                                    <option value="Remote">Remote</option>
-                                    <option value="Contract">Contract</option>
-                                </select>
-                            </div>
-
+            <!-- SECTION 02: Required Skills -->
+            <div class="card card-bordered-primary mb-4">
+                <div class="card-header bg-surface">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-primary">02</span>
+                        <div>
+                            <h5 class="fw-bold mb-1">Kỹ năng yêu cầu</h5>
+                            <p class="text-muted mb-0 small">Thêm các kỹ năng cần thiết cho vị trí tuyển dụng</p>
                         </div>
                     </div>
-                    <div class="icm-panel mb-4">
-
-                        <div class="icm-panel-heading">
-                            <span class="icm-step">02</span>
-
-                            <div>
-                                <h5 class="fw-bold mb-1">
-                                    Kỹ năng yêu cầu
-                                </h5>
-
-                                <p class="text-muted mb-0">
-                                    Thêm các kỹ năng cần thiết cho vị trí tuyển dụng
-                                </p>
-                            </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="skillInput" class="form-label">Nhập kỹ năng</label>
+                        <div class="input-group">
+                            <input type="text" id="skillInput" class="form-control" placeholder="VD: Python, SQL, Docker...">
+                            <button type="button" id="addSkillButton" class="btn btn-outline-primary">
+                                <i class="bi bi-plus-circle me-1"></i>Thêm
+                            </button>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="skillInput" class="form-label">
-                                Nhập kỹ năng
-                            </label>
-
-                            <div class="input-group">
-                                <input type="text"
-                                       id="skillInput"
-                                       class="form-control"
-                                       placeholder="VD: Python, SQL, Docker...">
-
-                                <button type="button"
-                                        id="addSkillButton"
-                                        class="btn btn-outline-primary">
-                                    <i class="bi bi-plus-circle me-1"></i>
-                                    Thêm
-                                </button>
-                            </div>
-
-                            <small class="text-muted">
-                                Nhấn Enter hoặc nút Thêm để thêm kỹ năng.
-                            </small>
-                        </div>
-
-                        <div class="mb-2">
-                            <label class="form-label">
-                                Danh sách kỹ năng đã chọn
-                            </label>
-
-                            <div id="selectedSkills"
-                                 class="d-flex flex-wrap gap-2">
-                                <span class="text-muted small"
-                                      id="emptySkillsMessage">
-                                    Chưa có kỹ năng nào được thêm.
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Các kỹ năng sẽ được gửi về Flask qua các input này -->
-                        <div id="skillHiddenInputs"></div>
-
+                        <small class="text-muted">Nhấn Enter hoặc nút Thêm để thêm kỹ năng.</small>
                     </div>
 
-                    <!-- SECTION 02 -->
-                    <div class="icm-panel mb-4">
-
-                        <div class="icm-panel-heading">
-                            <span class="icm-step">02</span>
-
-                            <div>
-                                <h5 class="fw-bold mb-1">
-                                    Nội dung tuyển dụng
-                                </h5>
-
-                                <p class="text-muted mb-0">
-                                    Thêm nhiều mục để mô tả công việc rõ ràng hơn
-                                </p>
-                            </div>
+                    <div class="mb-2">
+                        <label class="form-label">Danh sách kỹ năng đã chọn</label>
+                        <div id="selectedSkills" class="d-flex flex-wrap gap-2">
+                            <span class="text-muted small" id="emptySkillsMessage">Chưa có kỹ năng nào được thêm.</span>
                         </div>
-
-                        <div id="jobDescriptionSections"></div>
-
-                        <button type="button"
-                                id="addDescriptionSection"
-                                class="btn btn-outline-primary mt-3">
-                            <i class="bi bi-plus-circle me-2"></i>
-                            Thêm nội dung
-                        </button>
-
-                        <!-- JS sẽ tổng hợp các mục vào trường này -->
-                        <textarea name="description"
-                                  id="description"
-                                  hidden
-                                  aria-hidden="true"></textarea>
-
-                        <div class="mt-3">
-                            <span class="small text-muted">
-                                Hãy mô tả đầy đủ nhiệm vụ,
-                                yêu cầu và quyền lợi của công việc.
-                            </span>
-                        </div>
-
                     </div>
-
-                    <!-- FORM ACTIONS -->
-                    <div class="icm-form-actions">
-
-                        <a href="{{ url_for('admin_jobs') }}"
-                           class="btn btn-light icm-btn">
-                            <i class="bi bi-arrow-left me-2"></i>
-                            Quay lại
-                        </a>
-
-                        <button type="submit"
-                                class="btn btn-primary icm-btn">
-                            <i class="bi bi-plus-circle me-2"></i>
-                            Đăng công việc
-                        </button>
-
-                    </div>
-
-                </form>
-
+                    <div id="skillHiddenInputs"></div>
+                </div>
             </div>
-            <!-- END LEFT COLUMN -->
 
-            <!-- RIGHT COLUMN -->
-            <div class="col-12 col-lg-4">
-
-                <aside class="icm-panel icm-help-panel">
-
-                    <div class="icm-help-icon mb-3">
-                        <i class="bi bi-lightbulb"></i>
+            <!-- SECTION 03: Job Description -->
+            <div class="card card-bordered-primary mb-4">
+                <div class="card-header bg-surface">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-primary">03</span>
+                        <div>
+                            <h5 class="fw-bold mb-1">Nội dung tuyển dụng</h5>
+                            <p class="text-muted mb-0 small">Thêm nhiều mục để mô tả công việc rõ ràng hơn</p>
+                        </div>
                     </div>
-
-                    <h5 class="fw-bold">
-                        Mẹo đăng tuyển
-                    </h5>
-
-                    <p class="text-muted mb-3">
-                        Một tin tuyển dụng đầy đủ giúp sinh viên
-                        hiểu rõ vị trí và đánh giá mức độ phù hợp.
-                    </p>
-
-                    <div class="icm-tip">
-                        <i class="bi bi-check-circle-fill"></i>
-                        <span>
-                            Tiêu đề rõ ràng, đúng vị trí tuyển dụng
-                        </span>
+                </div>
+                <div class="card-body">
+                    <div id="jobDescriptionSections"></div>
+                    <button type="button" id="addDescriptionSection" class="btn btn-outline-primary mt-3">
+                        <i class="bi bi-plus-circle me-2"></i>Thêm nội dung
+                    </button>
+                    <textarea name="description" id="description" hidden aria-hidden="true"></textarea>
+                    <div class="mt-3">
+                        <span class="small text-muted">Hãy mô tả đầy đủ nhiệm vụ, yêu cầu và quyền lợi của công việc.</span>
                     </div>
-
-                    <div class="icm-tip">
-                        <i class="bi bi-check-circle-fill"></i>
-                        <span>
-                            Chọn đúng nhóm nghề để hỗ trợ gợi ý việc làm
-                        </span>
-                    </div>
-
-                    <div class="icm-tip">
-                        <i class="bi bi-check-circle-fill"></i>
-                        <span>
-                            Mô tả kỹ năng, nhiệm vụ và yêu cầu cụ thể
-                        </span>
-                    </div>
-
-                    <div class="icm-tip">
-                        <i class="bi bi-check-circle-fill"></i>
-                        <span>
-                            Kiểm tra thông tin trước khi đăng
-                        </span>
-                    </div>
-
-                </aside>
-
+                </div>
             </div>
-            <!-- END RIGHT COLUMN -->
 
-        </div>
-        <!-- END MAIN GRID -->
+            <!-- SECTION 04: Salary & Benefits -->
+            <div class="card card-bordered-primary mb-4">
+                <div class="card-header bg-surface">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-primary">04</span>
+                        <div>
+                            <h5 class="fw-bold mb-1">Mức lương & Phúc lợi</h5>
+                            <p class="text-muted mb-0 small">Thông tin trả lương và quyền lợi nhân viên</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form_field('Lương tối thiểu (VNĐ)', 'salary_min', type='number', placeholder='VD: 10000000', min=0, step=1000000) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Lương tối đa (VNĐ)', 'salary_max', type='number', placeholder='VD: 20000000', min=0, step=1000000) }}
+                        </div>
+                        <div class="col-12">
+                            {{ form_field('Phúc lợi', 'benefits', type='textarea', placeholder='VD: Bảo hiểm y tế, 13th salary, remote work, training budget...', rows=3) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <!-- SECTION 05: Requirements & Experience -->
+            <div class="card card-bordered-primary mb-4">
+                <div class="card-header bg-surface">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-primary">05</span>
+                        <div>
+                            <h5 class="fw-bold mb-1">Yêu cầu & Kinh nghiệm</h5>
+                            <p class="text-muted mb-0 small">Kinh nghiệm và trình độ cần thiết</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form_field('Kinh nghiệm (năm)', 'experience', type='number', min=0, max=50, placeholder='VD: 2') }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Trình độ', 'level', type='select', options=[
+                                ('', 'Chọn trình độ'),
+                                ('Intern', 'Intern'),
+                                ('Fresher', 'Fresher'),
+                                ('Junior', 'Junior'),
+                                ('Mid', 'Mid-level'),
+                                ('Senior', 'Senior'),
+                                ('Lead', 'Lead / Principal'),
+                                ('Manager', 'Manager / Director')
+                            ]) }}
+                        </div>
+                        <div class="col-12">
+                            {{ form_field('Yêu cầu khác', 'requirements', type='textarea', placeholder='VD: Tốt nghiệp Đại học, có Portfolio, tiếng Anh giao tiếp...', rows=3) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORM ACTIONS -->
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="{{ url_for('jobs.admin_jobs') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Quay lại
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Đăng công việc
+                </button>
+            </div>
+        </form>
     </div>
-</main>
+
+    <!-- Sidebar Help Panel -->
+    <div class="col-12 col-lg-4">
+        <div class="card card-bordered-success sticky-top mb-4" style="top: 100px;">
+            <div class="card-header bg-surface">
+                <h5 class="fw-bold mb-0"><i class="bi bi-lightbulb me-2"></i>Mẹo đăng tuyển</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Một tin tuyển dụng đầy đủ giúp sinh viên hiểu rõ vị trí và đánh giá mức độ phù hợp.</p>
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span>Tiêu đề rõ ràng, đúng vị trí tuyển dụng</span>
+                </div>
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span>Chọn đúng nhóm nghề để hỗ trợ gợi ý việc làm</span>
+                </div>
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span>Mô tả kỹ năng, nhiệm vụ và yêu cầu cụ thể</span>
+                </div>
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span>Kiểm tra thông tin trước khi đăng</span>
+                </div>
+                <div class="d-flex align-items-start gap-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span>Điền đầy đủ mức lương để thu hút ứng viên</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const skillInput = document.getElementById("skillInput");
@@ -366,11 +255,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         skills.forEach(function (skill, index) {
             const tag = document.createElement("span");
-
-            tag.className = "badge bg-primary-subtle text-primary border p-2";
+            tag.className = "badge badge-primary px-3 py-2 d-flex align-items-center gap-1";
 
             const skillText = document.createElement("span");
-            skillText.textContent = skill + " ";
+            skillText.textContent = skill;
 
             const removeButton = document.createElement("button");
             removeButton.type = "button";
@@ -391,17 +279,13 @@ document.addEventListener("DOMContentLoaded", function () {
             hiddenInput.type = "hidden";
             hiddenInput.name = "required_skills";
             hiddenInput.value = skill;
-
             skillHiddenInputs.appendChild(hiddenInput);
         });
     }
 
     function addSkill() {
         const skill = skillInput.value.trim();
-
-        if (!skill) {
-            return;
-        }
+        if (!skill) return;
 
         const exists = skills.some(function (item) {
             return item.toLowerCase() === skill.toLowerCase();
@@ -421,7 +305,6 @@ document.addEventListener("DOMContentLoaded", function () {
         skills.push(skill);
         skillInput.value = "";
         skillInput.focus();
-
         renderSkills();
     }
 
@@ -438,7 +321,64 @@ document.addEventListener("DOMContentLoaded", function () {
         renderSkills();
     });
 
-    renderSkills();
+    // Description sections
+    const jobDescriptionSections = document.getElementById("jobDescriptionSections");
+    const addDescriptionSection = document.getElementById("addDescriptionSection");
+    const descriptionHidden = document.getElementById("description");
+    let sectionCounter = 0;
+
+    function createSection(sectionData = {}) {
+        sectionCounter++;
+        const sectionId = "descSection" + sectionCounter;
+
+        const sectionDiv = document.createElement("div");
+        sectionDiv.id = sectionId;
+        sectionDiv.className = "card card-bordered-secondary mb-3";
+
+        sectionDiv.innerHTML = `
+            <div class="card-header bg-surface d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary">${sectionCounter}</span>
+                    <input type="text" class="form-control form-control-sm section-title" placeholder="Tiêu đề mục (VD: Mô tả công việc)" value="${sectionData.title || ''}" style="width: auto; min-width: 200px;">
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-section" aria-label="Xóa mục này">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <textarea class="form-control section-content" rows="4" placeholder="Nội dung...">${sectionData.content || ''}</textarea>
+            </div>
+        `;
+
+        sectionDiv.querySelector(".remove-section").addEventListener("click", function() {
+            sectionDiv.remove();
+            updateDescription();
+        });
+
+        sectionDiv.querySelector(".section-title").addEventListener("input", updateDescription);
+        sectionDiv.querySelector(".section-content").addEventListener("input", updateDescription);
+
+        jobDescriptionSections.appendChild(sectionDiv);
+    }
+
+    function updateDescription() {
+        const sections = [];
+        document.querySelectorAll("#jobDescriptionSections > div").forEach(function(sec) {
+            const title = sec.querySelector(".section-title").value.trim();
+            const content = sec.querySelector(".section-content").value.trim();
+            if (title || content) {
+                sections.push({ title: title, content: content });
+            }
+        });
+        descriptionHidden.value = JSON.stringify(sections);
+    }
+
+    addDescriptionSection.addEventListener("click", function() {
+        createSection();
+    });
+
+    // Initialize with one empty section
+    createSection();
 });
 </script>
 {% endblock %}

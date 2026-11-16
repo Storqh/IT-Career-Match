@@ -82,6 +82,14 @@ from ai.chatbot.engine import (
     reload_knowledge_base,
 )
 
+from ai.match_score import (
+    calculate_match_score,
+    calculate_skill_match_percentage,
+    get_skill_gap_analysis,
+    get_missing_skills,
+    get_matched_skills,
+)
+
 __all__ = [
     # Recommender
     "recommend_jobs_for_user",
@@ -151,6 +159,13 @@ __all__ = [
     "get_categories",
     "search_knowledge",
     "reload_knowledge_base",
+
+    # Match Score
+    "calculate_match_score",
+    "calculate_skill_match_percentage",
+    "get_skill_gap_analysis",
+    "get_missing_skills",
+    "get_matched_skills",
 ]
 
 # Version

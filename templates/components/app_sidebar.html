@@ -1,0 +1,196 @@
+<div class="sidebar-inner">
+    <!-- Logo -->
+    <div class="sidebar-brand">
+        <a href="{{ url_for('profile.dashboard') }}" class="brand-link" aria-label="IT Career Match Dashboard">
+            <span class="brand-icon" aria-hidden="true">
+                <i class="bi bi-briefcase-fill"></i>
+            </span>
+            <span class="brand-text">IT Career Match</span>
+        </a>
+        <button class="sidebar-collapse-btn" id="sidebarCollapse" aria-label="Thu gọn sidebar" title="Thu gọn sidebar">
+            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav" aria-label="Điều hướng chính">
+        <ul class="nav flex-column">
+
+            <!-- Dashboard Section -->
+            <li class="nav-section">
+                <span class="nav-section-label">Chính</span>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'profile.dashboard' %}active{% endif %}"
+                   href="{{ url_for('profile.dashboard') }}"
+                   title="Dashboard">
+                    <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                    <span class="nav-link-text">Dashboard</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint in ['profile.edit_profile'] %}active{% endif %}"
+                   href="{{ url_for('profile.edit_profile') }}"
+                   title="Hồ sơ">
+                    <i class="bi bi-person" aria-hidden="true"></i>
+                    <span class="nav-link-text">Hồ sơ</span>
+                </a>
+            </li>
+
+            <!-- CV Section -->
+            <li class="nav-section">
+                <span class="nav-section-label">CV & Kỹ năng</span>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint in ['cv.upload_cv', 'profile.upload_cv'] %}active{% endif %}"
+                   href="{{ url_for('cv.upload_cv') }}"
+                   title="Tải lên CV">
+                    <i class="bi bi-cloud-upload" aria-hidden="true"></i>
+                    <span class="nav-link-text">Tải lên CV</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint in ['cv.my_cvs'] %}active{% endif %}"
+                   href="{{ url_for('cv.my_cvs') }}"
+                   title="CV của tôi">
+                    <i class="bi bi-files" aria-hidden="true"></i>
+                    <span class="nav-link-text">CV của tôi</span>
+                </a>
+            </li>
+
+            <!-- Jobs Section -->
+            <li class="nav-section">
+                <span class="nav-section-label">Việc làm</span>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'jobs.list_jobs' %}active{% endif %}"
+                   href="{{ url_for('jobs.list_jobs') }}"
+                   title="Tìm việc">
+                    <i class="bi bi-briefcase" aria-hidden="true"></i>
+                    <span class="nav-link-text">Tìm việc</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint in ['cv.recommendations', 'jobs.recommendations'] %}active{% endif %}"
+                   href="{{ url_for('cv.recommendations') }}"
+                   title="AI Gợi ý">
+                    <i class="bi bi-magic" aria-hidden="true"></i>
+                    <span class="nav-link-text">AI Gợi ý</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'jobs.my_favourites' %}active{% endif %}"
+                   href="{{ url_for('jobs.my_favourites') }}"
+                   title="Yêu thích">
+                    <i class="bi bi-heart" aria-hidden="true"></i>
+                    <span class="nav-link-text">Yêu thích</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'jobs.my_applications' %}active{% endif %}"
+                   href="{{ url_for('jobs.my_applications') }}"
+                   title="Đã ứng tuyển">
+                    <i class="bi bi-send" aria-hidden="true"></i>
+                    <span class="nav-link-text">Đã ứng tuyển</span>
+                </a>
+            </li>
+
+            {% if session.get('user_role') == 'admin' %}
+            <!-- Admin Section -->
+            <li class="nav-section">
+                <span class="nav-section-label">Quản trị</span>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}"
+                   href="{{ url_for('admin.dashboard') }}"
+                   title="Bảng điều khiển">
+                    <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                    <span class="nav-link-text">Bảng điều khiển</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin.users' %}active{% endif %}"
+                   href="{{ url_for('admin.users') }}"
+                   title="Người dùng">
+                    <i class="bi bi-people" aria-hidden="true"></i>
+                    <span class="nav-link-text">Người dùng</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'jobs.admin_jobs' %}active{% endif %}"
+                   href="{{ url_for('jobs.admin_jobs') }}"
+                   title="Quản lý việc">
+                    <i class="bi bi-briefcase-fill" aria-hidden="true"></i>
+                    <span class="nav-link-text">Quản lý việc</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin.applications' %}active{% endif %}"
+                   href="{{ url_for('admin.applications') }}"
+                   title="Đơn ứng tuyển">
+                    <i class="bi bi-file-earmark-check" aria-hidden="true"></i>
+                    <span class="nav-link-text">Đơn ứng tuyển</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin.analytics' %}active{% endif %}"
+                   href="{{ url_for('admin.analytics') }}"
+                   title="Phân tích">
+                    <i class="bi bi-graph-up" aria-hidden="true"></i>
+                    <span class="nav-link-text">Phân tích</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin.settings' %}active{% endif %}"
+                   href="{{ url_for('admin.settings') }}"
+                   title="Cài đặt">
+                    <i class="bi bi-gear" aria-hidden="true"></i>
+                    <span class="nav-link-text">Cài đặt</span>
+                </a>
+            </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+
+    <!-- User Info at bottom -->
+    <div class="sidebar-user">
+        <div class="user-info">
+            <div class="user-avatar">
+                {% if session.get('user_email') %}
+                    {{ session.user_email[0].upper() }}
+                {% else %}
+                    <i class="bi bi-person"></i>
+                {% endif %}
+            </div>
+            <div class="user-details">
+                <div class="user-name">{{ session.get('user_email', 'User') }}</div>
+                <div class="user-role">
+                    {% if session.get('user_role') == 'admin' %}
+                        <span class="badge badge-primary badge-sm">Admin</span>
+                    {% else %}
+                        <span class="badge badge-secondary badge-sm">Sinh viên</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm w-100 mt-2" title="Đăng xuất">
+            <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>
+            <span class="nav-link-text">Đăng xuất</span>
+        </a>
+    </div>
+</div>

@@ -115,13 +115,13 @@ def calculate_priority_score(
     """
     Calculate priority score for a missing skill.
 
-    Formula: priority = market_demand * (1 - user_proficiency) * role_relevance
+    Formula: priority = market_demand * (1 - user_proficiency) * role_relevance * category_boost
 
     Args:
         skill: Skill name (for future category-specific logic)
         market_demand: Number of jobs requiring this skill
         user_has_skill: Whether user already has this skill
-        job_category: Job category for role relevance (for future use)
+        job_category: Job category for role relevance (affects category_boost)
         role_relevance: Role relevance multiplier (0-1)
 
     Returns:
@@ -137,7 +137,32 @@ def calculate_priority_score(
     # User proficiency: 0 if missing, 1 if has
     proficiency = 1.0 if user_has_skill else 0.0
 
-    priority = demand_score * (1 - proficiency) * role_relevance
+    # Category-specific boost for core skills
+    category_boost = 1.0
+    skill_lower = skill.lower()
+    category_lower = job_category.lower() if job_category else ""
+
+    # Frontend category boost
+    if "frontend" in category_lower or "front-end" in category_lower:
+        if skill_lower in {"react", "vue", "angular", "svelte", "typescript", "javascript", "html", "css", "next.js", "vue.js"}:
+            category_boost = 1.2
+
+    # Backend category boost
+    elif "backend" in category_lower or "back-end" in category_lower:
+        if skill_lower in {"python", "java", "go", "node.js", "sql", "postgresql", "docker", "kubernetes", "redis"}:
+            category_boost = 1.2
+
+    # Data Science / ML category boost
+    elif "data" in category_lower or "machine learning" in category_lower or "ai" in category_lower:
+        if skill_lower in {"python", "machine learning", "deep learning", "pytorch", "tensorflow", "pandas", "numpy", "sql"}:
+            category_boost = 1.2
+
+    # DevOps category boost
+    elif "devops" in category_lower or "cloud" in category_lower:
+        if skill_lower in {"docker", "kubernetes", "aws", "azure", "gcp", "terraform", "linux", "ci/cd"}:
+            category_boost = 1.2
+
+    priority = demand_score * (1 - proficiency) * role_relevance * category_boost
 
     return round(priority, 3)
 
@@ -170,17 +195,18 @@ def get_job_skill_requirements(job_id: int) -> List[Dict]:
         return result
 
 
-def get_latest_cv_skills(user_id: int) -> Tuple[List[str], str]:
+def get_latest_cv_skills(user_id: int) -> Tuple[List[str], str, Optional[str]]:
     """
     Get skills from user's latest CV, fallback to profile skills.
 
     Returns:
-        Tuple of (skill_list, source) where source is "cv" or "profile"
+        Tuple of (skill_list, source, raw_text) where source is "cv" or "profile"
+        raw_text is the raw CV text for evidence extraction, or None if from profile
     """
     with get_cursor() as cur:
-        # Get latest CV
+        # Get latest CV with raw_text
         cur.execute("""
-            SELECT extracted_skills FROM cvs
+            SELECT extracted_skills, raw_text FROM cvs
             WHERE user_id = %s
             ORDER BY created_at DESC
             LIMIT 1
@@ -188,7 +214,7 @@ def get_latest_cv_skills(user_id: int) -> Tuple[List[str], str]:
         cv = cur.fetchone()
 
         if cv and cv["extracted_skills"]:
-            return cv["extracted_skills"], "cv"
+            return cv["extracted_skills"], "cv", cv.get("raw_text")
 
         # Fallback to profile skills
         cur.execute("""
@@ -199,7 +225,7 @@ def get_latest_cv_skills(user_id: int) -> Tuple[List[str], str]:
             ORDER BY s.skill_name
         """, (user_id,))
         rows = cur.fetchall()
-        return [row["skill_name"] for row in rows], "profile"
+        return [row["skill_name"] for row in rows], "profile", None
 
 
 def find_cv_evidence(cv_text: str, job_skill: str) -> Optional[str]:
@@ -344,7 +370,10 @@ def analyze_skill_gap(
     """
     # If user_id provided, fetch latest CV skills (with fallback to profile)
     if user_id is not None:
-        cv_skills, skill_source = get_latest_cv_skills(user_id)
+        cv_skills, skill_source, cv_raw_text_from_db = get_latest_cv_skills(user_id)
+        # Use DB raw_text if not provided explicitly
+        if cv_raw_text is None:
+            cv_raw_text = cv_raw_text_from_db
     else:
         # Handle cv_text - could be string or list
         if isinstance(cv_text, list):
@@ -358,6 +387,16 @@ def analyze_skill_gap(
         job_skill_data = get_job_skill_requirements(job_id)
         job_skills = [s["skill_name"] for s in job_skill_data]
         skill_importance = {s["skill_name"]: s.get("importance_level", "required") for s in job_skill_data}
+
+        # Fallback: If job has no skills in DB, extract from job description
+        if not job_skills:
+            from database.database import get_job_by_id
+            job = get_job_by_id(job_id)
+            if job and job.get("description"):
+                extracted = extract_skills(job["description"])
+                job_skills = extracted
+                skill_importance = {skill: "required" for skill in extracted}
+                logger.info(f"Job {job_id} has no skills in DB, extracted {len(extracted)} from description")
     else:
         # Handle job_text - could be string or list
         if isinstance(job_text, list):
@@ -415,7 +454,7 @@ def analyze_skill_gap(
                 if cv_skill.lower() in job_skill_lower or job_skill_lower in cv_skill.lower():
                     matched_alias = cv_skill
                     break
-            reason = f"Khớp qua别名: {matched_alias or 'tương đương'}"
+            reason = f"Khớp qua alias: {matched_alias or 'tương đương'}"
             related_cv_skills = [matched_alias] if matched_alias else []
         elif job_skill_lower in semantic_matched:
             status = MatchStatus.PARTIAL
@@ -624,6 +663,7 @@ def get_skill_gap_details(cv_skills: List[str], job_skills: List[str]) -> Dict:
 
 if __name__ == "__main__":
     import json
+    import dataclasses
     logging.basicConfig(level=logging.INFO)
 
     # Test
@@ -631,7 +671,20 @@ if __name__ == "__main__":
     job = "Python, SQL, Machine Learning, TensorFlow, Kubernetes, AWS, Docker, React"
 
     result = analyze_skill_gap(cv, job, "Data Science")
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    # Convert dataclasses to dict for JSON serialization
+    def convert_dataclasses(obj):
+        if dataclasses.is_dataclass(obj):
+            return dataclasses.asdict(obj, dict_factory=lambda x: {k: convert_dataclasses(v) for k, v in x})
+        elif isinstance(obj, list):
+            return [convert_dataclasses(item) for item in obj]
+        elif isinstance(obj, dict):
+            return {k: convert_dataclasses(v) for k, v in obj.items()}
+        elif hasattr(obj, 'value'):  # Enum
+            return obj.value
+        return obj
+
+    print(json.dumps(convert_dataclasses(result), indent=2, ensure_ascii=True))
 
     print("\n--- Action Plan ---")
     for action in get_action_plan(result):

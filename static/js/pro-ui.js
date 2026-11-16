@@ -5,6 +5,18 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    document.addEventListener("keydown", event => {
+        if (!(event.ctrlKey || event.metaKey) || event.altKey || event.key.toLowerCase() !== "k") {
+            return;
+        }
+
+        const searchInput = document.getElementById("globalSearch");
+        if (!searchInput) return;
+
+        event.preventDefault();
+        searchInput.focus();
+    });
+
     // 1. Character counters
     document.querySelectorAll("[data-character-count]")
         .forEach(field => {

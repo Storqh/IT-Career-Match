@@ -30,13 +30,13 @@ RESOURCE_MAPPINGS = {
         LearningResource("Python for Everybody (Coursera)", "https://www.coursera.org/specializations/python", "course", "Coursera", "3 months", "beginner", "en", True, 4.8),
         LearningResource("Python Tutorial (freeCodeCamp)", "https://www.freecodecamp.org/learn/scientific-computing-with-python/", "course", "freeCodeCamp", "300 hours", "beginner", "en", True, 4.7),
         LearningResource("Python Official Tutorial", "https://docs.python.org/3/tutorial/", "documentation", "Official Docs", None, "beginner", "en", True, None),
-        LearningResource("Python Programming (Vietnamese)", "https://www.youtube.com/playlist?list=PLaKf_rw704n8K8C1eJ8K8K8K8K8K8K8K8", "video", "YouTube", "20 hours", "beginner", "vi", True, None),
+        LearningResource("Python Programming (Vietnamese)", "https://www.youtube.com/@KhoaPhamTraining", "video", "YouTube", "20 hours", "beginner", "vi", True, None),
     ],
     "javascript": [
         LearningResource("JavaScript Algorithms (freeCodeCamp)", "https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/", "course", "freeCodeCamp", "300 hours", "beginner", "en", True, 4.8),
         LearningResource("JavaScript.info", "https://javascript.info/", "tutorial", "Documentation", None, "beginner", "en", True, 4.9),
         LearningResource("MDN JavaScript Guide", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide", "documentation", "MDN", None, "beginner", "en", True, None),
-        LearningResource("JavaScript Cơ Bản (Vietnamese)", "https://www.youtube.com/playlist?list=PLaKf_rw704n8K8C1eJ8K8K8K8K8K8K8K8", "video", "YouTube", "15 hours", "beginner", "vi", True, None),
+        LearningResource("JavaScript Cơ Bản (Vietnamese)", "https://www.youtube.com/@KhoaPhamTraining", "video", "YouTube", "15 hours", "beginner", "vi", True, None),
     ],
     "typescript": [
         LearningResource("TypeScript Handbook", "https://www.typescriptlang.org/docs/handbook/intro.html", "documentation", "Official Docs", None, "intermediate", "en", True, None),
