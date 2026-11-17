@@ -51,7 +51,7 @@ def dashboard():
     from database.database import get_user_recommendations
     recommendations = get_user_recommendations(user_id, limit=5)
 
-    return render_template("dashboard.html",
+    return render_template("dashboard.jinja",
         user=user,
         profile=profile,
         skills=skills,
@@ -72,7 +72,7 @@ def edit_profile():
         student_skills = get_student_skills(user_id)
         student_skill_ids = {s["skill_id"] for s in student_skills}
 
-        return render_template("edit_profile.html",
+        return render_template("edit_profile.jinja",
             profile=profile,
             all_skills=all_skills,
             student_skill_ids=student_skill_ids
@@ -156,7 +156,7 @@ def upload_cv():
     user_id = session["user_id"]
 
     if request.method == "GET":
-        return render_template("upload_cv.html")
+        return render_template("upload_cv.jinja")
 
     if "cv_file" not in request.files:
         flash("Không có file được tải lên", "error")
@@ -251,4 +251,4 @@ def view_cv(cv_id):
     if not cv or cv["user_id"] != user_id:
         abort(404)
 
-    return render_template("view_cv.html", cv=cv)
+    return render_template("view_cv.jinja", cv=cv)

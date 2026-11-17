@@ -1,0 +1,91 @@
+{% extends "layouts/dashboard.jinja" %}
+
+{% block title %}Nhập CV thủ công - IT Career Match{% endblock %}
+
+{% block page_title %}Nhập CV thủ công{% endblock %}
+{% block page_subtitle %}Dán nội dung CV để AI trích xuất kỹ năng{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('cv.my_cvs') }}">CV của tôi</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('cv.upload_cv') }}">Tải CV lên</a></li>
+        <li class="breadcrumb-item active">Nhập thủ công</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card card-bordered-primary mb-4">
+            <div class="card-header bg-surface d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Nhập CV thủ công</h5>
+                <a href="{{ url_for('cv.upload_cv') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-upload me-1"></i>Tải file thay thế
+                </a>
+            </div>
+            <div class="card-body p-4">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show mb-3 d-flex align-items-center justify-content-between" role="alert" style="display: flex; align-items: center; justify-content: space-between;">
+                            <span>{{ message }}</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng" style="width: 20px; height: 20px; min-width: 20px; padding: 0; margin-left: 12px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; cursor: pointer; opacity: 0.6; flex-shrink: 0;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; display: block;">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" id="parseTextForm">
+                    {{ form_field('Nội dung CV', 'cv_text', type='textarea', required=true, help_text='Tối thiểu 50 ký tự. Bao gồm: kỹ năng, kinh nghiệm, dự án, học vấn.', value=request.form.cv_text if request.method == 'POST' else '') }}
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{{ url_for('cv.upload_cv') }}" class="btn btn-outline-secondary me-md-2">
+                            <i class="bi bi-arrow-left me-1"></i>Quay lại tải file
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-cpu me-1"></i>Phân tích kỹ năng
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Tips -->
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card card-bordered-success h-100">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-success mb-3"><i class="bi bi-check-circle me-1"></i>Nên làm</h6>
+                                <ul class="small mb-0">
+                                    <li>Liệt kê kỹ năng rõ ràng: "Python, React, PostgreSQL, Docker..."</li>
+                                    <li>Viết tên chuẩn: "TypeScript" không phải "TS", "PostgreSQL" không phải "Postgres"</li>
+                                    <li>Kèm kinh nghiệm: "3 năm Python", "2 năm React"</li>
+                                    <li>Đề cập công cụ: "Git, GitHub Actions, Jira, Docker"</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card card-bordered-danger h-100">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-danger mb-3"><i class="bi bi-x-circle me-1"></i>Tránh</h6>
+                                <ul class="small mb-0">
+                                    <li>Viết tắt không phổ biến: "k8s" → hãy viết "Kubernetes"</li>
+                                    <li>Kỹ năng quá chung: "Lập trình", "Database", "Cloud"</li>
+                                    <li>Thông tin cá nhân nhạy cảm (CMND, SĐT, email, địa chỉ)</li>
+                                    <li>Văn bản quá ngắn (< 50 ký tự)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

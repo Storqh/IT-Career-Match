@@ -74,7 +74,7 @@ def list_jobs():
     job_types = ["Full-time", "Part-time", "Internship", "Contract", "Remote"]
     levels = ["Intern", "Fresher", "Junior", "Mid", "Senior", "Lead", "Manager"]
 
-    return render_template("jobs.html",
+    return render_template("jobs.jinja",
         jobs=result["items"],
         pagination=result,
         filters=filters,
@@ -113,7 +113,7 @@ def job_detail(job_id):
         user_recommendation = get_recommendation_for_job(user_id, job_id)
         cvs = get_user_cvs(user_id)
 
-    return render_template("job_detail.html",
+    return render_template("job_detail.jinja",
         job=job,
         skills=skills,
         is_favourite=is_favourite,
@@ -132,7 +132,7 @@ def recommendations():
     # Get recommendations from ML
     recommended = recommend_jobs_for_user(user_id, top_k=10)
 
-    return render_template("recommendations.html",
+    return render_template("recommendations.jinja",
         recommendations=recommended
     )
 
@@ -167,7 +167,7 @@ def admin_jobs():
 
     result = get_jobs_paginated(page=page, per_page=per_page, filters=filters)
 
-    return render_template("admin/jobs.html",
+    return render_template("admin/jobs.jinja",
         jobs=result["items"],
         pagination=result,
         status_filter=status_filter
@@ -180,7 +180,7 @@ def admin_create_job():
     """Create new job (admin)."""
     if request.method == "GET":
         skills = get_all_skills()
-        return render_template("admin/job_form.html",
+        return render_template("admin/job_form.jinja",
             job=None,
             skills=skills,
             job_types=["Full-time", "Part-time", "Internship", "Contract", "Remote"],
@@ -240,7 +240,7 @@ def admin_edit_job(job_id):
         job_skills = get_job_skills(job_id)
         job_skill_ids = {s["skill_id"] for s in job_skills}
 
-        return render_template("admin/job_form.html",
+        return render_template("admin/job_form.jinja",
             job=job,
             skills=skills,
             job_skill_ids=job_skill_ids,
@@ -372,7 +372,7 @@ def my_applications():
     from database.database import get_user_applications
     applications = get_user_applications(user_id)
 
-    return render_template("my_applications.html", applications=applications)
+    return render_template("my_applications.jinja", applications=applications)
 
 
 @jobs_bp.route("/my-favourites")
@@ -384,4 +384,4 @@ def my_favourites():
     from database.database import get_user_favourites
     favourites = get_user_favourites(user_id)
 
-    return render_template("my_favourites.html", favourites=favourites)
+    return render_template("my_favourites.jinja", favourites=favourites)

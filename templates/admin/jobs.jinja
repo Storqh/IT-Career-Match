@@ -1,0 +1,177 @@
+{% extends "layouts/dashboard.jinja" %}
+
+{% block page_title %}Quản lý tin tuyển dụng{% endblock %}
+{% block page_subtitle %}Danh sách việc làm cần duyệt{% endblock %}
+
+{% block page_actions %}
+<a href="{{ url_for('jobs.admin_create_job') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Đăng tin mới
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Status Filter -->
+<div class="card card-bordered-primary mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('jobs.admin_jobs') }}"
+               class="btn btn-{% if status_filter == 'all' %}primary{% else %}outline-primary{% endif %}">Tất cả</a>
+            <a href="{{ url_for('jobs.admin_jobs', status='active') }}"
+               class="btn btn-{% if status_filter == 'active' %}success{% else %}outline-success{% endif %}">Đang tuyển (Active)</a>
+            <a href="{{ url_for('jobs.admin_jobs', status='inactive') }}"
+               class="btn btn-{% if status_filter == 'inactive' %}secondary{% else %}outline-secondary{% endif %}">Đã đóng (Inactive)</a>
+        </div>
+    </div>
+</div>
+
+<!-- Jobs Table -->
+<div class="card card-bordered-primary">
+    <div class="card-body p-0">
+        {% if jobs %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Vị trí</th>
+                        <th>Công ty</th>
+                        <th>Địa điểm</th>
+                        <th>Danh mục</th>
+                        <th>Loại hình</th>
+                        <th>Cấp bậc</th>
+                        <th>Lương</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <td>{{ job.job_id }}</td>
+                        <td>
+                            <strong>{{ job.title }}</strong>
+                        </td>
+                        <td>{{ job.company }}</td>
+                        <td>{{ job.location }}</td>
+                        <td>{{ job.category }}</td>
+                        <td>
+                            <span class="badge badge-{% if job.job_type == 'Remote' %}success{% elif job.job_type == 'Internship' %}info{% else %}primary{% endif %}">
+                                {{ job.job_type }}
+                            </span>
+                        </td>
+                        <td><span class="badge badge-secondary">{{ job.level }}</span></td>
+                        <td>
+                            {% if job.salary_min or job.salary_max %}
+                                <small>
+                                    {% if job.salary_min and job.salary_max %}
+                                        {{ "{:,.0f}".format(job.salary_min) }} - {{ "{:,.0f}".format(job.salary_max) }}
+                                    {% elif job.salary_min %}
+                                        Từ {{ "{:,.0f}".format(job.salary_min) }}
+                                    {% else %}
+                                        Đến {{ "{:,.0f}".format(job.salary_max) }}
+                                    {% endif %}
+                                </small>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{% if job.status == 'active' %}success{% else %}secondary{% endif %}">
+                                {% if job.status == 'active' %}Đang tuyển{% else %}Đã đóng{% endif %}
+                            </span>
+                        </td>
+                        <td>{{ job.created_at.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('jobs.admin_edit_job', job_id=job.job_id) }}"
+                                   class="btn btn-outline-primary" title="Sửa" aria-label="Sửa tin {{ job.title }}">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button class="btn btn-outline-{% if job.status == 'active' %}warning{% else %}success{% endif %}"
+                                        onclick="toggleStatus({{ job.job_id }}, '{{ job.status }}')"
+                                        title="{% if job.status == 'active' %}Đóng tin{% else %}Mở tin{% endif %}"
+                                        aria-label="{% if job.status == 'active' %}Đóng{% else %}Mở{% endif %} tin {{ job.title }}">
+                                    <i class="bi bi-{% if job.status == 'active' %}pause{% else %}play{% endif %}"></i>
+                                </button>
+                                <button class="btn btn-outline-danger"
+                                        onclick="confirmDelete({{ job.job_id }}, '{{ job.title }}')"
+                                        title="Xoá" aria-label="Xoá tin {{ job.title }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <nav class="px-3 py-3" aria-label="Pagination">
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('jobs.admin_jobs', page=pagination.page-1, status=status_filter) }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% for p in range(max(1, pagination.page-2), min(pagination.pages+1, pagination.page+3)) %}
+                    <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('jobs.admin_jobs', page=p, status=status_filter) }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
+                <li class="page-item {% if pagination.page == pagination.pages %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('jobs.admin_jobs', page=pagination.page+1, status=status_filter) }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-briefcase text-muted" style="font-size: 4rem;"></i>
+            <h4 class="text-muted mt-3">Không có tin tuyển dụng</h4>
+            <a href="{{ url_for('jobs.admin_create_job') }}" class="btn btn-primary mt-2">Đăng tin đầu tiên</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleStatus(jobId, currentStatus) {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    const action = newStatus === 'active' ? 'mở lại' : 'đóng';
+
+    if (!confirm(`Bạn có chắc muốn ${action} tin tuyển dụng này?`)) return;
+
+    fetch(`{{ url_for('jobs.admin_toggle_job_status', job_id=0) }}`.replace('0', jobId), {
+        method: 'POST'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+function confirmDelete(jobId, title) {
+    if (!confirm(`Bạn có chắc muốn XOÁ tin "${title}"?\nHành động này không thể hoàn tác!`)) return;
+
+    fetch(`{{ url_for('jobs.admin_delete_job', job_id=0) }}`.replace('0', jobId), {
+        method: 'POST'
+    })
+    .then(res => {
+        if (res.ok) location.reload();
+        else res.json().then(data => { throw new Error(data.message || 'Xoá thất bại'); });
+    })
+    .catch(err => alert(err.message));
+}
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.jinja" %}
+
+{% block body_class %}public-layout{% endblock %}
+
+{% block body_content %}
+<!-- Public Header -->
+<header class="public-header" role="banner">
+    <div class="public-header-inner">
+        <a href="{{ url_for('jobs.list_jobs') }}" class="public-brand" aria-label="IT Career Match - Trang chủ">
+            <i class="bi bi-briefcase-fill" aria-hidden="true"></i>
+            IT Career Match
+        </a>
+
+        <nav class="public-nav" aria-label="Điều hướng chính">
+            <a href="{{ url_for('jobs.list_jobs') }}" class="public-nav-link {% if request.endpoint == 'jobs.list_jobs' %}active{% endif %}">
+                <i class="bi bi-briefcase" aria-hidden="true"></i>Việc làm
+            </a>
+
+            {% if session.get("user_id") %}
+            <a href="{{ url_for('profile.dashboard') }}" class="public-nav-link {% if request.endpoint == 'profile.dashboard' %}active{% endif %}">
+                <i class="bi bi-speedometer2" aria-hidden="true"></i>Dashboard
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary btn-sm ms-2">
+                Đăng xuất
+            </a>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="public-nav-link {% if request.endpoint == 'auth.login' %}active{% endif %}">
+                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>Đăng nhập
+            </a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm ms-2">
+                Tạo tài khoản
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="public-main" role="main">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="public-footer" role="contentinfo">
+    <div class="container">
+        <p class="mb-0">IT Career Match — Hệ thống gợi ý việc làm IT thông minh</p>
+    </div>
+</footer>
+{% endblock %}

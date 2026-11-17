@@ -1,0 +1,116 @@
+{% extends "layouts/auth.jinja" %}
+
+{% block title %}Xác thực OTP - IT Career Match{% endblock %}
+
+{% block auth_title %}Xác thực email{% endblock %}
+
+{% block auth_subtitle %}
+Nhập mã 6 chữ số đã gửi đến <strong class="auth-email">{{ email }}</strong>.
+Nếu chưa nhận được, bạn có thể yêu cầu gửi lại.
+{% endblock %}
+
+{% block auth_content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show mb-3 d-flex align-items-center justify-content-between" role="alert" style="display: flex; align-items: center; justify-content: space-between;">
+            <span>{{ message }}</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng" style="width: 20px; height: 20px; min-width: 20px; padding: 0; margin-left: 12px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; cursor: pointer; opacity: 0.6; flex-shrink: 0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; display: block;">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<form method="POST" id="otpForm" data-loading-form novalidate>
+    {{ form_field('Mã OTP', 'otp', type='text', required=true, placeholder='000000', autocomplete='one-time-code', id='otp', class='text-center otp-input form-control-lg', help_text='Nhập mã gồm 6 chữ số. Mã mới sẽ thay thế mã đã gửi trước đó.') }}
+
+    {{ primary_button('Xác thực', icon='bi-check-circle', type='submit', class='w-100 py-2 fw-semibold', id='verifyBtn') }}
+</form>
+
+<div id="otpStatus" class="alert d-none mt-3 mb-0" role="status" aria-live="polite"></div>
+
+<div class="text-center mt-4">
+    <p class="mb-1">Không nhận được mã?</p>
+    <button type="button" class="btn btn-link p-0" id="resendBtn" data-resend-url="{{ url_for('auth.resend_otp') }}">
+        Gửi lại mã OTP
+    </button>
+    <span id="countdown" class="text-muted d-block small" aria-live="polite"></span>
+</div>
+{% endblock %}
+
+{% block auth_footer %}
+<a href="{{ url_for('auth.register') }}" class="text-decoration-none">
+    <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Quay lại đăng ký
+</a>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const otpInput = document.getElementById('otp');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const resendBtn = document.getElementById('resendBtn');
+    const countdown = document.getElementById('countdown');
+    const otpStatus = document.getElementById('otpStatus');
+
+    if (otpInput) {
+        otpInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+            verifyBtn.disabled = this.value.length !== 6;
+        });
+    }
+
+    if (resendBtn) {
+        let countdownTime = 60;
+        let countdownInterval = null;
+
+        function startCountdown() {
+            countdownTime = 60;
+            resendBtn.disabled = true;
+            resendBtn.style.pointerEvents = 'none';
+
+            countdownInterval = setInterval(() => {
+                countdownTime--;
+                countdown.textContent = countdownTime > 0 ? `Bạn có thể gửi lại sau ${countdownTime}s` : '';
+                if (countdownTime <= 0) {
+                    clearInterval(countdownInterval);
+                    resendBtn.disabled = false;
+                    resendBtn.style.pointerEvents = 'auto';
+                    countdown.textContent = '';
+                }
+            }, 1000);
+        }
+
+        resendBtn.addEventListener('click', async function() {
+            const url = this.dataset.resendUrl;
+            try {
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                const data = await response.json();
+
+                otpStatus.className = 'alert ' + (data.success ? 'alert-success' : 'alert-danger') + ' mt-3 mb-0';
+                otpStatus.textContent = data.message;
+                otpStatus.classList.remove('d-none');
+
+                if (data.success) {
+                    otpInput.value = '';
+                    verifyBtn.disabled = true;
+                    startCountdown();
+                }
+            } catch (err) {
+                otpStatus.className = 'alert alert-danger mt-3 mb-0';
+                otpStatus.textContent = 'Có lỗi xảy ra. Vui lòng thử lại.';
+                otpStatus.classList.remove('d-none');
+            }
+        });
+
+        startCountdown();
+    }
+});
+</script>
+{% endblock %}

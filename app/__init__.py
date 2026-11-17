@@ -105,7 +105,7 @@ def create_app(config_name=None):
     @app.route("/")
     def index():
         from flask import render_template
-        return render_template("index.html")
+        return render_template("index.jinja")
 
     # Context processor for templates
     @app.context_processor
@@ -129,13 +129,13 @@ def create_app(config_name=None):
     @app.errorhandler(404)
     def not_found_error(error):
         from flask import render_template
-        return render_template("errors/404.html"), 404
+        return render_template("errors/404.jinja"), 404
 
     @app.errorhandler(500)
     def internal_error(error):
         from flask import render_template
         app.logger.error(f"Internal server error: {error}")
-        return render_template("errors/500.html"), 500
+        return render_template("errors/500.jinja"), 500
 
     return app
 

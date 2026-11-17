@@ -42,7 +42,7 @@ def upload_cv():
     user_id = session["user_id"]
 
     if request.method == "GET":
-        return render_template("upload_cv.html")
+        return render_template("upload_cv.jinja")
 
     if "cv_file" not in request.files:
         flash("Không có file được tải lên", "error")
@@ -113,7 +113,7 @@ def parse_text_manual():
     user_id = session["user_id"]
 
     if request.method == "GET":
-        return render_template("parse_text.html")
+        return render_template("parse_text.jinja")
 
     text = request.form.get("cv_text", "").strip()
 
@@ -148,7 +148,7 @@ def my_cvs():
     """List user's CVs."""
     user_id = session["user_id"]
     cvs = get_user_cvs(user_id)
-    return render_template("my_cvs.html", cvs=cvs)
+    return render_template("my_cvs.jinja", cvs=cvs)
 
 
 @cv_bp.route("/<int:cv_id>")
@@ -161,7 +161,7 @@ def view_cv(cv_id):
     if not cv or cv["user_id"] != user_id:
         abort(404)
 
-    return render_template("view_cv.html", cv=cv)
+    return render_template("view_cv.jinja", cv=cv)
 
 
 @cv_bp.route("/<int:cv_id>/delete", methods=["POST"])
@@ -194,7 +194,7 @@ def recommendations():
     # Get recommendations from ML
     recommended = recommend_jobs_for_user(user_id, top_k=10)
 
-    return render_template("recommendations.html",
+    return render_template("recommendations.jinja",
         recommendations=recommended
     )
 
@@ -231,7 +231,7 @@ def gap_analysis(job_id):
         include_learning_path=True
     )
 
-    return render_template("gap_analysis.html",
+    return render_template("gap_analysis.jinja",
         job=job,
         gap=gap_result,
         user_skills=gap_result.get("cv_skills", []),

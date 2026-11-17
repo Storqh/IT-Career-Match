@@ -1,0 +1,121 @@
+{% extends "layouts/dashboard.jinja" %}
+
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block page_subtitle %}Quản trị hệ thống IT Career Match{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show mb-4 d-flex align-items-center justify-content-between" role="alert" style="display: flex; align-items: center; justify-content: space-between;">
+            <span>{{ message }}</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng" style="width: 20px; height: 20px; min-width: 20px; padding: 0; margin-left: 12px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: none; cursor: pointer; opacity: 0.6; flex-shrink: 0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; display: block;">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        {{ stat_card('bi-people', user_stats.total_users or 0, 'Tổng users',
+            trend=(user_stats.students or 0)|string ~ ' Sinh viên · ' ~ (user_stats.admins or 0)|string ~ ' Quản trị',
+            trend_up=true, icon_color='primary') }}
+    </div>
+    <div class="col-6 col-md-3">
+        {{ stat_card('bi-briefcase', job_stats.total or 0, 'Tổng việc làm',
+            trend=(job_stats.active or 0)|string ~ ' Đang hoạt động · ' ~ (job_stats.inactive or 0)|string ~ ' Tạm ẩn',
+            trend_up=true, icon_color='success') }}
+    </div>
+    <div class="col-6 col-md-3">
+        {{ stat_card('bi-send', app_stats.total or 0, 'Tổng đơn ứng tuyển',
+            trend=(app_stats.pending or 0)|string ~ ' Chờ duyệt · ' ~ (app_stats.accepted or 0)|string ~ ' Đã nhận',
+            trend_up=true, icon_color='warning') }}
+    </div>
+    <div class="col-6 col-md-3">
+        {{ stat_card('bi-graph-up', user_stats.new_this_week or 0, 'User mới (7 ngày)',
+            trend='Tháng này: ' ~ (user_stats.new_this_month or 0)|string,
+            trend_up=true, icon_color='info') }}
+</div>
+
+<!-- Quick Actions -->
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        {{ content_card('Thao tác nhanh', '',
+            actions=primary_button('Đăng tin tuyển dụng', href=url_for('jobs.admin_create_job'), icon='bi-plus-lg')
+            ~ outline_button('Quản lý users', href=url_for('admin.users'), icon='bi-people', variant='primary')
+            ~ outline_button('Duyệt đơn ứng tuyển', href=url_for('admin.applications'), icon='bi-inbox', variant='success')
+            ~ outline_button('Xem báo cáo', href=url_for('admin.analytics'), icon='bi-bar-chart', variant='info')
+            ~ outline_button('Xuất users CSV', href=url_for('admin.export_users'), icon='bi-download', variant='secondary')
+            ~ outline_button('Xuất jobs CSV', href=url_for('admin.export_jobs'), icon='bi-download', variant='secondary')
+        ) }}
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <!-- Recent Users -->
+    <div class="col-lg-4 mb-4">
+        {{ content_card('Users mới nhất', '', actions='<a href="' ~ url_for('admin.users') ~ '" class="btn btn-sm btn-link p-0">Xem tất cả</a>') }}
+        <div class="list-group list-group-flush">
+            {% for user in recent_users %}
+            <div class="list-group-item px-3 py-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ user.email }}</strong>
+                        <br><small class="text-muted">{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                    </div>
+                    <span class="badge badge-{% if user.role == 'admin' %}danger{% else %}primary{% endif %}">
+                        {{ user.role }}
+                    </span>
+                </div>
+            </div>
+            {% else %}
+            <div class="list-group-item text-center text-muted py-4">Chưa có user</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recent Jobs -->
+    <div class="col-lg-4 mb-4">
+        {{ content_card('Tin tuyển dụng mới', '', actions='<a href="' ~ url_for('jobs.admin_jobs') ~ '" class="btn btn-sm btn-link p-0">Xem tất cả</a>') }}
+        <div class="list-group list-group-flush">
+            {% for job in recent_jobs %}
+            <div class="list-group-item px-3 py-2">
+                <div>
+                    <strong class="text-truncate d-block">{{ job.title }}</strong>
+                    <small class="text-muted">{{ job.company }} · {{ job.created_at.strftime('%d/%m/%Y') }}</small>
+                </div>
+            </div>
+            {% else %}
+            <div class="list-group-item text-center text-muted py-4">Chưa có tin tuyển dụng</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recent Applications -->
+    <div class="col-lg-4 mb-4">
+        {{ content_card('Đơn ứng tuyển mới', '', actions='<a href="' ~ url_for('admin.applications') ~ '" class="btn btn-sm btn-link p-0">Xem tất cả</a>') }}
+        <div class="list-group list-group-flush">
+            {% for app in recent_applications %}
+            <div class="list-group-item px-3 py-2">
+                <div>
+                    <strong>{{ app.job_title }}</strong>
+                    <br><small class="text-muted">{{ app.email }} · {{ app.applied_at.strftime('%d/%m/%Y') }}</small>
+                </div>
+                <span class="badge badge-{% if app.status == 'pending' %}warning{% elif app.status == 'accepted' %}success{% elif app.status == 'rejected' %}danger{% else %}secondary{% endif %} mt-1">
+                    {{ app.status }}
+                </span>
+            </div>
+            {% else %}
+            <div class="list-group-item text-center text-muted py-4">Chưa có đơn ứng tuyển</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

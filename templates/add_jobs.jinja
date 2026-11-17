@@ -1,0 +1,384 @@
+{% extends "layouts/dashboard.jinja" %}
+
+{% block title %}Đăng công việc mới - IT Career Match{% endblock %}
+
+{% block page_title %}Đăng công việc mới{% endblock %}
+{% block page_subtitle %}Tạo thông tin tuyển dụng để sinh viên khám phá cơ hội phù hợp{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Admin</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('jobs.admin_jobs') }}">Quản lý công việc</a></li>
+        <li class="breadcrumb-item active">Thêm mới</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Main Form -->
+    <div class="col-12 col-lg-8">
+        <form method="POST" action="{{ url_for('jobs.admin_create_job') }}" id="addJobForm" class="needs-validation" novalidate>
+
+            <!-- SECTION 01: Basic Info -->
+            <div class="card card-bordered-primary mb-4">
+                <div class="card-header bg-surface">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-primary">01</span>
+                        <div>
+                            <h5 class="fw-bold mb-1">Thông tin cơ bản</h5>
+                            <p class="text-muted mb-0 small">Các thông tin chính của công việc</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            {{ form_field('Vị trí tuyển dụng', 'title', type='text', required=true, placeholder='VD: Python Backend Developer', maxlength=150) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Công ty', 'company', type='text', required=true, placeholder='VD: ABC Technology', maxlength=120) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Địa điểm', 'location', type='text', required=true, placeholder='VD: Hồ Chí Minh / Remote', maxlength=120) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Nhóm nghề', 'category', type='select', required=true, options=[
+                                ('', 'Chọn nhóm nghề'),
+                                ('AI/ML', 'AI / Machine Learning'),
+                                ('Backend', 'Backend'),
+                                ('Cybersecurity', 'Cybersecurity'),
+                                ('Data', 'Data'),
+                                ('DevOps/Cloud', 'DevOps / Cloud'),
+                                ('Network/System', 'Network / System'),
+                                ('Other IT', 'Other IT')
+                            ]) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Loại công việc', 'job_type', type='select', required=true, options=[
+                                ('', 'Chọn loại công việc'),
+                                ('Full-time', 'Full-time'),
+                                ('Part-time', 'Part-time'),
+                                ('Internship', 'Internship'),
+                                ('Remote', 'Remote'),
+                                ('Contract', 'Contract')
+                            ]) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 02: Required Skills -->
+            <div class="card card-bordered-primary mb-4">
+                <div class="card-header bg-surface">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-primary">02</span>
+                        <div>
+                            <h5 class="fw-bold mb-1">Kỹ năng yêu cầu</h5>
+                            <p class="text-muted mb-0 small">Thêm các kỹ năng cần thiết cho vị trí tuyển dụng</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="skillInput" class="form-label">Nhập kỹ năng</label>
+                        <div class="input-group">
+                            <input type="text" id="skillInput" class="form-control" placeholder="VD: Python, SQL, Docker...">
+                            <button type="button" id="addSkillButton" class="btn btn-outline-primary">
+                                <i class="bi bi-plus-circle me-1"></i>Thêm
+                            </button>
+                        </div>
+                        <small class="text-muted">Nhấn Enter hoặc nút Thêm để thêm kỹ năng.</small>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Danh sách kỹ năng đã chọn</label>
+                        <div id="selectedSkills" class="d-flex flex-wrap gap-2">
+                            <span class="text-muted small" id="emptySkillsMessage">Chưa có kỹ năng nào được thêm.</span>
+                        </div>
+                    </div>
+                    <div id="skillHiddenInputs"></div>
+                </div>
+            </div>
+
+            <!-- SECTION 03: Job Description -->
+            <div class="card card-bordered-primary mb-4">
+                <div class="card-header bg-surface">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-primary">03</span>
+                        <div>
+                            <h5 class="fw-bold mb-1">Nội dung tuyển dụng</h5>
+                            <p class="text-muted mb-0 small">Thêm nhiều mục để mô tả công việc rõ ràng hơn</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="jobDescriptionSections"></div>
+                    <button type="button" id="addDescriptionSection" class="btn btn-outline-primary mt-3">
+                        <i class="bi bi-plus-circle me-2"></i>Thêm nội dung
+                    </button>
+                    <textarea name="description" id="description" hidden aria-hidden="true"></textarea>
+                    <div class="mt-3">
+                        <span class="small text-muted">Hãy mô tả đầy đủ nhiệm vụ, yêu cầu và quyền lợi của công việc.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 04: Salary & Benefits -->
+            <div class="card card-bordered-primary mb-4">
+                <div class="card-header bg-surface">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-primary">04</span>
+                        <div>
+                            <h5 class="fw-bold mb-1">Mức lương & Phúc lợi</h5>
+                            <p class="text-muted mb-0 small">Thông tin trả lương và quyền lợi nhân viên</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form_field('Lương tối thiểu (VNĐ)', 'salary_min', type='number', placeholder='VD: 10000000', min=0, step=1000000) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Lương tối đa (VNĐ)', 'salary_max', type='number', placeholder='VD: 20000000', min=0, step=1000000) }}
+                        </div>
+                        <div class="col-12">
+                            {{ form_field('Phúc lợi', 'benefits', type='textarea', placeholder='VD: Bảo hiểm y tế, 13th salary, remote work, training budget...', rows=3) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 05: Requirements & Experience -->
+            <div class="card card-bordered-primary mb-4">
+                <div class="card-header bg-surface">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="badge bg-primary">05</span>
+                        <div>
+                            <h5 class="fw-bold mb-1">Yêu cầu & Kinh nghiệm</h5>
+                            <p class="text-muted mb-0 small">Kinh nghiệm và trình độ cần thiết</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form_field('Kinh nghiệm (năm)', 'experience', type='number', min=0, max=50, placeholder='VD: 2') }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Trình độ', 'level', type='select', options=[
+                                ('', 'Chọn trình độ'),
+                                ('Intern', 'Intern'),
+                                ('Fresher', 'Fresher'),
+                                ('Junior', 'Junior'),
+                                ('Mid', 'Mid-level'),
+                                ('Senior', 'Senior'),
+                                ('Lead', 'Lead / Principal'),
+                                ('Manager', 'Manager / Director')
+                            ]) }}
+                        </div>
+                        <div class="col-12">
+                            {{ form_field('Yêu cầu khác', 'requirements', type='textarea', placeholder='VD: Tốt nghiệp Đại học, có Portfolio, tiếng Anh giao tiếp...', rows=3) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORM ACTIONS -->
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="{{ url_for('jobs.admin_jobs') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Quay lại
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i>Đăng công việc
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sidebar Help Panel -->
+    <div class="col-12 col-lg-4">
+        <div class="card card-bordered-success sticky-top mb-4" style="top: 100px;">
+            <div class="card-header bg-surface">
+                <h5 class="fw-bold mb-0"><i class="bi bi-lightbulb me-2"></i>Mẹo đăng tuyển</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Một tin tuyển dụng đầy đủ giúp sinh viên hiểu rõ vị trí và đánh giá mức độ phù hợp.</p>
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span>Tiêu đề rõ ràng, đúng vị trí tuyển dụng</span>
+                </div>
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span>Chọn đúng nhóm nghề để hỗ trợ gợi ý việc làm</span>
+                </div>
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span>Mô tả kỹ năng, nhiệm vụ và yêu cầu cụ thể</span>
+                </div>
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span>Kiểm tra thông tin trước khi đăng</span>
+                </div>
+                <div class="d-flex align-items-start gap-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span>Điền đầy đủ mức lương để thu hút ứng viên</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const skillInput = document.getElementById("skillInput");
+    const addSkillButton = document.getElementById("addSkillButton");
+    const selectedSkills = document.getElementById("selectedSkills");
+    const skillHiddenInputs = document.getElementById("skillHiddenInputs");
+    const emptySkillsMessage = document.getElementById("emptySkillsMessage");
+    const addJobForm = document.getElementById("addJobForm");
+
+    const skills = [];
+
+    function renderSkills() {
+        selectedSkills.innerHTML = "";
+        skillHiddenInputs.innerHTML = "";
+
+        if (skills.length === 0) {
+            selectedSkills.appendChild(emptySkillsMessage);
+            return;
+        }
+
+        skills.forEach(function (skill, index) {
+            const tag = document.createElement("span");
+            tag.className = "badge badge-primary px-3 py-2 d-flex align-items-center gap-1";
+
+            const skillText = document.createElement("span");
+            skillText.textContent = skill;
+
+            const removeButton = document.createElement("button");
+            removeButton.type = "button";
+            removeButton.className = "btn-close ms-1";
+            removeButton.style.fontSize = "9px";
+            removeButton.setAttribute("aria-label", "Xóa " + skill);
+
+            removeButton.addEventListener("click", function () {
+                skills.splice(index, 1);
+                renderSkills();
+            });
+
+            tag.appendChild(skillText);
+            tag.appendChild(removeButton);
+            selectedSkills.appendChild(tag);
+
+            const hiddenInput = document.createElement("input");
+            hiddenInput.type = "hidden";
+            hiddenInput.name = "required_skills";
+            hiddenInput.value = skill;
+            skillHiddenInputs.appendChild(hiddenInput);
+        });
+    }
+
+    function addSkill() {
+        const skill = skillInput.value.trim();
+        if (!skill) return;
+
+        const exists = skills.some(function (item) {
+            return item.toLowerCase() === skill.toLowerCase();
+        });
+
+        if (exists) {
+            alert("Kỹ năng này đã được thêm.");
+            skillInput.value = "";
+            return;
+        }
+
+        if (skill.length > 100) {
+            alert("Tên kỹ năng không được vượt quá 100 ký tự.");
+            return;
+        }
+
+        skills.push(skill);
+        skillInput.value = "";
+        skillInput.focus();
+        renderSkills();
+    }
+
+    addSkillButton.addEventListener("click", addSkill);
+
+    skillInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            addSkill();
+        }
+    });
+
+    addJobForm.addEventListener("submit", function () {
+        renderSkills();
+    });
+
+    // Description sections
+    const jobDescriptionSections = document.getElementById("jobDescriptionSections");
+    const addDescriptionSection = document.getElementById("addDescriptionSection");
+    const descriptionHidden = document.getElementById("description");
+    let sectionCounter = 0;
+
+    function createSection(sectionData = {}) {
+        sectionCounter++;
+        const sectionId = "descSection" + sectionCounter;
+
+        const sectionDiv = document.createElement("div");
+        sectionDiv.id = sectionId;
+        sectionDiv.className = "card card-bordered-secondary mb-3";
+
+        sectionDiv.innerHTML = `
+            <div class="card-header bg-surface d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary">${sectionCounter}</span>
+                    <input type="text" class="form-control form-control-sm section-title" placeholder="Tiêu đề mục (VD: Mô tả công việc)" value="${sectionData.title || ''}" style="width: auto; min-width: 200px;">
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-section" aria-label="Xóa mục này">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <textarea class="form-control section-content" rows="4" placeholder="Nội dung...">${sectionData.content || ''}</textarea>
+            </div>
+        `;
+
+        sectionDiv.querySelector(".remove-section").addEventListener("click", function() {
+            sectionDiv.remove();
+            updateDescription();
+        });
+
+        sectionDiv.querySelector(".section-title").addEventListener("input", updateDescription);
+        sectionDiv.querySelector(".section-content").addEventListener("input", updateDescription);
+
+        jobDescriptionSections.appendChild(sectionDiv);
+    }
+
+    function updateDescription() {
+        const sections = [];
+        document.querySelectorAll("#jobDescriptionSections > div").forEach(function(sec) {
+            const title = sec.querySelector(".section-title").value.trim();
+            const content = sec.querySelector(".section-content").value.trim();
+            if (title || content) {
+                sections.push({ title: title, content: content });
+            }
+        });
+        descriptionHidden.value = JSON.stringify(sections);
+    }
+
+    addDescriptionSection.addEventListener("click", function() {
+        createSection();
+    });
+
+    // Initialize with one empty section
+    createSection();
+});
+</script>
+{% endblock %}

@@ -54,7 +54,7 @@ def dashboard():
     recent_jobs = get_recent_jobs(5)
     recent_applications = get_recent_applications(5)
 
-    return render_template("admin/dashboard.html",
+    return render_template("admin/dashboard.jinja",
         user_stats=user_stats,
         job_stats=job_stats,
         app_stats=app_stats,
@@ -87,7 +87,7 @@ def users():
         search=search if search else None
     )
 
-    return render_template("admin/users.html",
+    return render_template("admin/users.jinja",
         users=result["items"],
         pagination=result,
         role_filter=role_filter,
@@ -110,7 +110,7 @@ def user_detail(user_id):
     applications = get_user_applications(user_id)
     favourites = get_user_favourites(user_id)
 
-    return render_template("admin/user_detail.html",
+    return render_template("admin/user_detail.jinja",
         user=user,
         profile=profile,
         cvs=cvs,
@@ -185,7 +185,7 @@ def applications():
         status=status_filter if status_filter != "all" else None
     )
 
-    return render_template("admin/applications.html",
+    return render_template("admin/applications.jinja",
         applications=result["items"],
         pagination=result,
         status_filter=status_filter
@@ -242,7 +242,7 @@ def analytics():
     demand_skills = get_top_skills_demand(15)
     supply_skills = get_top_skills_supply(15)
 
-    return render_template("admin/analytics.html",
+    return render_template("admin/analytics.jinja",
         by_category=by_category,
         by_location=by_location,
         by_type=by_type,
@@ -306,7 +306,7 @@ def settings():
     if request.method == "GET":
         from database.database import get_settings
         settings = get_settings()
-        return render_template("admin/settings.html", settings=settings)
+        return render_template("admin/settings.jinja", settings=settings)
 
     # POST - Update settings
     from database.database import update_setting

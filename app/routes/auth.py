@@ -24,7 +24,7 @@ auth_bp = Blueprint("auth", __name__)
 def register():
     """User registration with email verification."""
     if request.method == "GET":
-        return render_template("register.html")
+        return render_template("register.jinja")
 
     email = request.form.get("email", "").strip().lower()
     password = request.form.get("password", "")
@@ -32,22 +32,22 @@ def register():
     # Validation
     if not email or not password:
         flash("Email và mật khẩu là bắt buộc", "error")
-        return render_template("register.html"), 400
+        return render_template("register.jinja"), 400
 
     if password != confirm_password:
         flash("Mật khẩu xác nhận không khớp", "error")
-        return render_template("register.html"), 400
+        return render_template("register.jinja"), 400
 
     if len(password) < 8:
         flash("Mật khẩu phải có ít nhất 8 ký tự", "error")
-        return render_template("register.html"), 400
+        return render_template("register.jinja"), 400
 
     # Check existing user
     existing = get_user_by_email(email)
     if existing:
         if existing["is_verified"]:
             flash("Email đã được đăng ký", "error")
-            return render_template("register.html"), 400
+            return render_template("register.jinja"), 400
         else:
             # Email exists but not verified - resend OTP
             otp = str(secrets.randbelow(900000) + 100000)  # 6-digit
@@ -106,13 +106,13 @@ def verify_otp():
         return redirect(url_for("auth.register"))
 
     if request.method == "GET":
-        return render_template("verify_otp.html", email=email)
+        return render_template("verify_otp.jinja", email=email)
 
     otp_input = request.form.get("otp", "").strip()
 
     if not otp_input:
         flash("Vui lòng nhập mã OTP", "error")
-        return render_template("verify_otp.html", email=email), 400
+        return render_template("verify_otp.jinja", email=email), 400
 
     success, message = db_verify_otp(email, otp_input)
 
@@ -123,7 +123,7 @@ def verify_otp():
         return redirect(url_for("auth.login"))
     else:
         flash(message, "error")
-        return render_template("verify_otp.html", email=email), 400
+        return render_template("verify_otp.jinja", email=email), 400
 
 
 @auth_bp.route("/resend-otp", methods=["POST"])
@@ -158,7 +158,7 @@ def resend_otp():
 def login():
     """User login."""
     if request.method == "GET":
-        return render_template("login.html")
+        return render_template("login.jinja")
 
     email = request.form.get("email", "").strip().lower()
     password = request.form.get("password", "")
@@ -166,20 +166,20 @@ def login():
 
     if not email or not password:
         flash("Email và mật khẩu là bắt buộc", "error")
-        return render_template("login.html"), 400
+        return render_template("login.jinja"), 400
 
     user = get_user_by_email(email)
 
     if not user:
         flash("Email hoặc mật khẩu không đúng", "error")
-        return render_template("login.html"), 401
+        return render_template("login.jinja"), 401
 
     # Older accounts used Werkzeug's scrypt hashes; migrate valid logins to bcrypt.
     stored_hash = user.get("password_hash") or user.get("password")
     if not isinstance(stored_hash, str):
         current_app.logger.warning("User account has no usable password hash")
         flash("Email hoặc mật khẩu không đúng", "error")
-        return render_template("login.html"), 401
+        return render_template("login.jinja"), 401
 
     if stored_hash.startswith(("$2a$", "$2b$", "$2y$")):
         try:
@@ -201,7 +201,7 @@ def login():
 
     if not password_matches:
         flash("Email hoặc mật khẩu không đúng", "error")
-        return render_template("login.html"), 401
+        return render_template("login.jinja"), 401
 
     if not stored_hash.startswith(("$2a$", "$2b$", "$2y$")):
         upgraded_hash = bcrypt.hashpw(
@@ -259,19 +259,19 @@ def logout():
 def forgot_password():
     """Forgot password - send reset link or OTP for unverified accounts."""
     if request.method == "GET":
-        return render_template("forgot_password.html")
+        return render_template("forgot_password.jinja")
 
     email = request.form.get("email", "").strip().lower()
 
     if not email:
         flash("Vui lòng nhập email", "error")
-        return render_template("forgot_password.html"), 400
+        return render_template("forgot_password.jinja"), 400
 
     user = get_user_by_email(email)
     if not user:
         # Keep user enumeration safe, but do not disclose whether the email exists.
         flash("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.", "info")
-        return render_template("forgot_password.html")
+        return render_template("forgot_password.jinja")
 
     if not user["is_verified"]:
         from database.database import update_user_otp
@@ -289,11 +289,11 @@ def forgot_password():
 
             current_app.logger.error("Could not send reset OTP email for unverified user: %s", message)
             flash("Tài khoản chưa xác thực email và hệ thống không gửi được mã OTP. Vui lòng thử lại sau.", "error")
-            return render_template("forgot_password.html"), 500
+            return render_template("forgot_password.jinja"), 500
         except Exception as exc:
             current_app.logger.exception("Could not send reset OTP email for unverified user")
             flash(f"Không thể gửi mã OTP: {exc}", "error")
-            return render_template("forgot_password.html"), 500
+            return render_template("forgot_password.jinja"), 500
 
     serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
     token = serializer.dumps(
@@ -312,10 +312,10 @@ def forgot_password():
     if not sent:
         current_app.logger.error("Could not send password reset email: %s", message)
         flash("Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại sau.", "error")
-        return render_template("forgot_password.html"), 500
+        return render_template("forgot_password.jinja"), 500
 
     flash("Nếu email tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi.", "info")
-    return render_template("forgot_password.html")
+    return render_template("forgot_password.jinja")
 
 
 @auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
@@ -333,16 +333,16 @@ def reset_password(token):
         return redirect(url_for("auth.forgot_password"))
 
     if request.method == "GET":
-        return render_template("reset_password.html", token=token)
+        return render_template("reset_password.jinja", token=token)
 
     password = request.form.get("password", "")
     confirm_password = request.form.get("confirm_password", "")
     if len(password) < 8:
         flash("Mật khẩu phải có ít nhất 8 ký tự.", "error")
-        return render_template("reset_password.html", token=token), 400
+        return render_template("reset_password.jinja", token=token), 400
     if password != confirm_password:
         flash("Mật khẩu xác nhận không khớp.", "error")
-        return render_template("reset_password.html", token=token), 400
+        return render_template("reset_password.jinja", token=token), 400
 
     user = get_user_by_email(token_data["email"])
     if not user or not user["is_verified"]:

@@ -1,0 +1,50 @@
+{% extends "layouts/dashboard.jinja" %}
+
+{% block title %}Hồ sơ cá nhân - IT Career Match{% endblock %}
+
+{% block page_title %}Hồ sơ cá nhân{% endblock %}
+{% block page_subtitle %}Cập nhật thông tin để hệ thống hiểu rõ hơn về bạn{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('profile.dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Hồ sơ cá nhân</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-bordered-primary">
+            <div class="card-body p-4 p-md-5">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form_field('Họ và tên', 'full_name', type='text', value=profile['full_name'] or '') }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_field('Ngày sinh', 'date_of_birth', type='date', value=profile['date_of_birth'] or '') }}
+                        </div>
+                        <div class="col-12">
+                            {{ form_field('Chuyên ngành', 'major', type='text', placeholder='Ví dụ: Công nghệ thông tin', value=profile['major'] or '') }}
+                        </div>
+                        <div class="col-12">
+                            {{ form_field('Giới thiệu bản thân', 'bio', type='textarea', placeholder='Mô tả ngắn về bản thân, định hướng nghề nghiệp...', value=profile['bio'] or '', rows=5) }}
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-end mt-4">
+                        <a href="{{ url_for('profile.dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Quay lại
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Lưu hồ sơ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
